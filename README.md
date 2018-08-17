@@ -5,11 +5,11 @@ lava is a script that visualizes the minor allele variants in longitudinal seque
 
 **Mandatory Files**
 1. A fastq must be specified as the control. This will be the sample to which lava aligns the rest of the sequences to. Also in the folder include all the sequences to be aligned to the control, but no other.
-2. A metadata.csv file must be provided in the folder with the fastq. This will contain two columns: Sample and Passage. 
+2. A metadata.csv file must be included in the folder with the fastq. This will contain two columns: Sample and Passage. 
 
 **Optional Files**
-1. A fasta may be provided of the control. Otherwise, lava will automatically align the control .fastq to a reference sequence of the virus pulled off of Genbank.
-2. A gff may also be provided of the annotations of the coding regions of the control. Otherwise, lava will automatically transfer the annotations off a reference sequence pulled off of Genbank.
+1. A fasta of the control may be provided. Otherwise, lava will automatically align the control .fastq to a reference sequence of the virus pulled from Genbank.
+2. A gff may also be provided of the annotations of the coding regions of the control. Otherwise, lava will automatically transfer the annotations off a reference sequence pulled from Genbank.
 
 **Note:**
 The optional files should not have any special characters in them, particularly underscores. Simply renaming the fasta or gff will not work - make sure the names within the files themselves do not have special characters as well.
