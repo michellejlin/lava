@@ -232,4 +232,4 @@ do
 	fi
 done	
 
-$script_path/genome_protein_plots
+$script_path/genome_protein_plots.py
