@@ -11,25 +11,29 @@ lava is a script that visualizes the minor allele variants in longitudinal seque
 1. A fasta may be provided of the control. Otherwise, lava will automatically align the control .fastq to a reference sequence of the virus pulled off of Genbank.
 2. A gff may also be provided of the annotations of the coding regions of the control. Otherwise, lava will automatically transfer the annotations off a reference sequence pulled off of Genbank.
 
-**Note**
+**Note:**
 The optional files should not have any special characters in them, particularly underscores. Simply renaming the fasta or gff will not work - make sure the names within the files themselves do not have special characters as well.
 
 # Usage
 
 Create input files as desired (for most, this may only be the metadata.csv file). 
 
-Move to the folder lava is in. For example, if lava was cloned from Github into downloads:
+Move to the folder lava is in. For example, if lava were cloned from Github into downloads:
 
-'cd C:\User\Downloads\lava\'
+`cd C:\User\Downloads\lava\`
 
 or the desired file path. 
 
 Then, run the command: 
 
-'lava.sh [fastq_file] -g "[user query for virus]"'
+`lava.sh [fastq_file] -g "[user query for virus]"`
 
 with your control fastq specified, as well as what virus the sequence is, or the accession number desired for mapping, for the default lava usage. Running the command:
 
-'lava.sh [fastq_file] -f [fasta_file] -r [gff_file]'
+`lava.sh [fastq_file] -f [fasta_file] -r [gff_file]`
 
 allows the user to specify their own fasta file or gff file for lava. Please note the -g and -r arguments CANNOT be both specified, as only one option for gff generation should be used. The -r argument is intended only for highly specific cases; otherwise, the -g argument in which lava automatically generates the gff is highly recommended.
+
+# Output Files
+
+lava will output an html file of the visualization that can be easily shareable and downloaded. In addition, lava will also output a summary table of the amino acid changes taking place, called merged.csv. 
