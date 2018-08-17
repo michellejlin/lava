@@ -17,7 +17,6 @@ from bokeh.transform import jitter, factor_cmap, linear_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 
-
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='no description yet')
 	parser.add_argument('-png', action='store_true')
@@ -41,88 +40,6 @@ if __name__ == '__main__':
 	unique_samples = merged.Sample.unique()
 	unique_samples = np.sort(merged.Sample.unique())
 	num_Passages = merged['Passage'].max()
-
-	TOOLTIPS = [
-		("Amino Acid Change", "@Change"),
-		("Nucleotide Change", "@NucleotideChange"),
-		("Allele Frequency", "@AF"+"%"),
-		("Depth", "@Depth"),
-	]
-
-	#Uses info from protein csv to shade every other protein in light green, and annotate with protein names
-	def protein_annotation():
-		protein_locs = []
-		protein_names = []	
-		#shades in every other protein region
-		for i in range(0, proteins.shape[0]):
-			if(i==0):
-				x1 = 0
-			else:
-				x1 = proteins.iloc[i,1]
-			if(i==proteins.shape[0]-1):
-				x2 = proteins.iloc[i,2]
-			else:
-				x2 = proteins.iloc[(i+1),1]
-			if(i%2==0):
-				g.add_layout(BoxAnnotation(left=x1, right=x2, fill_alpha=0.1, fill_color='green'))
-			protein_locs.append((x1+x2)/2)
-			protein_names.append(proteins.iloc[i,0])
-	
-		#adds protein labels as tick marks
-		g.xaxis.ticker = protein_locs
-		g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
-	
-	#Creates the legend and configures some of the toolbar stuff
-	def configurePlot():
-		g.legend.location = "top_right"
-		g.legend.glyph_width = 35
-		g.legend.glyph_height = 35
-		g.legend.spacing = -10
-		g.legend.background_fill_alpha = 0.5
-		g.toolbar.active_scroll = g.select_one(WheelZoomTool)
-		g.yaxis.axis_label_standoff = 10
-		g.yaxis.axis_label = "Allele Frequency (%)"
-		g.xaxis.minor_tick_line_color = None
-	
-	#Callback for the sliders and the checkboxes for non/synonymous mutations, goes through data and selects/pushes the data with the matching criteria
-	def sliderCallback(ref_source, source, slider, slider_af, syngroup):
-		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup), code = """
-			let depth = slider.value;
-			let af = slider_af.value;
-			let colnames = Object.keys(ref.data);
-			for (let a = 0; a < colnames.length; a++) {
-				depth_sample.data[colnames[a]] = [];
-			}
-			if (checkbox.active.indexOf(0)>-1) {
-				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
-						}
-					}
-				}
-			}
-			if (checkbox.active.indexOf(1)>-1) {
-				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
-						}
-					}
-				}
-			}
-			if (checkbox.active.indexOf(2)>-1) {
-				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
-						}
-					}
-				}
-			}
-            depth_sample.change.emit();
-        """)
-
 	palette=["#3cb44b", "#ffe119", "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#d2f53c", "#fabebe",
 				"#008080", "#aa6e28", "#e84d60", "#c9d9d3", "#e6beff", "#800000", "#aaffc3", "#808000",
 				"#ffd8b1", "#000080", "#808080", "#f09898", "#eece94", "#e06014", "#90c8da", "#c14d4d", "#64708b", "#d4d5e9", "#f7ca0e", "#37700e", 
@@ -263,7 +180,88 @@ if __name__ == '__main__':
 				"#6e6c8e", "#2fc6bf", "#f7ff91", "#50b768", "#ff9d00", "#140b66", "#ad8c95", "#e5917b", "#8921a0", "#c6efec", "#605c21", "#d7b4ed",
 				"#b23617", "#b5d1ff", "#65915a", "#9c00e5", "#d3ca63", "#4c2400", "#005b66", "#ffebbc", "#564543", "#ffbffa", "#b6db6d", "#447768",
 				"#5e2d45", "#f3ffb5", "#5cc9bc", "#f74420", "#9fdda3", "#ceb577", "#019db2", "#95ff1c", "#8d8dbf", "#d88495", "#ffbb56",
-				]
+			]
+
+	TOOLTIPS = [
+		("Amino Acid Change", "@Change"),
+		("Nucleotide Change", "@NucleotideChange"),
+		("Allele Frequency", "@AF"+"%"),
+		("Depth", "@Depth"),
+	]
+
+	#Uses info from protein csv to shade every other protein in light green, and annotate with protein names
+	def protein_annotation():
+		protein_locs = []
+		protein_names = []	
+		#shades in every other protein region
+		for i in range(0, proteins.shape[0]):
+			if(i==0):
+				x1 = 0
+			else:
+				x1 = proteins.iloc[i,1]
+			if(i==proteins.shape[0]-1):
+				x2 = proteins.iloc[i,2]
+			else:
+				x2 = proteins.iloc[(i+1),1]
+			if(i%2==0):
+				g.add_layout(BoxAnnotation(left=x1, right=x2, fill_alpha=0.1, fill_color='green'))
+			protein_locs.append((x1+x2)/2)
+			protein_names.append(proteins.iloc[i,0])
+	
+		#adds protein labels as tick marks
+		g.xaxis.ticker = protein_locs
+		g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
+	
+	#Creates the legend and configures some of the toolbar stuff
+	def configurePlot():
+		g.legend.location = "top_right"
+		g.legend.glyph_width = 35
+		g.legend.glyph_height = 35
+		g.legend.spacing = -10
+		g.legend.background_fill_alpha = 0.5
+		g.toolbar.active_scroll = g.select_one(WheelZoomTool)
+		g.yaxis.axis_label_standoff = 10
+		g.yaxis.axis_label = "Allele Frequency (%)"
+		g.xaxis.minor_tick_line_color = None
+	
+	#Callback for the sliders and the checkboxes for non/synonymous mutations, goes through data and selects/pushes the data with the matching criteria
+	def sliderCallback(ref_source, source, slider, slider_af, syngroup):
+		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup), code = """
+			let depth = slider.value;
+			let af = slider_af.value;
+			let colnames = Object.keys(ref.data);
+			for (let a = 0; a < colnames.length; a++) {
+				depth_sample.data[colnames[a]] = [];
+			}
+			if (checkbox.active.indexOf(0)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+			if (checkbox.active.indexOf(1)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+			if (checkbox.active.indexOf(2)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+            depth_sample.change.emit();
+        """)
 
 	#creates genome plots
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
@@ -275,7 +273,7 @@ if __name__ == '__main__':
 		depth_sample = ColumnDataSource(data=source_sample.data)
 		#creates a graph with xaxis being genome length (based on protein csv)
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name, active_scroll = "wheel_zoom",
+			title=sample_name, active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 

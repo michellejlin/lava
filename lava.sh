@@ -10,10 +10,7 @@ export GATK=/Users/uwvirongs/downloads/gatk-4.0.5.1/gatk
 export VARSCAN=/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar
 export PATH=$PATH:/Users/uwvirongs/Downloads/annovar 
 export SNPEFFPATH=/Users/uwvirongs/snpEff/
-export RATT_HOME=/Users/uwvirongs/Downloads/ratt-code/
 export PATH="/Users/uwvirongs/downloads/annovar/:$PATH"
-export PATH="/Users/uwvirongs/downloads/MAC-master/:$PATH"
-export PATH="/Users/uwvirongs/Downloads/MUMmer3.232/scripts/:$PATH"
 
 # esearch -db nucleotide -query "parainfluenza 1 complete genome refseq" -sort relevance| efetch -format fasta | sed -n '1,/>/p' | sed \$d > test.fasta
 # reference=$(awk 'NR==1{print substr($1,2)}' test.fasta)
@@ -27,42 +24,42 @@ export PATH="/Users/uwvirongs/Downloads/MUMmer3.232/scripts/:$PATH"
 # $RATT_HOME/start.ratt.sh ./ 5S5.fasta ref.fasta Assembly
 # 
 # replace Us with Ts
-# sed -i -e 's/U/T/g' $ref
-# 
-# #indexes $reference
-# bwa index $ref
-# 
-# #indexes $reference for GATK use
-# samtools faidx $ref
-# $GATK CreateSequenceDictionary -R $ref --VERBOSITY WARNING
-# 
-# for sample in *.fastq
-# do
-# 	name=$(basename "$sample" .fastq)
-# 	
-# 	aligns
-# 	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 $ref $sample > $name.sam
-# 
-# 	converts sam to bam and sorts
-# 	java -jar $PICARD SortSam \
-# 		INPUT=$name.sam \
-# 		OUTPUT=$name.bam \
-# 		SORT_ORDER=coordinate \
-# 		VERBOSITY=WARNING
-# 
-# 	gets rid of pcr duplicates
-# 	java -jar $PICARD MarkDuplicates \
-# 		INPUT=$name.bam \
-# 		OUTPUT=$name'_dedup'.bam \
-# 		METRICS_FILE=metrics.txt \
-# 		VERBOSITY=WARNING
-# 
-# 	indexes bam file
-# 	java -jar $PICARD BuildBamIndex INPUT=$name'_dedup'.bam VERBOSITY=WARNING
-# 	
-# 	creates pileup
-# 	samtools mpileup -f $ref $name'_dedup'.bam > $name'_dedup'.pileup
-# done
+sed -i -e 's/U/T/g' $ref
+
+#indexes $reference
+bwa index $ref
+
+#indexes $reference for GATK use
+samtools faidx $ref
+$GATK CreateSequenceDictionary -R $ref --VERBOSITY WARNING
+
+for sample in *.fastq
+do
+	name=$(basename "$sample" .fastq)
+	
+	#aligns
+	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 $ref $sample > $name.sam
+
+	#converts sam to bam and sorts
+	java -jar $PICARD SortSam \
+		INPUT=$name.sam \
+		OUTPUT=$name.bam \
+		SORT_ORDER=coordinate \
+		VERBOSITY=WARNING
+
+	#gets rid of pcr duplicates
+	java -jar $PICARD MarkDuplicates \
+		INPUT=$name.bam \
+		OUTPUT=$name'_dedup'.bam \
+		METRICS_FILE=metrics.txt \
+		VERBOSITY=WARNING
+
+	#indexes bam file
+	java -jar $PICARD BuildBamIndex INPUT=$name'_dedup'.bam VERBOSITY=WARNING
+	
+	#creates pileup
+	samtools mpileup -f $ref $name'_dedup'.bam > $name'_dedup'.pileup
+done
 
 # samtools mpileup -uf test.fasta $name'_dedup'.bam | bcftools call -c | vcfutils.pl vcf2fq > consensus.fq
 # seqtk seq -A consensus.fq > consensus.fasta
@@ -70,18 +67,18 @@ export PATH="/Users/uwvirongs/Downloads/MUMmer3.232/scripts/:$PATH"
 # Change the .gff file here to make it acceptable
 # make sure none of the other things have more annotations than the transcript
 
-# awk 'BEGIN{FS=OFS="\t"} $3=="cds" {$3="CDS"}1;' $gff > a.tmp && mv a.tmp $gff
-# awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$8=0}1;' $gff > a.tmp && mv a.tmp $gff
-# awk 'BEGIN{IGNORECASE=1} {gsub(/mrna/,"transcript")}1' $gff > a.tmp && mv a.tmp $gff	
-# awk -F" |=" 'BEGIN{OFS=":"}{t=$2; $2=$3; $3=t; print;}' $gff > a.tmp && mv a.tmp $gff
-# awk '{gsub(/Name:/,"ID=")}1' $gff > a.tmp && mv a.tmp $gff
-# awk 'BEGIN{FS=OFS="\t"} $3=="transcript" {$9=$9";Parent=gene:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
-# awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$9=$9";Parent=transcript:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
-# grep -v "regulatory" $gff > a.tmp && mv a.tmp $gff
-# awk -F":|;" '{gsub(/REPLACEME/,$2)}1' $gff > a.tmp && mv a.tmp $gff
-# awk 'BEGIN{FS=OFS="\t"} $3=="gene" {$9=$9";biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
-# sed "1s/.*/##gff-version 3/" $gff > a.tmp && mv a.tmp $gff
-# sed "2s/.*/##source-version geneious 9.1.7/" $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{FS=OFS="\t"} $3=="cds" {$3="CDS"}1;' $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$8=0}1;' $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{IGNORECASE=1} {gsub(/mrna/,"transcript")}1' $gff > a.tmp && mv a.tmp $gff	
+awk -F" |=" 'BEGIN{OFS=":"}{t=$2; $2=$3; $3=t; print;}' $gff > a.tmp && mv a.tmp $gff
+awk '{gsub(/Name:/,"ID=")}1' $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{FS=OFS="\t"} $3=="transcript" {$9=$9";Parent=gene:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$9=$9";Parent=transcript:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
+grep -v "regulatory" $gff > a.tmp && mv a.tmp $gff
+awk -F":|;" '{gsub(/REPLACEME/,$2)}1' $gff > a.tmp && mv a.tmp $gff
+awk 'BEGIN{FS=OFS="\t"} $3=="gene" {$9=$9";biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
+sed "1s/.*/##gff-version 3/" $gff > a.tmp && mv a.tmp $gff
+sed "2s/.*/##source-version geneious 9.1.7/" $gff > a.tmp && mv a.tmp $gff
 
 #converts the gff into something annovar can use
 gff3ToGenePred $gff AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes

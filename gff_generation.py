@@ -13,7 +13,6 @@ import datetime
 import shutil
 Entrez.email = 'uwvirongs@gmail.com'
 
-
 # Reads in a fasta file that should have strain names for the names of the sequences -  can handle any number of
 # sequences. Also strips leading and trailing Ns or ?s from the provided sequence. Returns two lists with the names of
 # the strains in the first one and the genomes as strings in the second list, also changes U's to T's
