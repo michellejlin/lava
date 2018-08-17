@@ -43,3 +43,8 @@ allows the user to specify their own fasta file or gff file for lava. Please not
 # Output Files
 
 lava will output an html file of the visualization that can be easily shareable and downloaded. In addition, lava will also output a summary table of the amino acid changes taking place, called merged.csv. 
+
+# Common Errors
+
+1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
+	This error will occur when the open reading frame is judged to be wrong by Annovar. It usually happens when the frame does not end in a stop codon.

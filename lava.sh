@@ -91,7 +91,7 @@ fi
 if [[ ! -z "$query" ]]
 then
 	echo "Searching Genbank for ""$query""..."
-	esearch -db nucleotide -query "$query"" complete genome refseq" -sort relevance| efetch -format fasta | sed -n '1,/>/p' | sed \$d > genbank.fasta
+	esearch -db nucleotide -query "$query"" human complete genome refseq" -sort relevance | efetch -format fasta | sed -n '1,/>/p' | sed \$d > genbank.fasta
 	reference=$(awk 'NR==1{print substr($1,2)}' genbank.fasta)
 	echo "Found "$reference", transferring annotations..."
 	esearch -db nucleotide -query $reference | efetch -format gb > genbank.gb
@@ -111,8 +111,13 @@ then
 		VERBOSITY=WARNING
 	java -jar $PICARD BuildBamIndex INPUT=consensus_dedup.bam VERBOSITY=WARNING
 	samtools mpileup -f genbank.fasta consensus_dedup.bam > consensus_dedup.pileup
-	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -c | vcfutils.pl vcf2fq > consensus.fq
-	seqtk seq -A consensus.fq > consensus.fasta
+	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -c > consensus.vcf
+	bgzip consensus.vcf
+	bcftools index consensus.vcf.gz
+	cat genbank.fasta | bcftools consensus consensus.vcf.gz > consensus.fasta 
+	
+# 	vcfutils.pl vcf2fq consensus.vcf > consensus.fq
+# 	seqtk seq -A consensus.fq > consensus.fasta
 	
 	python $script_path/gff_generation.py consensus.fasta genbank.fasta genbank.gb --no_spell_check
 	sed '1 s/^.*$/>consensus/' consensus.fasta > a.tmp && mv a.tmp consensus.fasta
@@ -128,7 +133,7 @@ else
 		awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$8=0}1;' $gff > a.tmp && mv a.tmp $gff
 		awk 'BEGIN{IGNORECASE=1} {gsub(/mrna/,"transcript")}1' $gff > a.tmp && mv a.tmp $gff	
 		awk -F" |=" 'BEGIN{OFS=":"}{t=$2; $2=$3; $3=t; print;}' $gff > a.tmp && mv a.tmp $gff
-		awk '{gsub(/Name:/,"ID=")}1' $gff > a.tmp && mv a.tmp $gff
+		awk '{gsub(/Name=/,"ID=")}1' $gff > a.tmp && mv a.tmp $gff
 		awk 'BEGIN{FS=OFS="\t"} $3=="transcript" {$9=$9";Parent=gene:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
 		awk 'BEGIN{FS=OFS="\t"} $3=="CDS" {$9=$9";Parent=transcript:REPLACEME;biotype=protein_coding"}1' $gff > a.tmp && mv a.tmp $gff
 		grep -v "regulatory" $gff > a.tmp && mv a.tmp $gff
@@ -227,9 +232,11 @@ do
 		mv a.tmp $name.txt 
 		#gets Passage number from metadata.csv 
 		SAMPLE="$(awk -F"," -v name=$name '$1==name {print $2}' metadata.csv)" 
-		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}' $name.txt > $name.csv 
+		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","$2","$46","sample}' $name.txt > $name.csv 
 		cat $name.csv >> merged.csv
 	fi
 done	
 
 $script_path/genome_protein_plots.py
+name=$(basename "$ref" .fasta)
+mv genome_protein_plots.py $ref_genome_protein_plots.py
