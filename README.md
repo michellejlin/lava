@@ -16,7 +16,11 @@ The optional files should not have any special characters in them, particularly 
 
 # Usage
 
-Make sure lava is in your path. This can be done by the command:
+The general usage of lava is 
+
+`lava.sh [options] control.fastq`
+
+For more detailed instructions: Make sure lava is in your path. This can be done by the command:
 
 `echo 'export PATH=${PATH}:/path/to/lava' >> ~/.bash_profile`
 
@@ -24,21 +28,17 @@ where path/to/lava is the absolute path to the directory in which lava is downlo
 
 Create input files as desired (for most, this may only be the metadata.csv file). 
 
-Move to the folder lava is in. For example, if lava were cloned from Github into downloads:
-
-`cd C:\User\Downloads\lava\`
-
-or the desired file path. 
+Move to the folder your sequences are in. Make sure this folder contains the necessary input files: the control fastq, the rest of your sequences in fastq format, the metadata.csv file containing information about your samples, and optionally the fasta and gff file.
 
 Then, run the command: 
 
-`lava.sh [fastq_file] -g "[user query for virus]"`
+`lava.sh -q "[user query for virus]" fastq_file`
 
 with your control fastq specified, as well as what virus the sequence is, or the accession number desired for mapping, for the default lava usage. Running the command:
 
-`lava.sh [fastq_file] -f [fasta_file] -r [gff_file]`
+`lava.sh -f [fasta_file] -g [gff_file] fastq_file`
 
-allows the user to specify their own fasta file or gff file for lava. Please note the -g and -r arguments CANNOT be both specified, as only one option for gff generation should be used. The -r argument is intended only for highly specific cases; otherwise, the -g argument in which lava automatically generates the gff is highly recommended.
+allows the user to specify their own fasta file or gff file for lava. Please note the -q and -g arguments CANNOT be both specified, as only one option for gff generation should be used. The -g argument is intended only for highly specific cases; otherwise, the -q argument in which lava automatically generates the gff is highly recommended.
 
 # Output Files
 
@@ -47,4 +47,5 @@ lava will output an html file of the visualization that can be easily shareable 
 # Common Errors
 
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
+	
 	This error will occur when the open reading frame is judged to be wrong by Annovar. It usually happens when the frame does not end in a stop codon.
