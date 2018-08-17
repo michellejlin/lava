@@ -400,5 +400,5 @@ if __name__ == '__main__':
 		export_png(plots_proteins, filename="Protein_Plots.png")
 		export_png(plots_genomes, filename="Genome_Plots.png")
 	else:
-		output_file("kms.html")
+		output_file("genome_protein_plots.html")
 		show(column(tabs_genomes, tabs_proteins))

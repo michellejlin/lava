@@ -16,6 +16,12 @@ The optional files should not have any special characters in them, particularly 
 
 # Usage
 
+Make sure lava is in your path. This can be done by the command:
+
+`echo 'export PATH=${PATH}:/path/to/lava' >> ~/.bash_profile`
+
+where path/to/lava is the absolute path to the directory in which lava is downloaded.
+
 Create input files as desired (for most, this may only be the metadata.csv file). 
 
 Move to the folder lava is in. For example, if lava were cloned from Github into downloads:
