@@ -49,3 +49,7 @@ lava will output an html file of the visualization that can be easily shareable 
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
 	
 	This error will occur when the open reading frame is judged to be wrong by Annovar. It usually happens when the frame does not end in a stop codon.
+
+2. `Can't find annotation record "transcript:3D" referenced by "3D" Parent attribute`
+
+	Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.)

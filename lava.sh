@@ -111,7 +111,7 @@ then
 		VERBOSITY=WARNING
 	java -jar $PICARD BuildBamIndex INPUT=consensus_dedup.bam VERBOSITY=WARNING
 	samtools mpileup -f genbank.fasta consensus_dedup.bam > consensus_dedup.pileup
-	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -c > consensus.vcf
+	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -m > consensus.vcf
 	bgzip consensus.vcf
 	bcftools index consensus.vcf.gz
 	cat genbank.fasta | bcftools consensus consensus.vcf.gz > consensus.fasta 
@@ -238,5 +238,6 @@ do
 done	
 
 $script_path/genome_protein_plots.py
-name=$(basename "$ref" .fasta)
-mv genome_protein_plots.py $ref_genome_protein_plots.py
+
+# name=$(basename "$control" .fastq)
+# mv genome_protein_plots.html $name'_genome_protein_plots'.html
