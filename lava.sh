@@ -193,7 +193,7 @@ mv AT_refGeneMrna.fa db/
 mv AT_refGene.txt db/
 
 #created merged header
-echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,Syn,Depth,Passage" > merged.csv
+echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
 #extract out protein names and sequences
 grep "ID=transcript:" $gff | awk -F'[\t;:]' '{print $12 "," $4 "," $5}' | sort -t ',' -k2 -n > proteins.csv
 
@@ -217,7 +217,7 @@ do
 			#grep -v '0:0%' $name.exonic_variant_function | awk -F":" '($18+0)>=5{print}' > ref.txt
 			awk -F":" '($18+0)>=5{print}' $name.exonic_variant_function > ref.txt
 			grep "SNV" ref.txt > a.tmp && mv a.tmp ref.txt
-			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","$2","$36",0"}' ref.txt > ref.csv
+			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
 			cat ref.csv >> merged.csv
 			printf $con"," > reads.csv
 			samtools flagstat $con'_dedup'.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
@@ -232,7 +232,7 @@ do
 		mv a.tmp $name.txt 
 		#gets Passage number from metadata.csv 
 		SAMPLE="$(awk -F"," -v name=$name '$1==name {print $2}' metadata.csv)" 
-		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","$2","$46","sample}' $name.txt > $name.csv 
+		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}' $name.txt > $name.csv 
 		cat $name.csv >> merged.csv
 	fi
 done	
