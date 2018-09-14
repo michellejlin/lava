@@ -264,9 +264,13 @@ if __name__ == '__main__':
 	plots_proteins = (column(list2_plots))
 	
 #can only either have html or pngs because of weird Bokeh voodoo
-	if(args.png):
-		export_png(plots_proteins, filename="Protein_Plots.png")
-		export_png(plots_genomes, filename="Genome_Plots.png")
+	if(args.nuc):
+		output_file("nucleotide_changes.html")
+		show(tabs_genomes)
 	else:
-		output_file("genome_protein_plots.html")
-		show(column(tabs_genomes, tabs_proteins))
+		if(args.png):
+			export_png(plots_proteins, filename="Protein_Plots.png")
+			export_png(plots_genomes, filename="Genome_Plots.png")
+		else:
+			output_file("genome_protein_plots.html")
+			show(column(tabs_genomes, tabs_proteins))
