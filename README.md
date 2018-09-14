@@ -53,3 +53,7 @@ lava will output an html file of the visualization that can be easily shareable 
 2. `Can't find annotation record "transcript:3D" referenced by "3D" Parent attribute`
 
 	Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.)
+
+3. `Exception in thread "main" htsjdk.samtools.SAMFormatException: Error parsing text SAM file. Empty field at position 9 (zero-based); File SC168.sam; Line 1081`
+
+	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.
