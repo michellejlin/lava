@@ -307,6 +307,15 @@ if __name__ == '__main__':
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
+		print(sample_name)
+		# experimental depth plotting code
+		coverage = pd.read_table(sample_name.strip() + '.genomecov')
+		cov_sample=ColumnDataSource(coverage)
+		cov_sample.data['position'].astype(float)
+		cov_val_sample = ColumnDataSource(data=cov_sample.data)
+		
+		f = figure(plot_width=400, plot_height=200, title='Coverage')
+		f.line(x='position', y='cov',source=cov_val_sample)
 		
 		source_sample=ColumnDataSource(merged_Sample)
 		source_sample.data['Position'].astype(float)
@@ -350,7 +359,7 @@ if __name__ == '__main__':
 			"""<br><b>Total reads mapped: </b>"""+str(reads_info.iloc[0]["Mapped"])+"""<br><b>Percentage of reads mapped: </b>
 			"""+reads_info.iloc[0]["Percentage"]+"""</font>""", width=300, height=100)
 		
-		g = layout(row([g, column([Div(text="""""", width=300, height=220), ose, slider, slider_af, syngroup, widgetbox(div),b])]))
+		g = layout(row([g, column([Div(text="""""", width=300, height=220), f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		#creates both tabs and different plots
 		tab = Panel(child=g, title=name)
