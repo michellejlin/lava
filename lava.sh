@@ -104,14 +104,16 @@ then
 		OUTPUT=consensus.bam \
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
-	java -jar $PICARD MarkDuplicates \
-		INPUT=consensus.bam \
-		OUTPUT=consensus_dedup.bam \
-		METRICS_FILE=metrics.txt \
-		VERBOSITY=WARNING
-	java -jar $PICARD BuildBamIndex INPUT=consensus_dedup.bam VERBOSITY=WARNING
-	samtools mpileup -f genbank.fasta consensus_dedup.bam > consensus_dedup.pileup
-	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -m > consensus.vcf
+		VALIDATION_STRINGENCY=LENIENT
+	#java -jar $PICARD MarkDuplicates \
+	#	INPUT=consensus.bam \
+	#	OUTPUT=consensus_dedup.bam \
+	#	METRICS_FILE=metrics.txt \
+	#	VERBOSITY=WARNING
+	#	VALIDATION_STRINGENCY=LENIENT
+	java -jar $PICARD BuildBamIndex INPUT=consensus.bam VERBOSITY=WARNING
+	samtools mpileup -f genbank.fasta consensus.bam > consensus.pileup
+	samtools mpileup -uf genbank.fasta consensus.bam | bcftools call -m > consensus.vcf
 	bgzip consensus.vcf
 	bcftools index consensus.vcf.gz
 	cat genbank.fasta | bcftools consensus consensus.vcf.gz > consensus.fasta 
@@ -161,8 +163,8 @@ for sample in *.fastq
 do
 	name=$(basename "$sample" .fastq)
 	
-	#aligns
-	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 $ref $sample > $name.sam
+	#aligns # upped end error masking penalty
+	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 -L [17,17] $ref $sample > $name.sam
 
 	#converts sam to bam and sorts
 	java -jar $PICARD SortSam \
@@ -170,19 +172,22 @@ do
 		OUTPUT=$name.bam \
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
+		VALIDATION_STRINGENCY=LENIENT
 
 	#gets rid of pcr duplicates
-	java -jar $PICARD MarkDuplicates \
-		INPUT=$name.bam \
-		OUTPUT=$name'_dedup'.bam \
-		METRICS_FILE=metrics.txt \
-		VERBOSITY=WARNING
+#	java -jar $PICARD MarkDuplicates \
+	#	INPUT=$name.bam \
+	#	OUTPUT=$name'_dedup'.bam \
+	#	METRICS_FILE=metrics.txt \
+	#	VERBOSITY=WARNING
+	#	VALIDATION_STRINGENCY=LENIENT
 
 	#indexes bam file
-	java -jar $PICARD BuildBamIndex INPUT=$name'_dedup'.bam VERBOSITY=WARNING
+	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
+	VALIDATION_STRINGENCY=LENIENT
 	
 	#creates pileup
-	samtools mpileup -f $ref $name'_dedup'.bam > $name'_dedup'.pileup
+	samtools mpileup -f $ref $name.bam > $name.pileup
 done
 
 #converts the gff into something annovar can use
@@ -193,7 +198,7 @@ mv AT_refGeneMrna.fa db/
 mv AT_refGene.txt db/
 
 #created merged header
-echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
+echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,Syn,Depth,Passage" > merged.csv
 #extract out protein names and sequences
 grep "ID=transcript:" $gff | awk -F'[\t;:]' '{print $12 "," $4 "," $5}' | sort -t ',' -k2 -n > proteins.csv
 
@@ -206,7 +211,7 @@ do
 	if [ $name != $con ]
 	then
 		#creates vcf of all bases with reference and alternate alleles
-		java -jar $VARSCAN somatic $con'_dedup'.pileup $name'_dedup'.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2
+		java -jar $VARSCAN somatic $con.pileup $name.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2
 		mv $name.vcf.validation $name.vcf
 		awk -F $'\t' 'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1' $name.vcf > $name_p.vcf
 		#annotates all mutations with codon changes
@@ -217,14 +222,14 @@ do
 			#grep -v '0:0%' $name.exonic_variant_function | awk -F":" '($18+0)>=5{print}' > ref.txt
 			awk -F":" '($18+0)>=5{print}' $name.exonic_variant_function > ref.txt
 			grep "SNV" ref.txt > a.tmp && mv a.tmp ref.txt
-			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
+			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","$2","$36",0"}' ref.txt > ref.csv
 			cat ref.csv >> merged.csv
 			printf $con"," > reads.csv
-			samtools flagstat $con'_dedup'.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+			samtools flagstat $con.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
 			REF_DONE=true
 		fi
 		printf $name"," >> reads.csv
-		samtools flagstat $name'_dedup'.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
 		
 		awk -F":" '($24+0)>=5{print}' $name.exonic_variant_function >$name.txt 
 		grep "SNV" $name.txt > a.tmp 
@@ -232,7 +237,7 @@ do
 		mv a.tmp $name.txt 
 		#gets Passage number from metadata.csv 
 		SAMPLE="$(awk -F"," -v name=$name '$1==name {print $2}' metadata.csv)" 
-		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}' $name.txt > $name.csv 
+		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","$2","$46","sample}' $name.txt > $name.csv 
 		cat $name.csv >> merged.csv
 	fi
 done	
