@@ -1,4 +1,4 @@
-#sets all the paths, horribly
+#sets all the paths, normally
 export PICARD=/Users/uwvirongs/downloads/picard-2.18.7/picard/build/libs/picard.jar
 export GATK=/Users/uwvirongs/downloads/gatk-4.0.5.1/gatk
 export VARSCAN=/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar
@@ -185,7 +185,9 @@ do
 	#indexes bam file
 	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
 	VALIDATION_STRINGENCY=LENIENT
-	
+	# these two lines added again to try to get the 'reference coverage graph'
+	echo 'sample	position	cov' > $name.genomecov
+	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 	#creates pileup
 	samtools mpileup -f $ref $name.bam > $name.pileup
 done
@@ -226,9 +228,14 @@ do
 			cat ref.csv >> merged.csv
 			printf $con"," > reads.csv
 			samtools flagstat $con.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+			echo 'sample	position	cov' > $name.genomecov
+			bedtools genomecov -d -ibam $name.bam >> $name.genomecov
+			
 			REF_DONE=true
 		fi
 		printf $name"," >> reads.csv
+		echo 'sample	position	cov' > $name.genomecov
+		bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
 		
 		awk -F":" '($24+0)>=5{print}' $name.exonic_variant_function >$name.txt 
@@ -239,6 +246,7 @@ do
 		SAMPLE="$(awk -F"," -v name=$name '$1==name {print $2}' metadata.csv)" 
 		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","$2","$46","sample}' $name.txt > $name.csv 
 		cat $name.csv >> merged.csv
+
 	fi
 done	
 
