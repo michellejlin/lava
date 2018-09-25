@@ -105,6 +105,7 @@ then
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
 		VALIDATION_STRINGENCY=LENIENT
+		
 	#java -jar $PICARD MarkDuplicates \
 	#	INPUT=consensus.bam \
 	#	OUTPUT=consensus_dedup.bam \
@@ -173,7 +174,7 @@ do
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
 		VALIDATION_STRINGENCY=LENIENT
-
+	# Commented this out, maybe have an optional argument that enables dedup because most of the time we actually PCR our samples so dedup makes the AF and Depth a lie RCS
 	#gets rid of pcr duplicates
 #	java -jar $PICARD MarkDuplicates \
 	#	INPUT=$name.bam \
@@ -185,7 +186,7 @@ do
 	#indexes bam file
 	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
 	VALIDATION_STRINGENCY=LENIENT
-	# these two lines added again to try to get the 'reference coverage graph'
+	# these two lines added again to try to get the 'reference coverage graph' RCS
 	echo 'sample	position	cov' > $name.genomecov
 	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 	#creates pileup
@@ -234,6 +235,7 @@ do
 			REF_DONE=true
 		fi
 		printf $name"," >> reads.csv
+		# Make genome coverage RCS
 		echo 'sample	position	cov' > $name.genomecov
 		bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
