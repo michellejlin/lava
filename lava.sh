@@ -110,8 +110,8 @@ then
 	#	METRICS_FILE=metrics.txt \
 	#	VERBOSITY=WARNING
 	java -jar $PICARD BuildBamIndex INPUT=consensus_dedup.bam VERBOSITY=WARNING
-	samtools mpileup -f genbank.fasta consensus_dedup.bam > consensus_dedup.pileup
-	samtools mpileup -uf genbank.fasta consensus_dedup.bam | bcftools call -m > consensus.vcf
+	samtools mpileup -f genbank.fasta consensus.bam > consensus.pileup
+	samtools mpileup -uf genbank.fasta consensus.bam | bcftools call -m > consensus.vcf
 	bgzip consensus.vcf
 	bcftools index consensus.vcf.gz
 	cat genbank.fasta | bcftools consensus consensus.vcf.gz > consensus.fasta 
@@ -179,7 +179,7 @@ do
 	#	VERBOSITY=WARNING
 
 	#indexes bam file
-	java -jar $PICARD BuildBamIndex INPUT=$name'_dedup'.bam VERBOSITY=WARNING
+	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
 	# Generate by nt coverage
 	echo 'sample	position	cov' > $name.genomecov
 	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
