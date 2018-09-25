@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from bokeh.io import export_png
 from bokeh.plotting import figure, show, output_file
 from bokeh.palettes import Dark2, Category20, Category20c, Spectral10, Colorblind
-# All buttons and shit have to be imported specifically from boekh.models
+# All buttons have to be imported specifically from boekh.models - Added text input box RCS
 from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
 from bokeh.models.tickers import FixedTicker
 from bokeh.transform import jitter, factor_cmap, linear_cmap
@@ -265,6 +265,7 @@ if __name__ == '__main__':
 			}
             depth_sample.change.emit();
         """)
+	# added another slider callback so that manual input overrides slider input RCS
 	def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose):
 		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup, ose=ose), code = """
 			let depth = Number(ose.value);
@@ -307,13 +308,13 @@ if __name__ == '__main__':
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
+		# Testing code you can remove this RCS
 		print(sample_name)
-		# experimental depth plotting code
+		# experimental depth plotting code RCS
 		coverage = pd.read_table(sample_name.strip() + '.genomecov')
 		cov_sample=ColumnDataSource(coverage)
 		cov_sample.data['position'].astype(float)
 		cov_val_sample = ColumnDataSource(data=cov_sample.data)
-		
 		f = figure(plot_width=400, plot_height=200, title='Coverage')
 		f.line(x='position', y='cov',source=cov_val_sample)
 		
@@ -341,6 +342,7 @@ if __name__ == '__main__':
 		b.js_on_click(CustomJS(args=dict(g=g), code="""
 			g.reset.emit()
 		"""))
+		# RCS
 		ose = TextInput(title='Manually input depth:')
 		
 		
@@ -352,13 +354,14 @@ if __name__ == '__main__':
 		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+		# added manual depth input RCS
 		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose ))
 		#labels with read information
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
 		div=Div(text="""<font size="2" color="gray"><b>Total reads: </b>"""+str(reads_info.iloc[0]["Total"])+
 			"""<br><b>Total reads mapped: </b>"""+str(reads_info.iloc[0]["Mapped"])+"""<br><b>Percentage of reads mapped: </b>
 			"""+reads_info.iloc[0]["Percentage"]+"""</font>""", width=300, height=100)
-		
+		# added new input and coverage graph to layout RCS
 		g = layout(row([g, column([Div(text="""""", width=300, height=220), f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		#creates both tabs and different plots
@@ -433,7 +436,7 @@ if __name__ == '__main__':
 		b.js_on_click(CustomJS(args=dict(g=g), code="""
 			g.reset.emit()
 		"""))
-		
+		# RCS
 		ose = TextInput(title='Manually input depth:')
 		
 		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", "Show stopgains and stoplosses"], active=[0,1,2])
@@ -443,7 +446,9 @@ if __name__ == '__main__':
 		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		slider_af.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_protein, depth_sample_p, slider, slider_af, syngroup))
+		# RCS
 		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose ))
+		# RCS
 		g = layout(row([g, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),b])]))
 		tab = Panel(child=g, title=name)
 		list2_tabs.append(tab)
