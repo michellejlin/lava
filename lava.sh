@@ -223,7 +223,7 @@ do
 			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
 			cat ref.csv >> merged.csv
 			printf $con"," > reads.csv
-			samtools flagstat $con'_dedup'.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+			samtools flagstat $con.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
 			# Coverage Generation
 			echo 'sample	position	cov' > $name.genomecov
 			bedtools genomecov -d -ibam $name.bam >> $name.genomecov
@@ -236,7 +236,7 @@ do
 		echo 'sample	position	cov' > $name.genomecov
 		bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 		
-		samtools flagstat $name'_dedup'.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
 		
 		awk -F":" '($24+0)>=5{print}' $name.exonic_variant_function >$name.txt 
 		grep "SNV" $name.txt > a.tmp 
