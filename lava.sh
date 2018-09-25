@@ -185,7 +185,7 @@ do
 	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 	
 	#creates pileup
-	samtools mpileup -f $ref $name.bam > $name'_dedup'.pileup
+	samtools mpileup -f $ref $name.bam > $name.pileup
 done
 
 #converts the gff into something annovar can use
