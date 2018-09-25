@@ -109,7 +109,7 @@ then
 	#	OUTPUT=consensus_dedup.bam \
 	#	METRICS_FILE=metrics.txt \
 	#	VERBOSITY=WARNING
-	java -jar $PICARD BuildBamIndex INPUT=consensus_dedup.bam VERBOSITY=WARNING
+	java -jar $PICARD BuildBamIndex INPUT=consensus.bam VERBOSITY=WARNING
 	samtools mpileup -f genbank.fasta consensus.bam > consensus.pileup
 	samtools mpileup -uf genbank.fasta consensus.bam | bcftools call -m > consensus.vcf
 	bgzip consensus.vcf
@@ -185,7 +185,7 @@ do
 	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
 	
 	#creates pileup
-	samtools mpileup -f $ref $name'_dedup'.bam > $name'_dedup'.pileup
+	samtools mpileup -f $ref $name.bam > $name'_dedup'.pileup
 done
 
 #converts the gff into something annovar can use
