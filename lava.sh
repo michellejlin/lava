@@ -209,7 +209,7 @@ do
 	if [ $name != $con ]
 	then
 		#creates vcf of all bases with reference and alternate alleles
-		java -jar $VARSCAN somatic $con'_dedup'.pileup $name'_dedup'.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2
+		java -jar $VARSCAN somatic $con.pileup $name.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2
 		mv $name.vcf.validation $name.vcf
 		awk -F $'\t' 'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1' $name.vcf > $name_p.vcf
 		#annotates all mutations with codon changes
