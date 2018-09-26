@@ -5,10 +5,10 @@ export VARSCAN=/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar
 export PATH=$PATH:/Users/uwvirongs/Downloads/annovar 
 export SNPEFFPATH=/Users/uwvirongs/snpEff/
 export PATH="/Users/uwvirongs/downloads/annovar/:$PATH"
-
+dedup=false
 script_path=$(dirname "$0")
 
-while getopts ":f::q::g::h" opt; do
+while getopts ":f::q::g::h::d" opt; do
   case $opt in
     f)
     ref=$OPTARG
@@ -48,6 +48,10 @@ while getopts ":f::q::g::h" opt; do
       echo "	-f	User-provided .fasta file. Only for specialized cases."
       echo "			Intended for use with user-provided .gff file."
       exit 0
+      ;;
+    d)
+    dedup=true
+    echo "lava is running in dedup mode, PCR duplicates will be removed"
       ;;
     \?)
       echo "ERROR: Invalid option: -$OPTARG" >&2
@@ -104,11 +108,16 @@ then
 		OUTPUT=consensus.bam \
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
-	#java -jar $PICARD MarkDuplicates \
-	#	INPUT=consensus.bam \
-	#	OUTPUT=consensus_dedup.bam \
-	#	METRICS_FILE=metrics.txt \
-	#	VERBOSITY=WARNING
+	if $dedup; then
+		java -jar $PICARD MarkDuplicates \
+			INPUT=consensus.bam \
+			OUTPUT=consensus_dedup.bam \
+			METRICS_FILE=metrics.txt \
+			VERBOSITY=WARNING
+			
+		cat consensus_dedup.bam > consensus.bam
+	fi
+	
 	java -jar $PICARD BuildBamIndex INPUT=consensus.bam VERBOSITY=WARNING
 	samtools mpileup -f genbank.fasta consensus.bam > consensus.pileup
 	samtools mpileup -uf genbank.fasta consensus.bam | bcftools call -m > consensus.vcf
@@ -171,12 +180,16 @@ do
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
 
-	#gets rid of pcr duplicates - commented out RCS, should probobly have argument for this
-	#java -jar $PICARD MarkDuplicates \
-	#	INPUT=$name.bam \
-	#	OUTPUT=$name'_dedup'.bam \
-	#	METRICS_FILE=metrics.txt \
-	#	VERBOSITY=WARNING
+	if $dedup; then
+		echo 'Removing PCR duplicates'
+		java -jar $PICARD MarkDuplicates \
+			INPUT=$name.bam \
+			OUTPUT=$name'_dedup'.bam \
+			METRICS_FILE=metrics.txt \
+			VERBOSITY=WARNING
+		# we overwrite the original here 
+		cat $name'_dedup'.bam > $name.bam
+	fi
 
 	#indexes bam file
 	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
