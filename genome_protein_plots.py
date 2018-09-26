@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from bokeh.io import export_png
 from bokeh.plotting import figure, show, output_file
 from bokeh.palettes import Dark2, Category20, Category20c, Spectral10, Colorblind
-from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button
+from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
 from bokeh.models.tickers import FixedTicker
 from bokeh.transform import jitter, factor_cmap, linear_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
@@ -92,6 +92,45 @@ def sliderCallback(ref_source, source, slider, slider_af, syngroup):
         depth_sample.change.emit();
     """)
 
+# Second slider callback so that manual depth input overrides the slider 
+def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose):
+		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup, ose=ose), code = """
+			let depth = Number(ose.value);
+			let af = slider_af.value;
+			let colnames = Object.keys(ref.data);
+			for (let a = 0; a < colnames.length; a++) {
+				depth_sample.data[colnames[a]] = [];
+			}
+			if (checkbox.active.indexOf(0)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+			if (checkbox.active.indexOf(1)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+			if (checkbox.active.indexOf(2)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+            depth_sample.change.emit();
+        """)
+	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='no description yet')
 	parser.add_argument('-png', action='store_true')
@@ -128,6 +167,14 @@ if __name__ == '__main__':
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
+		# added coverage plotting code
+		coverage = pd.read_table(sample_name.strip() + '.genomecov')
+		cov_sample=ColumnDataSource(coverage)
+		cov_sample.data['position'].astype(float)
+		cov_val_sample = ColumnDataSource(data=cov_sample.data)
+		
+		f = figure(plot_width=400, plot_height=200, title='Coverage')
+		f.line(x='position', y='cov',source=cov_val_sample)
 		
 		source_sample=ColumnDataSource(merged_Sample)
 		source_sample.data['Position'].astype(float)
@@ -160,6 +207,7 @@ if __name__ == '__main__':
 		b.js_on_click(CustomJS(args=dict(g=g), code="""
 			g.reset.emit()
 		"""))
+		ose = TextInput(title='Manually input depth:')
 		
 		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", "Show stopgains and stoplosses"], active=[0,1,2])
 		
@@ -168,6 +216,7 @@ if __name__ == '__main__':
 		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose ))
 		
 		#labels with read information
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
@@ -175,7 +224,7 @@ if __name__ == '__main__':
 			"""<br><b>Total reads mapped: </b>"""+str(reads_info.iloc[0]["Mapped"])+"""<br><b>Percentage of reads mapped: </b>
 			"""+reads_info.iloc[0]["Percentage"]+"""</font>""", width=300, height=100)
 		
-		g = layout(row([g, column([Div(text="""""", width=300, height=220), slider, slider_af, syngroup, widgetbox(div),b])]))
+		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		#creates both tabs and different plots
 		tab = Panel(child=g, title=name)
@@ -196,8 +245,8 @@ if __name__ == '__main__':
 		#CHANGE RANGE AS NEEDED
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 			title=protein_name,
-# 			x_range=DataRange1d(bounds=(-1,num_Passages+2), start=-1, end=num_Passages+2))
-			x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
+ 			x_range=DataRange1d(bounds=(-1,num_Passages+2), start=-1, end=num_Passages+2))
+			#x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
 		#creates list of lists by getting all the xvalues and yvalues for multiline
 		xlist_all = []
@@ -248,6 +297,9 @@ if __name__ == '__main__':
 		b.js_on_click(CustomJS(args=dict(g=g), code="""
 			g.reset.emit()
 		"""))
+		
+		ose = TextInput(title='Manually input depth:')
+		
 		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", "Show stopgains and stoplosses"], active=[0,1,2])
 		
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=5, title='Depth Cutoff')
@@ -255,7 +307,8 @@ if __name__ == '__main__':
 		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		slider_af.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_protein, depth_sample_p, slider, slider_af, syngroup))
-		g = layout(row([g, column([Div(width=100, height=260),slider, slider_af, syngroup, Div(width=100, height=30),b])]))
+		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose ))
+		g = layout(row([g, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),b])]))
 		tab = Panel(child=g, title=name)
 		list2_tabs.append(tab)
 		list2_plots.append(g)		
