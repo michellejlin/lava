@@ -5,10 +5,10 @@ export VARSCAN=/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar
 export PATH=$PATH:/Users/uwvirongs/Downloads/annovar 
 export SNPEFFPATH=/Users/uwvirongs/snpEff/
 export PATH="/Users/uwvirongs/downloads/annovar/:$PATH"
-
+dedup=false
 script_path=$(dirname "$0")
 
-while getopts ":f::q::g::h" opt; do
+while getopts ":f::q::g::h::d" opt; do
   case $opt in
     f)
     ref=$OPTARG
@@ -49,6 +49,10 @@ while getopts ":f::q::g::h" opt; do
       echo "			Intended for use with user-provided .gff file."
       exit 0
       ;;
+    d)
+    dedup=true
+    echo "lava is running in dedup mode, PCR duplicates will be removed"
+      ;;
     \?)
       echo "ERROR: Invalid option: -$OPTARG" >&2
       exit 1
@@ -70,8 +74,7 @@ fi
 
 if [[ ! -z "$query" && ! -z "$gff" ]]
 then
-	echo "ERROR: Please only specify one method of generating a gff. The flags -q and -g cannot be mixed."
-	echo "-q is highly recommended for automatic generation of a gff. Please try again."
+	echo "ERROR: Please only specify one method of generating a gff."
 	exit 1
 fi
 
@@ -90,39 +93,8 @@ fi
 
 if [[ ! -z "$query" ]]
 then
-	echo "Searching Genbank for ""$query""..."
-	esearch -db nucleotide -query "$query"" human complete genome refseq" -sort relevance | efetch -format fasta | sed -n '1,/>/p' | sed \$d > genbank.fasta
-	reference=$(awk 'NR==1{print substr($1,2)}' genbank.fasta)
-	echo "Found "$reference", transferring annotations..."
-	esearch -db nucleotide -query $reference | efetch -format gb > genbank.gb
-	
-	sed -i -e 's/U/T/g' genbank.fasta
-	bwa index genbank.fasta
-	bwa mem -M -R '@RG\tID:group1\tSM:consensus\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 genbank.fasta $control > consensus.sam
-	java -jar $PICARD SortSam \
-		INPUT=consensus.sam \
-		OUTPUT=consensus.bam \
-		SORT_ORDER=coordinate \
-		VERBOSITY=WARNING
-	#java -jar $PICARD MarkDuplicates \
-	#	INPUT=consensus.bam \
-	#	OUTPUT=consensus_dedup.bam \
-	#	METRICS_FILE=metrics.txt \
-	#	VERBOSITY=WARNING
-	java -jar $PICARD BuildBamIndex INPUT=consensus.bam VERBOSITY=WARNING
-	samtools mpileup -f genbank.fasta consensus.bam > consensus.pileup
-	samtools mpileup -uf genbank.fasta consensus.bam | bcftools call -m > consensus.vcf
-	bgzip consensus.vcf
-	bcftools index consensus.vcf.gz
-	cat genbank.fasta | bcftools consensus consensus.vcf.gz > consensus.fasta 
-	
-# 	vcfutils.pl vcf2fq consensus.vcf > consensus.fq
-# 	seqtk seq -A consensus.fq > consensus.fasta
-	
-	python $script_path/gff_generation.py consensus.fasta genbank.fasta genbank.gb --no_spell_check
-	sed '1 s/^.*$/>consensus/' consensus.fasta > a.tmp && mv a.tmp consensus.fasta
-	ref="consensus.fasta"
-	gff="consensus.gff"
+	python ../process.py $query $ref
+	gff="lava_ref.gff"
 	echo "Created fasta and gff files."
 else
 	gff_check=$(grep "Parent=gene:" $gff)
@@ -170,13 +142,18 @@ do
 		OUTPUT=$name.bam \
 		SORT_ORDER=coordinate \
 		VERBOSITY=WARNING
-
-	#gets rid of pcr duplicates - commented out RCS, should probobly have argument for this
-	#java -jar $PICARD MarkDuplicates \
-	#	INPUT=$name.bam \
-	#	OUTPUT=$name'_dedup'.bam \
-	#	METRICS_FILE=metrics.txt \
-	#	VERBOSITY=WARNING
+		
+	# optional flag
+	if $dedup; then
+		echo 'Removing PCR duplicates'
+		java -jar $PICARD MarkDuplicates \
+			INPUT=$name.bam \
+			OUTPUT=$name'_dedup'.bam \
+			METRICS_FILE=metrics.txt \
+			VERBOSITY=WARNING
+			
+		cat $name'_dedup'.bam > $name.bam
+	fi
 
 	#indexes bam file
 	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
