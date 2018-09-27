@@ -11,6 +11,7 @@ The following dependencies are required to run lava:
 5. VARSCAN (http://varscan.sourceforge.net/)
 6. ANNOVAR (http://annovar.openbioinformatics.org/en/latest/user-guide/download/)
 7. snpEff (http://snpeff.sourceforge.net/download.html)
+8. maaft (https://mafft.cbrc.jp/alignment/software/) mafft needs to be on your path. Install with something like `brew install maaft` or `apt-get install maaft` and mafft will automatically be placed on your path. 
 
 **Once dependencies are installed:**
 
