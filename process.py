@@ -8,7 +8,7 @@ def read_file(file_path):
     stop_list = []
     for line in open(file_path):
         if line[0] != '#':
-            if line.split()[2].upper() == 'CDS':
+            if line.split()[2].upper() == 'CDS' and len(line) > 0:
                 cds_list.append(line.split()[8].split('=')[1].split('CDS')[0])
                 start_list.append(line.split()[3])
                 stop_list.append(line.split()[4])
