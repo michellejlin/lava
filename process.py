@@ -17,7 +17,7 @@ def read_file(file_path):
 
 
 if __name__ =='__main__':
-    parser = argparse.ArgumentParser(description='Use this tool to autocorrect genious GFF output into the shit that '
+    parser = argparse.ArgumentParser(description='Use this tool to autocorrect genious GFF output into the format that '
                                                  'lava only accepts')
     parser.add_argument('file_path', help='Just list the gff file that genious outputs, as long as the cds annotations'
                                           ' were correct in genious this will output a new gff that you can use with '
