@@ -32,7 +32,7 @@ To run lava you need, at a minimum: (Example files are included in the example f
 1. fastq files for all of your samples, lava does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example1.fastq example2.fastq`
 2. A fasta file representing the majority consensus of your first sample. `example_reference.fasta`
 3. Either a .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
-4. A metadata.csv file that must contain two columns: Sample and Passage. Then each the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
+4. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
 
 
 Once you've got all the required files above collected make a new folder and place all the files into this folder. Then execute lava from inside this folder. 
@@ -45,11 +45,11 @@ Once you've got all the required files above collected make a new folder and pla
 
 To run lava you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running lava
 
-With a reference fasta and a reference gff
+1. With a reference fasta and a reference gff
 
 `lava.sh -f example_reference.fasta -g example_reference.fasta example1.fastq`
 
-And to pull the reference from Genbank
+2. And to pull the reference from Genbank
 
 `lava.sh -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq`
 
@@ -70,8 +70,8 @@ Additionally you can examine the data more in depth via the merged.csv file whic
 	
 2. `Can't find annotation record "transcript:3D" referenced by "3D" Parent attribute`
 
-	Once again this error is due to an incorrect gff file. Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.) For help formatting your gff files correctly you can look at the included example_reference.gff
+	Once again this error is due to an incorrect gff file. Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.) For help formatting your gff files correctly you can look at the included example_reference.gff.
 	
 3. `Exception in thread "main" htsjdk.samtools.SAMFormatException: Error parsing text SAM file. Empty field at position 9 (zero-based); File SC168.sam; Line 1081`
 
-	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.````
+	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.
