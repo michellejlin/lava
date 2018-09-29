@@ -12,6 +12,9 @@ The following dependencies are required to run lava:
 6. ANNOVAR (http://annovar.openbioinformatics.org/en/latest/user-guide/download/)
 7. snpEff (http://snpeff.sourceforge.net/download.html)
 8. maaft (https://mafft.cbrc.jp/alignment/software/) mafft needs to be on your path. Install with something like `brew install maaft` or `apt-get install maaft` and mafft will automatically be placed on your path. 
+9. bedtools (https://bedtools.readthedocs.io/en/latest/content/installation.html)
+10. SAMtools (http://www.htslib.org/download/)
+11. BWA (https://sourceforge.net/projects/bio-bwa/files/)
 
 **Once dependencies are installed:**
 
