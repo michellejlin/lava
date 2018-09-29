@@ -1,59 +1,77 @@
-# lava: longitudinal analysis and variant annotation
-lava is a script that visualizes the minor allele variants in longitudinal sequences. Given a fastq file to serve as a control (usually in longitudinal studies this will be the sequence at Passage 0), lava will annotate the amino acid changes in the control sequence and all subsequent sequences. These changes will then be plotted for ease of viewability of the changes in minor allele variants.
+# lava: Longitudinal Analysis and Variant Annotation
+lava analyzes and visualizes minor allele variants in longitudinal sequence data. lava takes a reference fasta (normally representing the first sample in your longitudinal analysis), fastq files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser. lava will only work on Mac and Linux machines. 
 
-# Input Files
+# Installation
+**Dependencies**
+The following dependencies are required to run lava: 
+1. Python
+2. BioPython, numpy, pandas, seaborn, bokeh modules for python which can be installed with `python -m pip install biopython` and `python -m pip install whateverpackage` 
+3. Picard (https://broadinstitute.github.io/picard/)
+4. GATK (https://software.broadinstitute.org/gatk/download/)
+5. VARSCAN (http://varscan.sourceforge.net/)
+6. ANNOVAR (http://annovar.openbioinformatics.org/en/latest/user-guide/download/)
+7. snpEff (http://snpeff.sourceforge.net/download.html)
+8. maaft (https://mafft.cbrc.jp/alignment/software/) mafft needs to be on your path. Install with something like `brew install maaft` or `apt-get install maaft` and mafft will automatically be placed on your path. 
 
-**Mandatory Files**
-1. A fastq must be specified as the control. This will be the sample to which lava aligns the rest of the sequences to. Also in the folder include all the sequences to be aligned to the control, but no other.
-2. A metadata.csv file must be included in the folder with the fastq. This will contain two columns: Sample and Passage. 
+**Once dependencies are installed:**
 
-**Optional Files**
-1. A fasta of the control may be provided. Otherwise, lava will automatically align the control .fastq to a reference sequence of the virus pulled from Genbank.
-2. A gff may also be provided of the annotations of the coding regions of the control. Otherwise, lava will automatically transfer the annotations off a reference sequence pulled from Genbank.
+1. Download this repository either through git or download and unzip. 
+2. Open up lava.sh in a text editor and set the export statements in lines 2-7 to point to where you installed the executable for each of your dependencies. 
 
-**Note:**
-The optional files should not have any special characters in them, particularly underscores. Simply renaming the fasta or gff will not work - make sure the names within the files themselves do not have special characters as well.
-
-# Usage
-
-The general usage of lava is 
-
-`lava.sh [options] control.fastq`
-
-For more detailed instructions: Make sure lava is in your path. This can be done by the command:
+You may find it helpful to put lava in your path. This can be done by the command:
 
 `echo 'export PATH=${PATH}:/path/to/lava' >> ~/.bash_profile`
 
-where path/to/lava is the absolute path to the directory in which lava is downloaded.
+Now you're ready to do some longitudinal analysis of minor alleles! 
 
-Create input files as desired (for most, this may only be the metadata.csv file). 
+# Input
 
-Move to the folder your sequences are in. Make sure this folder contains the necessary input files: the control fastq, the rest of your sequences in fastq format, the metadata.csv file containing information about your samples, and optionally the fasta and gff file.
+**Mandatory Files**
 
-Then, run the command: 
+To run lava you need, at a minimum: (Example files are included in the example folder)
+1. fastq files for all of your samples, lava does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example1.fastq example2.fastq`
+2. A fasta file representing the majority consensus of your first sample. `example_reference.fasta`
+3. Either a .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
+4. A metadata.csv file that must contain two columns: Sample and Passage. Then each the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
 
-`lava.sh -q "[user query for virus]" fastq_file`
 
-with your control fastq specified, as well as what virus the sequence is, or the accession number desired for mapping, for the default lava usage. Running the command:
+Once you've got all the required files above collected make a new folder and place all the files into this folder. Then execute lava from inside this folder. 
 
-`lava.sh -f [fasta_file] -g [gff_file] fastq_file`
+`cd /User/uwvirongs/Downloads/lava/example/` 
 
-allows the user to specify their own fasta file or gff file for lava. Please note the -q and -g arguments CANNOT be both specified, as only one option for gff generation should be used. The -g argument is intended only for highly specific cases; otherwise, the -q argument in which lava automatically generates the gff is highly recommended.
+`bash ../lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq`
+
+# Usage
+
+To run lava you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running lava
+
+With a reference fasta and a reference gff
+
+`lava.sh -f example_reference.fasta -g example_reference.fasta example1.fastq`
+
+And to pull the reference from Genbank
+
+`lava.sh -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq`
+
+For additional help you can also run 
+
+`lava.sh -h`
 
 # Output Files
 
-lava will output an html file of the visualization that can be easily shareable and downloaded. In addition, lava will also output a summary table of the amino acid changes taking place, called merged.csv. 
+Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
+
+Additionally you can examine the data more in depth via the merged.csv file which will be created - you can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (I.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.)
 
 # Common Errors
-
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
-	
-	This error will occur when the open reading frame is judged to be wrong by Annovar. It usually happens when the frame does not end in a stop codon.
 
+	This error will occur when annovar finds an error in an open reading frame. This is most often due to an incorrect gff file. (If the start and stop positions for a protein is wrong annovar will detect this and produce this error). Therefore the solution is to make sure the protein start and stops in your gff file are in the correct location nucleotide position should be relative to the matching fasta file. 
+	
 2. `Can't find annotation record "transcript:3D" referenced by "3D" Parent attribute`
 
-	Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.)
-
+	Once again this error is due to an incorrect gff file. Make sure the gff file has every line with the correct ID= and Parent= , with the correct type (transcript, gene, CDS, etc.) For help formatting your gff files correctly you can look at the included example_reference.gff
+	
 3. `Exception in thread "main" htsjdk.samtools.SAMFormatException: Error parsing text SAM file. Empty field at position 9 (zero-based); File SC168.sam; Line 1081`
 
-	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.
+	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.````
