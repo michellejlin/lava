@@ -225,7 +225,7 @@ do
 		cat $name.csv >> merged.csv
 	fi
 done	
-
+cp $script_path/ngls_test.html .
 $script_path/genome_protein_plots.py
 
 # name=$(basename "$control" .fastq)
