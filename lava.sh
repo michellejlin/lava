@@ -123,51 +123,56 @@ echo "gff is "$gff
 sed -i -e 's/U/T/g' $ref
 
 #indexes $reference
-bwa index $ref
-
+echo "indexing reference..."
+bwa index $ref &> lava.log
+echo "reference indexing complete"
 #indexes $reference for GATK use
+
+
 samtools faidx $ref
-$GATK CreateSequenceDictionary -R $ref --VERBOSITY WARNING
+$GATK CreateSequenceDictionary -R $ref --VERBOSITY ERROR &> lava.log
 
 for sample in *.fastq
 do
 	name=$(basename "$sample" .fastq)
 	
 	#aligns with updaed end error masking penalty - RCS
-	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 -L [17,17] $ref $sample > $name.sam
-
+	echo "aligning reads with bwa mem for sample " $name
+	bwa mem -M -R '@RG\tID:group1\tSM:'"$name"'\tPL:illumina\tLB:lib1\tPU:unit1' -p -t 6 -L [17,17] $ref $sample > $name.sam 2> lava.log
+	echo "sorting bam file for sample " $name
 	#converts sam to bam and sorts
 	java -jar $PICARD SortSam \
 		INPUT=$name.sam \
 		OUTPUT=$name.bam \
 		SORT_ORDER=coordinate \
-		VERBOSITY=WARNING
+		VERBOSITY=ERROR 2> lava.log
 		
 	# optional flag
 	if $dedup; then
-		echo 'Removing PCR duplicates'
+		echo 'Removing PCR duplicates for sample ' $name
 		java -jar $PICARD MarkDuplicates \
 			INPUT=$name.bam \
 			OUTPUT=$name'_dedup'.bam \
 			METRICS_FILE=metrics.txt \
-			VERBOSITY=WARNING
+			VERBOSITY=ERROR
 			
 		cat $name'_dedup'.bam > $name.bam
 	fi
-
+	echo "creating pileups and coverage information for sample " $name
 	#indexes bam file
-	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=WARNING
+	java -jar $PICARD BuildBamIndex INPUT=$name.bam VERBOSITY=ERROR 2> lava.log
 	# Generate by nt coverage
 	echo 'sample	position	cov' > $name.genomecov
-	bedtools genomecov -d -ibam $name.bam >> $name.genomecov
+	bedtools genomecov -d -ibam $name.bam >> $name.genomecov 2> lava.log
 	
 	#creates pileup
-	samtools mpileup -f $ref $name.bam > $name.pileup
+	samtools mpileup -f $ref $name.bam > $name.pileup 2> lava.log
 done
 
 #converts the gff into something annovar can use
-gff3ToGenePred $gff AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes
-retrieve_seq_from_fasta.pl --format refGene --seqfile $ref AT_refGene.txt --out AT_refGeneMrna.fa
+echo "converting annotations into ANNOVAR compatible format"
+gff3ToGenePred $gff AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2> lava.log
+retrieve_seq_from_fasta.pl --format refGene --seqfile $ref AT_refGene.txt --out AT_refGeneMrna.fa 2> lava.log
 mkdir db/
 mv AT_refGeneMrna.fa db/
 mv AT_refGene.txt db/
@@ -186,12 +191,13 @@ do
 	if [ $name != $con ]
 	then
 		#creates vcf of all bases with reference and alternate alleles
-		java -jar $VARSCAN somatic $con.pileup $name.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2
+		echo "analyzing minor variants in sample " $name 
+		java -jar $VARSCAN somatic $con.pileup $name.pileup $name.vcf --validation 1 --output-vcf 1 --min-coverage 2 2> lava.log
 		mv $name.vcf.validation $name.vcf
 		awk -F $'\t' 'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1' $name.vcf > $name_p.vcf
 		#annotates all mutations with codon changes
-		convert2annovar.pl -withfreq -format vcf4 -includeinfo $name_p.vcf>$name.avinput
-		annotate_variation.pl -outfile $name -v -buildver AT $name.avinput db/
+		convert2annovar.pl -withfreq -format vcf4 -includeinfo $name_p.vcf>$name.avinput 2> lava.log
+		annotate_variation.pl -outfile $name -v -buildver AT $name.avinput db/ 2> lava.log
 		if [ $REF_DONE = false ]
 		then
 			#grep -v '0:0%' $name.exonic_variant_function | awk -F":" '($18+0)>=5{print}' > ref.txt
@@ -200,10 +206,10 @@ do
 			awk -v ref=$con -F '[\t:,]' '{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
 			cat ref.csv >> merged.csv
 			printf $con"," > reads.csv
-			samtools flagstat $con.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+			samtools flagstat $con.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv 2> lava.log
 			# Coverage Generation
 			echo 'sample	position	cov' > $name.genomecov
-			bedtools genomecov -d -ibam $name.bam >> $name.genomecov
+			bedtools genomecov -d -ibam $name.bam >> $name.genomecov 2> lava.log
 			
 			REF_DONE=true
 		fi
@@ -211,9 +217,9 @@ do
 		
 		# More coverage code, one of these is most likely reduntant 
 		echo 'sample	position	cov' > $name.genomecov
-		bedtools genomecov -d -ibam $name.bam >> $name.genomecov
+		bedtools genomecov -d -ibam $name.bam >> $name.genomecov 2> lava.log
 		
-		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+		samtools flagstat $name.bam | awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv 2> lava.log
 		
 		awk -F":" '($24+0)>=5{print}' $name.exonic_variant_function >$name.txt 
 		grep "SNV" $name.txt > a.tmp 
@@ -223,8 +229,10 @@ do
 		SAMPLE="$(awk -F"," -v name=$name '$1==name {print $2}' metadata.csv)" 
 		awk -v name=$name -v sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}' $name.txt > $name.csv 
 		cat $name.csv >> merged.csv
+		echo "done with sample " $name
 	fi
 done	
+echo "generating vizualisation"
 cp $script_path/ngls_test.html .
 $script_path/genome_protein_plots.py
 
