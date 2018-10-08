@@ -344,5 +344,6 @@ if __name__ == '__main__':
 					z.write(line)
 			g.close()
 			z.close()
+			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
 			output_file("genome_protein_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
