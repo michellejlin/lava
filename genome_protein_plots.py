@@ -8,7 +8,9 @@ import seaborn as sns
 from scipy import stats
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from bokeh.io import export_png
+from bokeh.io import export_png, save
+from bokeh.resources import CDN
+from bokeh.embed import components, file_html, autoload_static
 from bokeh.plotting import figure, show, output_file
 from bokeh.palettes import Dark2, Category20, Category20c, Spectral10, Colorblind
 from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
@@ -325,5 +327,22 @@ if __name__ == '__main__':
 			export_png(plots_proteins, filename="Protein_Plots.png")
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
+			save(column(tabs_genomes, tabs_proteins))
+			js, tag = autoload_static(column(tabs_genomes, tabs_proteins), CDN, "js_test.js")
+			e = open('js_test.js', 'w')
+			e.write(js)
+			e.close()
+			f = open('script.tag', 'w')
+			f.write(tag)
+			f.close()
+			g = open('ngls_test.html')
+			z = open('graphs_and_viewer.html', 'w')
+			for line in g:
+				if line.strip() == '$@PLOTSGOHERE@$':
+					z.write(tag)
+				else:
+					z.write(line)
+			g.close()
+			z.close()
 			output_file("genome_protein_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
