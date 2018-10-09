@@ -137,11 +137,14 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='no description yet')
 	parser.add_argument('-png', action='store_true')
 	parser.add_argument('-nuc', action='store_true')
+	parser.add_argument('-pdb', help='Provide a PDB acsession number to load into the NGL viewer')
 	try:
 		args = parser.parse_args()
 	except:
 		parser.print_help()
 		sys.exit(0)
+
+	pdb_num = args.pdb 
 
 	merged = pd.read_csv('merged.csv',index_col=False)
 	proteins = pd.read_csv('proteins.csv',index_col=False,header=None)
@@ -340,8 +343,11 @@ if __name__ == '__main__':
 			for line in g:
 				if line.strip() == '$@PLOTSGOHERE@$':
 					z.write(tag)
-				else:
+				elif pdb_num != None and line.strip() == 'loadStructure("rcsb://4WEF")':
+					z.write('loadStructure("rcsb://'    + pdb_num +      '")')
+				else: 
 					z.write(line)
+
 			g.close()
 			z.close()
 			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
