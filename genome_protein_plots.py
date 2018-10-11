@@ -19,6 +19,7 @@ from bokeh.transform import jitter, factor_cmap, linear_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
+import subprocess
 
 #Uses info from protein csv to shade every other protein in light green, and annotate with protein names
 def protein_annotation():
@@ -138,17 +139,22 @@ if __name__ == '__main__':
 	parser.add_argument('-png', action='store_true')
 	parser.add_argument('-nuc', action='store_true')
 	parser.add_argument('-pdb', help='Provide a PDB acsession number to load into the NGL viewer')
+	parser.add_argument('merged', help='internal call pointing to the merged.csv file created by the main lava script')
+	parser.add_argument('proteins', help='Internal call pointing to the proteins.csv file created by the main lava script')
+	parser.add_argument('reads', help='Internal call pointing to the reads.csv file created by the main lava script')
+	parser.add_argument('dir', help='Dir created by main lava program')
+	
 	try:
 		args = parser.parse_args()
 	except:
 		parser.print_help()
 		sys.exit(0)
-
 	pdb_num = args.pdb 
+	new_dir = args.dir
 
-	merged = pd.read_csv('merged.csv',index_col=False)
-	proteins = pd.read_csv('proteins.csv',index_col=False,header=None)
-	reads = pd.read_csv('reads.csv', index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
+	merged = pd.read_csv(args.merged,index_col=False)
+	proteins = pd.read_csv(args.proteins,index_col=False,header=None)
+	reads = pd.read_csv(args.reads, index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
 
 	source = ColumnDataSource(merged)
 	list_tabs = []
@@ -173,7 +179,8 @@ if __name__ == '__main__':
 		sample = merged_Sample
 		name = sample_name
 		# added coverage plotting code
-		coverage = pd.read_table(sample_name.strip() + '.genomecov')
+
+		coverage = pd.read_table(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0)
 		cov_sample=ColumnDataSource(coverage)
 		cov_sample.data['position'].astype(float)
 		cov_val_sample = ColumnDataSource(data=cov_sample.data)
@@ -232,7 +239,7 @@ if __name__ == '__main__':
 		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		#creates both tabs and different plots
-		tab = Panel(child=g, title=name)
+		tab = Panel(child=g, title=name.split('/')[1])
 		list_tabs.append(tab)
 		list_plots.append(g)
 	
@@ -343,13 +350,15 @@ if __name__ == '__main__':
 			for line in g:
 				if line.strip() == '$@PLOTSGOHERE@$':
 					z.write(tag)
-				elif pdb_num != None and line.strip() == 'loadStructure("rcsb://4WEF")':
-					z.write('loadStructure("rcsb://'    + pdb_num +      '")')
-				else: 
+				else:
 					z.write(line)
-
 			g.close()
 			z.close()
+			subprocess.call('cp js_test.js ' + new_dir + '/',shell=True)
+			subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
+			subprocess.call('cp ngls_test.html ' + new_dir + '/',shell=True)
+			subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
+
 			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
 			output_file("genome_protein_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
