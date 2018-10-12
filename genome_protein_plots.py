@@ -193,7 +193,7 @@ if __name__ == '__main__':
 		depth_sample = ColumnDataSource(data=source_sample.data)
 		#creates a graph with xaxis being genome length (based on protein csv)
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name, active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
+			title=sample_name.split('/')[1], active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		if(args.nuc):
@@ -339,26 +339,28 @@ if __name__ == '__main__':
 		else:
 			save(column(tabs_genomes, tabs_proteins))
 			js, tag = autoload_static(column(tabs_genomes, tabs_proteins), CDN, "js_test.js")
-			e = open('js_test.js', 'w')
+			e = open(new_dir + '/js_test.js', 'w')
 			e.write(js)
 			e.close()
-			f = open('script.tag', 'w')
+			f = open(new_dir + '/script.tag', 'w')
 			f.write(tag)
 			f.close()
 			g = open('ngls_test.html')
-			z = open('graphs_and_viewer.html', 'w')
+			z = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
 			for line in g:
 				if line.strip() == '$@PLOTSGOHERE@$':
 					z.write(tag)
+				elif line.strip == '<h2>$@TITLEHERE$@</h2>':
+					z.write('<h2>' + new_dir + '</h2>\n' )
 				else:
 					z.write(line)
 			g.close()
 			z.close()
-			subprocess.call('cp js_test.js ' + new_dir + '/',shell=True)
-			subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
+			#subprocess.call('cp js_test.js ' + new_dir + '/',shell=True)
+			#subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
 			subprocess.call('cp ngls_test.html ' + new_dir + '/',shell=True)
-			subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
+			#subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
 
 			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
-			output_file("genome_protein_plots.html")
+			output_file(new_dir + "/" + new_dir + "_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
