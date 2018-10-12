@@ -2,9 +2,8 @@
 export PICARD=/Users/uwvirongs/downloads/picard-2.18.7/picard/build/libs/picard.jar
 export GATK=/Users/uwvirongs/downloads/gatk-4.0.5.1/gatk
 export VARSCAN=/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar
-export PATH=$PATH:/Users/uwvirongs/Downloads/annovar 
-export SNPEFFPATH=/Users/uwvirongs/snpEff/
 export PATH="/Users/uwvirongs/downloads/annovar/:$PATH"
+
 dedup=false
 script_path=$(dirname "$0")
 
@@ -51,7 +50,7 @@ while getopts ":f::q::g::h::d" opt; do
       ;;
     d)
     dedup=true
-    echo "lava is running in dedup mode, PCR duplicates will be removed"
+    echo "lava is running in dedup mode, PCR duplicates will be removed."
       ;;
     \?)
       echo "ERROR: Invalid option: -$OPTARG" >&2
