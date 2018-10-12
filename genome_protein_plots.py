@@ -21,14 +21,21 @@ from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
 import subprocess
 
+
+
 #Uses info from protein csv to shade every other protein in light green, and annotate with protein names
-def protein_annotation():
+def protein_annotation(first):
 	protein_locs = []
 	protein_names = []	
 	#shades in every other protein region
+
 	for i in range(0, proteins.shape[0]):
 		if(i==0):
 			x1 = 0
+		elif(proteins.iloc[i,1] < proteins.iloc[i-1,2]) and first:
+			print('WARNING: Protein-' + str(proteins.iloc[i,0]) + ' is overlapping with Protein-' + str(proteins.iloc[i-1,0]))
+			print('Analysis will continue but the visualization for these two proteins will look a little funny. Often the fix for this is simply deleting the small ancilary proteins that overlapping from the gff file and using the -f and -g flags. For more help see the README')
+			x1 = proteins.iloc[i,1]
 		else:
 			x1 = proteins.iloc[i,1]
 		if(i==proteins.shape[0]-1):
@@ -40,9 +47,11 @@ def protein_annotation():
 		protein_locs.append((x1+x2)/2)
 		protein_names.append(proteins.iloc[i,0])
 
+
 	#adds protein labels as tick marks
 	g.xaxis.ticker = protein_locs
 	g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
+
 
 #Creates the legend and configures some of the toolbar stuff
 def configurePlot():
@@ -175,6 +184,7 @@ if __name__ == '__main__':
 	]
 
 	#creates genome plots
+	FIRST = True
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
@@ -212,7 +222,8 @@ if __name__ == '__main__':
 		g.add_tools(HoverTool(tooltips=TOOLTIPS))
 		g.xgrid.grid_line_alpha = 0
 		configurePlot()
-		protein_annotation()
+		protein_annotation(FIRST)
+		FIRST = False
 		g.xaxis.axis_label = "Protein"
 
 		b = Button(label="Reset Plot")
