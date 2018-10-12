@@ -96,12 +96,14 @@ def adjust(given_num, our_num_array, ref_num_array, genome):
 # One of sample/file names and the other of their relative temporal relationship
 def read_metadata(filepath):
 	sample_list = []
+	sample_time_list = []
 	first = True
 	for line in open(filepath):
 		if first:
 			first = False
 		else:
 			sample_list.append(line.split(',')[0])
+			sample_time_list.append(line.split(',')[1])
 
 	if not os.path.isfile(sample_list[0]):
 		print('METADATA file is incorecctly formatted!')
@@ -109,7 +111,7 @@ def read_metadata(filepath):
 		print('Please move your samples to the directory you are running lava from, this is:')
 		subprocess.call('pwd', shell=True)
 		sys.exit(1)
-	return sample_list
+	return sample_list, sample_time_list
 
 
 # Essentially import the entire process.py file into this function 
@@ -193,6 +195,24 @@ def process(ref_seq_gb, fastq, new_dir):
 			gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
 	return fasta, new_dir + '/lava_ref.gff'
 
+def add_passage(sample, passage):
+
+	line_list = []
+	last = ''
+	last_line = ''
+	for line in open(sample):
+		if line.split(',')[4][:-1] == last:
+			print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
+		last = line.split(',')[4][:-1]
+		last_line = line
+		if line.strip().split(',')[10] == '':
+			line = line.strip() + str(passage)
+		line_list.append(line)
+
+	g = open(sample, 'w')
+	for line in line_list:
+		g.write(line)
+	g.close()
 
 
 if __name__ == '__main__':
@@ -246,7 +266,7 @@ if __name__ == '__main__':
 	metadata_location = args.metadata
 	control_fastq = args.control_fastq
 
-	sample_list = read_metadata(metadata_location)
+	sample_list, sample_time_list = read_metadata(metadata_location)
 
 	subprocess.call('cp ' + control_fastq + ' ' + new_dir + '/', shell=True)
 	control_fastq = new_dir + '/' + control_fastq
@@ -326,8 +346,9 @@ if __name__ == '__main__':
 		new_dir + '/proteins.csv', shell=True)
 
 	ref_done = False
-
-	for sample in sample_path_list:
+	for x in range(0, len(sample_path_list)):
+		sample = sample_path_list[x]
+		passage = sample_time_list[x]
 		if sample != control_fastq:
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
@@ -373,6 +394,7 @@ if __name__ == '__main__':
 			subprocess.call('SAMPLE="$(awk -F"," -v name=' + sample + ' \'$1==name {print $2}\' ' + metadata_location + ')" ', shell=True)
 			subprocess.call('awk -v name=' + sample + ' -v sample=$SAMPLE -F\'[\t:,]\' \'{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}\' ' + 
 				sample + '.txt > ' + sample + '.csv', shell = True)
+			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
 
 	print('generating Vizualisation')
@@ -383,9 +405,6 @@ if __name__ == '__main__':
 	else:
 		print('ngls_test.html file not found - 3d crystal structure will not be integrated')
 
-	#testing print statement
-	print('pythonw ../genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
-			new_dir + ' ' + nuc_flag + ' ' + png_flag)
 	# merged, proteins, reads 
 	if os.path.isfile('../genome_protein_plots.py'):
 		subprocess.call('pythonw ../genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
@@ -396,3 +415,6 @@ if __name__ == '__main__':
 	else:
 		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
 		sys.exit(1)
+
+
+
