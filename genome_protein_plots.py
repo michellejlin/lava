@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythonw
 
 import argparse
 import sys
@@ -8,7 +8,9 @@ import seaborn as sns
 from scipy import stats
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from bokeh.io import export_png
+from bokeh.io import export_png, save
+from bokeh.resources import CDN
+from bokeh.embed import components, file_html, autoload_static
 from bokeh.plotting import figure, show, output_file
 from bokeh.palettes import Dark2, Category20, Category20c, Spectral10, Colorblind
 from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
@@ -17,15 +19,23 @@ from bokeh.transform import jitter, factor_cmap, linear_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
+import subprocess
+
+
 
 #Uses info from protein csv to shade every other protein in light green, and annotate with protein names
-def protein_annotation():
+def protein_annotation(first):
 	protein_locs = []
 	protein_names = []	
 	#shades in every other protein region
+
 	for i in range(0, proteins.shape[0]):
 		if(i==0):
 			x1 = 0
+		elif(proteins.iloc[i,1] < proteins.iloc[i-1,2]) and first:
+			print('WARNING: Protein-' + str(proteins.iloc[i,0]) + ' is overlapping with Protein-' + str(proteins.iloc[i-1,0]))
+			print('Analysis will continue but the visualization for these two proteins will look a little funny. Often the fix for this is simply deleting the small ancilary proteins that overlapping from the gff file and using the -f and -g flags. For more help see the README')
+			x1 = proteins.iloc[i,1]
 		else:
 			x1 = proteins.iloc[i,1]
 		if(i==proteins.shape[0]-1):
@@ -37,9 +47,11 @@ def protein_annotation():
 		protein_locs.append((x1+x2)/2)
 		protein_names.append(proteins.iloc[i,0])
 
+
 	#adds protein labels as tick marks
 	g.xaxis.ticker = protein_locs
 	g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
+
 
 #Creates the legend and configures some of the toolbar stuff
 def configurePlot():
@@ -135,15 +147,23 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='no description yet')
 	parser.add_argument('-png', action='store_true')
 	parser.add_argument('-nuc', action='store_true')
+	parser.add_argument('-pdb', help='Provide a PDB acsession number to load into the NGL viewer')
+	parser.add_argument('merged', help='internal call pointing to the merged.csv file created by the main lava script')
+	parser.add_argument('proteins', help='Internal call pointing to the proteins.csv file created by the main lava script')
+	parser.add_argument('reads', help='Internal call pointing to the reads.csv file created by the main lava script')
+	parser.add_argument('dir', help='Dir created by main lava program')
+	
 	try:
 		args = parser.parse_args()
 	except:
 		parser.print_help()
 		sys.exit(0)
+	pdb_num = args.pdb 
+	new_dir = args.dir
 
-	merged = pd.read_csv('merged.csv',index_col=False)
-	proteins = pd.read_csv('proteins.csv',index_col=False,header=None)
-	reads = pd.read_csv('reads.csv', index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
+	merged = pd.read_csv(args.merged,index_col=False)
+	proteins = pd.read_csv(args.proteins,index_col=False,header=None)
+	reads = pd.read_csv(args.reads, index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
 
 	source = ColumnDataSource(merged)
 	list_tabs = []
@@ -164,11 +184,13 @@ if __name__ == '__main__':
 	]
 
 	#creates genome plots
+	FIRST = True
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
 		# added coverage plotting code
-		coverage = pd.read_table(sample_name.strip() + '.genomecov')
+
+		coverage = pd.read_table(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0)
 		cov_sample=ColumnDataSource(coverage)
 		cov_sample.data['position'].astype(float)
 		cov_val_sample = ColumnDataSource(data=cov_sample.data)
@@ -181,7 +203,7 @@ if __name__ == '__main__':
 		depth_sample = ColumnDataSource(data=source_sample.data)
 		#creates a graph with xaxis being genome length (based on protein csv)
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name, active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
+			title=sample_name.split('/')[1], active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		if(args.nuc):
@@ -200,7 +222,8 @@ if __name__ == '__main__':
 		g.add_tools(HoverTool(tooltips=TOOLTIPS))
 		g.xgrid.grid_line_alpha = 0
 		configurePlot()
-		protein_annotation()
+		protein_annotation(FIRST)
+		FIRST = False
 		g.xaxis.axis_label = "Protein"
 
 		b = Button(label="Reset Plot")
@@ -227,7 +250,7 @@ if __name__ == '__main__':
 		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		#creates both tabs and different plots
-		tab = Panel(child=g, title=name)
+		tab = Panel(child=g, title=name.split('/')[1])
 		list_tabs.append(tab)
 		list_plots.append(g)
 	
@@ -325,5 +348,30 @@ if __name__ == '__main__':
 			export_png(plots_proteins, filename="Protein_Plots.png")
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
-			output_file("genome_protein_plots.html")
+			save(column(tabs_genomes, tabs_proteins))
+			js, tag = autoload_static(column(tabs_genomes, tabs_proteins), CDN, "js_test.js")
+			e = open(new_dir + '/js_test.js', 'w')
+			e.write(js)
+			e.close()
+			f = open(new_dir + '/script.tag', 'w')
+			f.write(tag)
+			f.close()
+			g = open('ngls_test.html')
+			z = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
+			for line in g:
+				if line.strip() == '$@PLOTSGOHERE@$':
+					z.write(tag)
+				elif line.strip == '<h2>$@TITLEHERE$@</h2>':
+					z.write('<h2>' + new_dir + '</h2>\n' )
+				else:
+					z.write(line)
+			g.close()
+			z.close()
+			#subprocess.call('cp js_test.js ' + new_dir + '/',shell=True)
+			#subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
+			subprocess.call('cp ngls_test.html ' + new_dir + '/',shell=True)
+			#subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
+
+			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
+			output_file(new_dir + "/" + new_dir + "_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
