@@ -62,7 +62,7 @@ To run LAVA you need to make sure you have placed all the fastq files you want t
 
 1. With a reference fasta and a reference gff
 
-`lava.sh -f example_reference.fasta -g example_reference.fasta example1.fastq`
+`lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq`
 
 2. And to pull the reference from Genbank
 
