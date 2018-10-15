@@ -196,22 +196,37 @@ def process(ref_seq_gb, fastq, new_dir):
 	return fasta, new_dir + '/lava_ref.gff'
 
 def add_passage(sample, passage):
-
+	complex_list = []
 	line_list = []
 	last = ''
 	last_line = ''
+	add_a_complex = False
 	for line in open(sample):
 		if line.split(',')[4][:-1] == last:
-			print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
+			print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
+				  ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
+			complex_list.append(last_line)
+			add_a_complex = True
+
 		last = line.split(',')[4][:-1]
-		last_line = line
+	
 		if line.strip().split(',')[10] == '':
 			line = line.strip() + str(passage)
+		if add_a_complex:
+			complex_list.append(line)
+			add_a_complex = False
+
 		line_list.append(line)
+		last_line = line
 
 	g = open(sample, 'w')
+
 	for line in line_list:
-		g.write(line)
+		if line in complex_list:
+			# re-write line but with complex instead of whatever change was previously listed 
+			g.write(','.join(line.split(',')[:8]) + ',complex,' + ','.join(line.split(',')[9:]))
+		else:
+			g.write(line)
 	g.close()
 
 
