@@ -10,7 +10,7 @@ The following dependencies are required to run LAVA:
 4. GATK (https://software.broadinstitute.org/gatk/download/)
 5. VarScan (http://varscan.sourceforge.net/)
 6. ANNOVAR (http://www.openbioinformatics.org/annovar/annovar_download_form.php)
-7. mafft (https://mafft.cbrc.jp/alignment/software/) mafft needs to be on your path. Install with something like `brew install maaft` or `apt-get install maaft` and mafft will automatically be placed on your path. 
+7. mafft (https://mafft.cbrc.jp/alignment/software/) mafft needs to be on your path. Install with something like `brew install mafft` or `apt-get install mafft` and mafft will automatically be placed on your path. 
 8. bedtools (https://bedtools.readthedocs.io/en/latest/content/installation.html)
 9. SAMtools (http://www.htslib.org/download/)
 10. BWA (https://sourceforge.net/projects/bio-bwa/files/)
