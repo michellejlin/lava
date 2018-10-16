@@ -101,7 +101,7 @@ def read_metadata(filepath):
 	for line in open(filepath):
 		if first:
 			first = False
-		else:
+		elif ',' in line:
 			sample_list.append(line.split(',')[0])
 			sample_time_list.append(line.split(',')[1])
 
@@ -136,6 +136,7 @@ def process(ref_seq_gb, fastq, new_dir):
 	subprocess.call('bcftools mpileup -Ou -f ' + new_dir + '/lava_ref.fasta ' + new_dir + '/aln.sorted.bam | bcftools call -mv -Oz -o ' + 
 		new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('tabix ' + new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
+	# This line might not be correctly creating the right reference 
 	subprocess.call('cat ' + new_dir + '/lava_ref.fasta | bcftools consensus ' + new_dir + '/calls.vcf.gz > ' + new_dir + '/consensus.fasta', shell=True)
 
 	fasta = new_dir + '/consensus.fasta'
