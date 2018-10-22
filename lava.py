@@ -212,7 +212,7 @@ def add_passage(sample, passage):
 		last = line.split(',')[4][:-1]
 	
 		if line.strip().split(',')[10] == '':
-			line = line.strip() + str(passage)
+			line = line.strip() + str(passage) + '\n'
 		if add_a_complex:
 			complex_list.append(line)
 			add_a_complex = False
