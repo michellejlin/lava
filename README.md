@@ -45,28 +45,35 @@ Now you're ready to do some longitudinal analysis of minor alleles!
 
 To run LAVA you need, at a minimum: (Example files are included in the example folder)
 1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example1.fastq example2.fastq`
-2. A fasta file representing the majority consensus of your first sample. `example_reference.fasta`
-3. Either a .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
-4. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
+2.  Either a fasta file representing the majority consensus of your first sample. `example_reference.fasta` and a matching .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
+3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
 
 
 Once you've got all the required files above collected make a new folder and place all the files into this folder. Then execute LAVA from inside this folder. 
 
 `cd /User/uwvirongs/Downloads/LAVA/example/` 
 
-`bash ../lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq`
+`bash ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv`
 
 # Usage
 
-To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running LAVA:
+To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have several choices for running LAVA:
 
 1. With a reference fasta and a reference gff
 
-`lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq`
+`lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv`
 
-2. And to pull the reference from Genbank
+2. And to pull the reference from GenBank
 
-`lava.sh -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq`
+`lava.sh -q GENBANK_ACCESSION_NUMBER example1.fastq metadata.csv`
+
+3. Using reference fasta/gff and specifying output folder
+
+`lava.sh -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -o output_folder`
+
+4. Pull GenBank reference and analyze nuctleotide changes
+
+`lava.sh -q GENBANK_ACCESSION_NUMBER example1.fastq metadata.csv -o output_folder -nuc`
 
 For additional help you can also run 
 
@@ -74,9 +81,11 @@ For additional help you can also run
 
 # Output Files
 
-Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
+Output files will either be placed into a folder specified by the -o flag or into a folder named the current ISO date and time. All output, intermediate and log files will be placed into this folder. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
 
 Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (I.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.)
+
+Additionally, for debugging and much more indepth logging the lava.log contains much more detailed progress log. 
 
 # Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
