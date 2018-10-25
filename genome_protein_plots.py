@@ -60,7 +60,7 @@ def configurePlot():
 	g.legend.glyph_height = 35
 	g.legend.spacing = -10
 	g.legend.background_fill_alpha = 0.5
-	g.toolbar.active_scroll = g.select_one(WheelZoomTool)
+	#g.toolbar.active_scroll = g.select_one(WheelZoomTool)
 	g.yaxis.axis_label_standoff = 10
 	g.yaxis.axis_label = "Allele Frequency (%)"
 	g.xaxis.minor_tick_line_color = None
@@ -202,8 +202,9 @@ if __name__ == '__main__':
 		source_sample.data['Position'].astype(float)
 		depth_sample = ColumnDataSource(data=source_sample.data)
 		#creates a graph with xaxis being genome length (based on protein csv)
+		# took out active_scroll = "wheel_zoom" -RCS
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name.split('/')[1], active_scroll = "wheel_zoom", sizing_mode = 'scale_width',
+			title=sample_name.split('/')[1], sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		if(args.nuc):
