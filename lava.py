@@ -394,7 +394,8 @@ if __name__ == '__main__':
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
 					+ new_dir + '/ref.txt > ' + new_dir + '/ref.csv', shell=True)
-				subprocess.call('cat ' + new_dir + '/ref.csv >> ' + new_dir + '/merged.csv', shell=True)
+				# removed this line to attempt to fix duplication of control tabs - RCS
+				#subprocess.call('cat ' + new_dir + '/ref.csv >> ' + new_dir + '/merged.csv', shell=True)
 				subprocess.call('printf ' + control_fastq + '"," > ' + new_dir + '/reads.csv', shell=True)
 
 				subprocess.call('samtools flagstat ' + control_fastq + '.bam | awk \'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}\' '
