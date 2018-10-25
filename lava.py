@@ -102,6 +102,7 @@ def read_metadata(filepath):
 		if first:
 			first = False
 		elif ',' in line:
+			print(line)
 			sample_list.append(line.split(',')[0])
 			sample_time_list.append(line.split(',')[1])
 
@@ -203,22 +204,24 @@ def add_passage(sample, passage):
 	last_line = ''
 	add_a_complex = False
 	for line in open(sample):
-		if line.split(',')[4][:-1] == last:
-			print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
-				  ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
-			complex_list.append(last_line)
-			add_a_complex = True
+		if ',' in line:
+			if line.split(',')[4][:-1] == last:
+				print(line)
+				print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
+				  	' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
+				complex_list.append(last_line)
+				add_a_complex = True
 
-		last = line.split(',')[4][:-1]
+			last = line.split(',')[4][:-1]
 	
-		if line.strip().split(',')[10] == '':
-			line = line.strip() + str(passage) + '\n'
-		if add_a_complex:
-			complex_list.append(line)
-			add_a_complex = False
+			if line.strip().split(',')[10] == '':
+				line = line.strip() + str(passage) + '\n'
+			if add_a_complex:
+				complex_list.append(line)
+				add_a_complex = False
 
-		line_list.append(line)
-		last_line = line
+			line_list.append(line)
+			last_line = line
 
 	g = open(sample, 'w')
 
@@ -283,7 +286,9 @@ if __name__ == '__main__':
 	control_fastq = args.control_fastq
 
 	sample_list, sample_time_list = read_metadata(metadata_location)
-
+	# debugging print
+	print(sample_list)
+	print(sample_time_list)
 	subprocess.call('cp ' + control_fastq + ' ' + new_dir + '/', shell=True)
 	control_fastq = new_dir + '/' + control_fastq
 
@@ -291,6 +296,7 @@ if __name__ == '__main__':
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
 		reference_fasta = args.f
 		reference_gff = args.g
+
 		subprocess.call('cp ' + reference_fasta + ' ' + new_dir + '/', shell=True)
 		subprocess.call('cp ' + reference_gff + ' ' + new_dir + '/', shell=True)
 		reference_fasta = new_dir + '/' + reference_fasta
@@ -309,8 +315,7 @@ if __name__ == '__main__':
 	sample_path_list = []
 	for sample in sample_list:
 		sample_path_list.append(new_dir + '/' + sample)
-
-		subprocess.call('cp ' + sample + ' ' + new_dir + '/', shell=True)
+		subprocess.call('cp ' + sample + ' ' + new_dir + '/',shell=True)
 	
 
 	print('Indexing reference...')
@@ -319,7 +324,8 @@ if __name__ == '__main__':
 
 	subprocess.call('samtools faidx ' + reference_fasta + ' 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call(GATK + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR 2>> ' + new_dir + '/lava.log', shell=True)
-
+	# debuggin print command 
+	print(sample_path_list)
 	for sample in sample_path_list:
 
 		print('Aligning reads for sample ' + sample)
@@ -365,7 +371,9 @@ if __name__ == '__main__':
 	for x in range(0, len(sample_path_list)):
 		sample = sample_path_list[x]
 		passage = sample_time_list[x]
-		if sample != control_fastq:
+		# RYAN IS CHANGING THIS TO ALWAYS EXECUTE
+		#if sample != control_fastq:
+		if 1 == 1:
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
 
@@ -381,6 +389,7 @@ if __name__ == '__main__':
 				'-outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
+				print('PROCESSING reFereence EXCONIC VARIATION FUNCTION')
 				subprocess.call('awk -F":" \'($18+0)>=5{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
