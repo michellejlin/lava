@@ -60,6 +60,7 @@ def configurePlot():
 	g.legend.glyph_height = 35
 	g.legend.spacing = -10
 	g.legend.background_fill_alpha = 0.5
+	# disabled scroll wheel zooming for all plots - RCS
 	#g.toolbar.active_scroll = g.select_one(WheelZoomTool)
 	g.yaxis.axis_label_standoff = 10
 	g.yaxis.axis_label = "Allele Frequency (%)"
@@ -161,6 +162,7 @@ if __name__ == '__main__':
 	pdb_num = args.pdb 
 	new_dir = args.dir
 
+	# read data from lava output
 	merged = pd.read_csv(args.merged,index_col=False)
 	proteins = pd.read_csv(args.proteins,index_col=False,header=None)
 	reads = pd.read_csv(args.reads, index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
@@ -185,11 +187,12 @@ if __name__ == '__main__':
 
 	#creates genome plots
 	FIRST = True
+	# go through each sample and create the genome plot 
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
-		# added coverage plotting code
-
+		
+		# Plot per base coverage for each sample as a subplot 
 		coverage = pd.read_table(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0)
 		cov_sample=ColumnDataSource(coverage)
 		cov_sample.data['position'].astype(float)
@@ -198,6 +201,7 @@ if __name__ == '__main__':
 		f = figure(plot_width=400, plot_height=200, title='Coverage')
 		f.line(x='position', y='cov',source=cov_val_sample)
 		
+		# setup 
 		source_sample=ColumnDataSource(merged_Sample)
 		source_sample.data['Position'].astype(float)
 		depth_sample = ColumnDataSource(data=source_sample.data)
@@ -207,6 +211,7 @@ if __name__ == '__main__':
 			title=sample_name.split('/')[1], sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
+		# this creates console errors when complex mutations are detected, can probobly fix this by adding more colors 
 		if(args.nuc):
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'LetterChange', line_color='white', line_width=2, line_alpha=1,
@@ -349,6 +354,7 @@ if __name__ == '__main__':
 			export_png(plots_proteins, filename="Protein_Plots.png")
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
+			# save output both as standalone HTML file and as a javascript element and a script tag 
 			save(column(tabs_genomes, tabs_proteins))
 			js, tag = autoload_static(column(tabs_genomes, tabs_proteins), CDN, "js_test.js")
 			e = open(new_dir + '/js_test.js', 'w')
@@ -357,6 +363,9 @@ if __name__ == '__main__':
 			f = open(new_dir + '/script.tag', 'w')
 			f.write(tag)
 			f.close()
+			# go through provided ngl viewer and insert reference to javascript tag 
+			# NOTE: this creates a file that cannot be shared
+			# TODO: fix this 
 			g = open('ngls_test.html')
 			z = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
 			for line in g:
@@ -372,7 +381,7 @@ if __name__ == '__main__':
 			#subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
 			subprocess.call('cp ngls_test.html ' + new_dir + '/',shell=True)
 			#subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
-
+			# we open the file on the default browser
 			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
 			output_file(new_dir + "/" + new_dir + "_plots.html")
 			show(column(tabs_genomes, tabs_proteins))
