@@ -14,7 +14,7 @@ from datetime import datetime
 import re
 import os.path
 
-
+# Set hard coded paths for uwvirongs system (specifically the iMac on the left)
 PICARD='/Users/uwvirongs/downloads/picard-2.18.7/picard/build/libs/picard.jar'
 GATK='/Users/uwvirongs/downloads/gatk-4.0.5.1/gatk'
 VARSCAN='/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar'
@@ -24,7 +24,8 @@ Entrez.email = 'uwvirongs@gmail.com'
 
 VERSION = 'v0.9rs'
 
-
+# Takes a file path pointing to a fasta file and returns two lists, the first is a list of all the fasta headers and the second is 
+# A list of all the sequence for each record, these will always be in the same order. Also replaces Us with Ts
 def read_fasta(fasta_file_loc):
     strain_list = []
     genome_list = []
@@ -41,6 +42,9 @@ def read_fasta(fasta_file_loc):
     genome_list.append(dna_string.replace('U', 'T'))
     return strain_list, genome_list
 
+
+# Takes two MAFFT aligned sequences and returns two arrays of numbers coresponding to relative genome position for each
+# any position that doesn't align will have a -1 
 def build_num_arrays(our_seq, ref_seq):
     ref_count = 0
     our_count = 0
@@ -63,6 +67,8 @@ def build_num_arrays(our_seq, ref_seq):
     return our_num_array, ref_num_array
 
 
+# takes two number arrays built by build_num_arrays and adjusts a given nucleotide position from a reference to a given genome 
+# returns adjusted index as a string. If the adjustment fails (for example off the edges of the alignments) a -1 will be returned
 def adjust(given_num, our_num_array, ref_num_array, genome):
 
     # Handles gene lengths that go off the end of the genome
@@ -101,6 +107,7 @@ def read_metadata(filepath):
 	for line in open(filepath):
 		if first:
 			first = False
+		# protects against empty lines
 		elif ',' in line:
 			print(line)
 			sample_list.append(line.split(',')[0])
@@ -115,31 +122,39 @@ def read_metadata(filepath):
 	return sample_list, sample_time_list
 
 
-# Essentially import the entire process.py file into this function 
+# Takes a fastq file, GenBank Accession number and output directory. Aligns fastq file to genbank acsession, and extracts majority consensus as well as 
+# transfers annotations from Genbank to newly extracted consensus. Returns a filepath to a fasta of the majority consensus and a filepath to a coresponding 
+# .gff file containing protein annotations. Also writes these files into the output directory as well as all intermediate files 
 def process(ref_seq_gb, fastq, new_dir):
 
+	# Pull whole genbank reference from Entrez
 	record = Entrez.read(Entrez.esearch(db='nucleotide', term=ref_seq_gb))
 	h2 = Entrez.efetch(db='nucleotide', id=record["IdList"][0], rettype='gb', retmode='text')
 	e = open(new_dir + '/lava_ref.gbk', 'w')
 	e.write(h2.read())
 	e.close()
 
+	# pull reference fasta from Entrez
 	h = Entrez.efetch(db='nucleotide', id=record["IdList"][0], rettype='fasta', retmode='text')
 	d = open(new_dir + '/lava_ref.fasta', 'w')
 	d.write(h.read())
 	d.close()
 
-
+	# index reference fasta
 	subprocess.call('bwa index ' + new_dir + '/lava_ref.fasta 2> ' + new_dir + '/lava.log', shell=True)
+
+	# align passed fastq reads to the downloaded reference fasta create vcf file and index it, sterr is sent to lava.log 
 	subprocess.call('bwa mem -M ' + new_dir + '/lava_ref.fasta ' + fastq + ' > ' + new_dir + '/aln.sam 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('samtools view -S -b ' + new_dir + '/aln.sam > ' + new_dir + '/aln.bam 2>> '+ new_dir + '/lava.log', shell=True)
 	subprocess.call('samtools sort ' + new_dir + '/aln.bam -o ' + new_dir + '/aln.sorted.bam 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('bcftools mpileup -Ou -f ' + new_dir + '/lava_ref.fasta ' + new_dir + '/aln.sorted.bam | bcftools call -mv -Oz -o ' + 
 		new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('tabix ' + new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
-	# This line might not be correctly creating the right reference 
+	# create the consensus and write it to the output folder 
 	subprocess.call('cat ' + new_dir + '/lava_ref.fasta | bcftools consensus ' + new_dir + '/calls.vcf.gz > ' + new_dir + '/consensus.fasta', shell=True)
 
+
+	# rewrite fasta with lava as the sequence header so that annovar can match this with the reference .gff
 	fasta = new_dir + '/consensus.fasta'
 	ignore, genome_ref = read_fasta(fasta)
 	g = open(fasta, 'w')
@@ -151,6 +166,7 @@ def process(ref_seq_gb, fastq, new_dir):
 	gene_product_list = []
 	allow_one = False
 
+	# pull CDS annotations from downloaded genbank file 
 	for line in open(new_dir + '/lava_ref.gbk'):
 		if ' CDS ' in line:
 			gene_loc_list.append(re.findall(r'\d+', line))
@@ -162,6 +178,7 @@ def process(ref_seq_gb, fastq, new_dir):
 			px = px.split()[0]
 			gene_product_list.append(px)
 
+	# write a new file for mafft input 
 	z = open(new_dir + '/aligner.fasta', 'w')
 	fe = open(fasta)
 	for line in fe:
@@ -174,6 +191,7 @@ def process(ref_seq_gb, fastq, new_dir):
 	ge.close()
 	z.close()
 
+	# use maaft to align consensus fasta with downloaded fasta 
 	nullo, genome = read_fasta(fasta)
 	subprocess.call('mafft --quiet ' + new_dir + '/aligner.fasta > ' + new_dir + '/lava.ali', shell=True)
 	ali_list, ali_genomes = read_fasta(new_dir + '/lava.ali')
@@ -181,10 +199,12 @@ def process(ref_seq_gb, fastq, new_dir):
 	our_seq = ali_genomes[0]
 	our_seq_num_array, ref_seq_num_array = build_num_arrays(our_seq, ref_seq)
 
+	# go through every annotation and adjust the coordinates from the reference to the consensus sequence
 	for entry in range(0, len(gene_loc_list)):
 		for y in range(0, len(gene_loc_list[entry])):
 			gene_loc_list[entry][y] = adjust(int(gene_loc_list[entry][y]), our_seq_num_array, ref_seq_num_array, genome)   
 
+	# write a new .gff file for annovar to use later 
 	g = open(new_dir + '/lava_ref.gff', 'w')
 	g.write('##gff-version 3\n##source-version geneious 9.1.7\n')
 	name= 'lava'
@@ -195,8 +215,12 @@ def process(ref_seq_gb, fastq, new_dir):
 			gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		g.write(name + '\tGeneious\ttranscript\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t.\tID=transcript:' + 
 			gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+	# return the filepaths for the new fasta and .gff file as strings 
 	return fasta, new_dir + '/lava_ref.gff'
 
+# goes through the merged.csv file and makes sure that the temporal metadata has been added correctly to the output
+# also scans for complex mutations and prints a helpfull warning message to the terminal listing what samples and the changes
+# also re-writes the file with complex mutations being annotated as 'complex'
 def add_passage(sample, passage):
 	complex_list = []
 	line_list = []
@@ -204,7 +228,10 @@ def add_passage(sample, passage):
 	last_line = ''
 	add_a_complex = False
 	for line in open(sample):
+		# make sure we only read lines that contain data 
 		if ',' in line:
+			# if the amino acid reside is the same as the last one we read than we have a complex mutaiton, this assumes that merged.csv is in sorted order
+			# which we garuntee that it is
 			if line.split(',')[4][:-1] == last:
 				print(line)
 				print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
@@ -213,7 +240,8 @@ def add_passage(sample, passage):
 				add_a_complex = True
 
 			last = line.split(',')[4][:-1]
-	
+			
+			# if we don't have time data add it here 
 			if line.strip().split(',')[10] == '':
 				line = line.strip() + str(passage) + '\n'
 			if add_a_complex:
@@ -225,6 +253,7 @@ def add_passage(sample, passage):
 
 	g = open(sample, 'w')
 
+	# re-write file with 'complex' as change type 
 	for line in line_list:
 		if line in complex_list:
 			# re-write line but with complex instead of whatever change was previously listed 
@@ -235,8 +264,6 @@ def add_passage(sample, passage):
 
 
 if __name__ == '__main__':
-
-	start_time = timeit.default_timer()
 
 	parser = argparse.ArgumentParser(description='Version ' + VERSION + '\nLongitudinal analysis of minor variants across whole viral'
 												 ' genomes. Use either -g and -f together or use -q to annotate control fastq')
@@ -258,18 +285,21 @@ if __name__ == '__main__':
 	parser.add_argument('-o', help='Optional flag to name the output folder that lava will stuff output into. If a name isn\'t provided '
 								   'folder will be named lava-date')
 
+	# check for argument sanity
 	try:
 		args = parser.parse_args()
 	except:
 		parser.print_help()
 		sys.exit(0)
 
+	# if an output directory is not provided pull the date and time in isoformat with no colons
 	if args.o != None:
 		new_dir = args.o
 	else:
 		new_dir = str(datetime.now().isoformat())
 		new_dir = '_'.join(new_dir.split(':'))
 
+	# create flags for passing to genome_protein_plots.py 
 	if args.nuc:
 		nuc_flag = '-nuc'
 	else:
@@ -279,7 +309,8 @@ if __name__ == '__main__':
 		png_flag = '-png'
 	else:
 		png_flag = ''
-		
+	
+	# write new output folder 
 	subprocess.call('mkdir -p ' + new_dir, shell=True)
 
 	metadata_location = args.metadata
@@ -289,18 +320,22 @@ if __name__ == '__main__':
 	# debugging print
 	print(sample_list)
 	print(sample_time_list)
+	# copy fastqs to new directory - slow but protects user data from the insanity that is about to occur 
 	subprocess.call('cp ' + control_fastq + ' ' + new_dir + '/', shell=True)
 	control_fastq = new_dir + '/' + control_fastq
 
+	# make sure that we've got a way of pulling annotations, if the user gives -f -g and -q then we only use -f and -g 
 	if args.f != None and args.g != None:
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
+		print('This method of reference generation assumes that your fasta and .gff file are formated correctly')
+		print('If you are using this method and lava is crashing or producing whack output verify these files. A helpful guide is avalible in the README')
 		reference_fasta = args.f
 		reference_gff = args.g
-
 		subprocess.call('cp ' + reference_fasta + ' ' + new_dir + '/', shell=True)
 		subprocess.call('cp ' + reference_gff + ' ' + new_dir + '/', shell=True)
 		reference_fasta = new_dir + '/' + reference_fasta
 		reference_gff = new_dir + '/' + reference_gff
+
 	elif args.q != None:
 		print('Using -q flag to automatically create reference from control fastq and genbank record.')
 		reference_fasta, reference_gff = process(args.q, control_fastq, new_dir)
@@ -311,7 +346,7 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	
-
+	# move users provided files into new output directory, slow but protects original input 
 	sample_path_list = []
 	for sample in sample_list:
 		sample_path_list.append(new_dir + '/' + sample)
@@ -336,18 +371,21 @@ if __name__ == '__main__':
 			'.bam SORT_ORDER=coordinate VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 
 		if args.dedup:
+			print('Removing PCR duplicates from sample ' + sample)
 			subprocess.call('java -jar ' + PICARD + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
 				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log',shell=True)
 			subprocess.call('cat ' + name + '_dedup.bam > ' + name + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
+			print('done removing PCR duplicates from sample ' + sample)
 
 		subprocess.call('java -jar ' + PICARD + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 		subprocess.call('echo sample\tposition\tcov > ' + sample + '.genomecov', shell=True)
 		subprocess.call('bedtools genomecov -d -ibam ' + sample + '.bam >> ' + sample +'.genomecov' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 		subprocess.call('samtools mpileup -f ' + reference_fasta + ' ' + sample + '.bam > ' + sample + '.pileup' + ' 2>> ' + 
 			new_dir + '/lava.log', shell=True)
-
+	# create annovar /db from reference gff 
 	subprocess.call('gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
 		+ '/lava.log', shell=True)
+	# check for these files in both the current directory and one directory up, if not present print helpful error message 
 	if os.path.isfile('../retrieve_seq_from_fasta.pl'):
 		subprocess.call('../retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
 			+ new_dir + '/lava.log', shell=True)
@@ -355,15 +393,18 @@ if __name__ == '__main__':
 		subprocess.call('./retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
 			+ new_dir + '/lava.log', shell=True)
 	else:
-		print('retrieve_seq_from_fasta.pl not found, to fix this move these files from ANNOVAR into the main lava directory')
+		print('retrieve_seq_from_fasta.pl not found, to fix this move these files from ANNOVAR into the main lava directory. For more information and help check out the readme')
 		sys.exit(1)
 
 	subprocess.call('mkdir ' + new_dir + '/db/', shell=True)
 	subprocess.call('mv AT_refGeneMrna.fa ' + new_dir + '/db/', shell=True)
 	subprocess.call('mv ' + new_dir + '/AT_refGene.txt ' + new_dir + '/db/', shell=True)
 	# TODO: Re-write these in python 
+	# intialzie merged.csv 
 	subprocess.call('echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > ' + 
 		new_dir + '/merged.csv', shell=True)
+
+	# pull annotations for plotting 
 	subprocess.call('grep "ID=transcript:" ' + reference_gff + ' | awk -F\'[\t;:]\' \'{print $12 "," $4 "," $5}\' | sort -t \',\' -k2 -n > ' + 
 		new_dir + '/proteins.csv', shell=True)
 
@@ -374,6 +415,7 @@ if __name__ == '__main__':
 		# RYAN IS CHANGING THIS TO ALWAYS EXECUTE
 		#if sample != control_fastq:
 		if 1 == 1:
+			print('Analyzing variants in sample ' + sample)
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
 
@@ -381,7 +423,8 @@ if __name__ == '__main__':
 			subprocess.call('mv ' + sample + '.vcf.validation ' + sample + '.vcf', shell=True)
 			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
-
+			# these export commands don't do anything and likely will mess up other people's enviornments
+			# TODO: remove these when we redo the installation 
 			subprocess.call('export PATH=$PATH:/Users/uwvirongs/Downloads/annovar;export PATH="/Users/uwvirongs/downloads/annovar/:$PATH";convert2annovar.pl '
 				'-withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
 			#annotates all mutations with codon changes
@@ -389,7 +432,6 @@ if __name__ == '__main__':
 				'-outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
-				print('PROCESSING reFereence EXCONIC VARIATION FUNCTION')
 				subprocess.call('awk -F":" \'($18+0)>=5{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
@@ -406,7 +448,6 @@ if __name__ == '__main__':
 				ref_done = True
 
 
-
 			subprocess.call('echo \'sample	position	cov\' > ' + sample + '.genomecov', shell=True)
 			subprocess.call('bedtools genomecov -d -ibam ' + sample + '.bam >> ' + sample + '.genomecov 2>> ' + new_dir + '/lava.log', shell=True)
 			subprocess.call('printf ' + sample + '"," >> ' + new_dir + '/reads.csv', shell=True)
@@ -420,6 +461,7 @@ if __name__ == '__main__':
 			subprocess.call('SAMPLE="$(awk -F"," -v name=' + sample + ' \'$1==name {print $2}\' ' + metadata_location + ')" ', shell=True)
 			subprocess.call('awk -v name=' + sample + ' -v sample=$SAMPLE -F\'[\t:,]\' \'{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}\' ' + 
 				sample + '.txt > ' + sample + '.csv', shell = True)
+			# go through and make sure that we have passage data in the preliminary csv files 
 			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
 
