@@ -2,6 +2,7 @@
 import platform
 import sys
 import subprocess
+import os
 
 if __name__ == '__main__':
 	# TODO: have a flag for install and a flag for checking dependencies in the same way that lava does 
@@ -37,16 +38,21 @@ if __name__ == '__main__':
 	subprocess.call('python -m pip install bokeh', shell=True)
 	print('Python modules installed')
 
-	print('Downloading Picard')
-	subprocess.call('wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar', shell=True)
-	print('Downloading GATK and installing GATK')
-	subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
-	subprocess.call('tar -xvzf gatk-4.0.11.0.zip', shell=True)
-	# clean up
-	subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
-	print('Downloading VarScan')
-	subprocess.call('wget https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
-	subprocess.call('mv download VarScan', shell=True)
+	
+	# TODO: add detection to only do this if picard.jar isn't found in the main lava folder 
+	if not os.path.isfile('picard.jar'):
+		print('Downloading Picard')
+		subprocess.call('wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar', shell=True)
+	if not os.path.isfile('gatk-4.0.11.0.zip'):
+		print('Downloading GATK and installing GATK')
+		subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
+		subprocess.call('tar -xvzf gatk-4.0.11.0.zip', shell=True)
+		# clean up
+		subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
+	if not os.path.isfile('VarScan')
+		print('Downloading VarScan')
+		subprocess.call('wget https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
+		subprocess.call('mv download VarScan', shell=True)
 
 	if platform.system() == 'Linux':
 		subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred', shell=True)
