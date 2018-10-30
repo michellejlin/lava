@@ -14,15 +14,46 @@ from datetime import datetime
 import re
 import os.path
 
-# Set hard coded paths for uwvirongs system (specifically the iMac on the left)
-PICARD='/Users/uwvirongs/downloads/picard-2.18.7/picard/build/libs/picard.jar'
-GATK='/Users/uwvirongs/downloads/gatk-4.0.5.1/gatk'
-VARSCAN='/Users/uwvirongs/Downloads/VarScan.v2.3.9.jar'
-ANNOVAR='/Users/uwvirongs/Downloads/annovar'
-
 Entrez.email = 'uwvirongs@gmail.com'
 
 VERSION = 'v0.9rs'
+
+def check_picard():
+	if os.path.isfile('./picard.jar'):
+		return './picard.jar'
+	elif os.path.isfile('../picard.jar'):
+		return '../picard.jar'
+	else:
+		print('Picard not found - lava is being executed from : ')
+		subprocess.call('pwd', shell=True)
+		print('LAVA checked for picard in the above folder and the main lava folder')
+		print('to fix this error download picard and unzip it into the main lava directory - for more indepth help check out the readme')
+		sys.exit(1)
+
+def check_gatk():
+	if os.path.isfile('./gatk-4.0.11.0/gatk'):
+		return './gatk-4.0.11.0/gatk'
+	elif os.path.isfile('../gatk-4.0.11.0/gatk'):
+		return '../gatk-4.0.11.0/gatk'
+	else:
+		print('GATK not found - lava is being executed from : ')
+		subprocess.call('pwd', shell=True)
+		print('LAVA checked for GATK in the above folder and the main lava folder')
+		print('to fix this error download GATK and unzip it into the main lava directory - for more indepth help check out the readme')
+		sys.exit(1)
+
+def check_varscan():
+	if os.path.isfile('./VarScan'):
+		return './VarScan'
+	elif os.path.isfile('../VarScan'):
+		return '../VarScan'
+	else:
+		print('VarScan not found - lava is being executed from : ')
+		subprocess.call('pwd', shell=True)
+		print('LAVA checked for VarScan in the above folder and the main lava folder')
+		print('to fix this error download VarScan and unzip it into the main lava directory NOTE: the jar file needs to be named VarScan - for more indepth help check out the readme')
+		sys.exit(1)
+
 
 # Takes a file path pointing to a fasta file and returns two lists, the first is a list of all the fasta headers and the second is 
 # A list of all the sequence for each record, these will always be in the same order. Also replaces Us with Ts
@@ -309,10 +340,16 @@ if __name__ == '__main__':
 		png_flag = '-png'
 	else:
 		png_flag = ''
-	
+
+	# check for picard, gatk, and varscan exit if we can't find them 
+	PICARD = check_picard()
+	GATK = check_gatk()
+	VARSCAN = check_varscan()
 	# write new output folder 
 	subprocess.call('mkdir -p ' + new_dir, shell=True)
-
+	# debuggin console print
+	subprocess.call('pwd', shell=True)
+	subprocess.call('pwd', shell=True)
 	metadata_location = args.metadata
 	control_fastq = args.control_fastq
 
@@ -423,13 +460,10 @@ if __name__ == '__main__':
 			subprocess.call('mv ' + sample + '.vcf.validation ' + sample + '.vcf', shell=True)
 			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
-			# these export commands don't do anything and likely will mess up other people's enviornments
-			# TODO: remove these when we redo the installation 
-			subprocess.call('export PATH=$PATH:/Users/uwvirongs/Downloads/annovar;export PATH="/Users/uwvirongs/downloads/annovar/:$PATH";convert2annovar.pl '
-				'-withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
+
+			subprocess.call('../convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
 			#annotates all mutations with codon changes
-			subprocess.call('export PATH=$PATH:/Users/uwvirongs/Downloads/annovar;export PATH="/Users/uwvirongs/downloads/annovar/:$PATH";annotate_variation.pl '
-				'-outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call('../annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
 				subprocess.call('awk -F":" \'($18+0)>=5{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
