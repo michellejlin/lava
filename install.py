@@ -49,7 +49,7 @@ if __name__ == '__main__':
 		subprocess.call('tar -xvzf gatk-4.0.11.0.zip', shell=True)
 		# clean up
 		subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
-	if not os.path.isfile('VarScan')
+	if not os.path.isfile('VarScan'):
 		print('Downloading VarScan')
 		subprocess.call('wget https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
 		subprocess.call('mv download VarScan', shell=True)
@@ -67,5 +67,4 @@ if __name__ == '__main__':
 		subprocess.call('brew install bwa', shell=True)
 		subprocess.call('brew install mafft', shell= True)
 	subprocess.call('chmod +x gff3ToGenePred', shell =True)
-	print('Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.')
 
