@@ -98,6 +98,7 @@ if __name__ == '__main__':
 	if args.c:
 		# if this is still 0 at the end of this block then we know there's nothing fishy about the enviornment 
 		error_code = 0 
+		annovar_error = 0
 		try:
 			from Bio.Seq import Seq
 		except ImportError:
@@ -178,12 +179,15 @@ if __name__ == '__main__':
 				'http://www.openbioinformatics.org/annovar/annovar_download_form.php and request acsess, download, unzip and place all '
 				'files into the main LAVA directory')
 			error_code += 1
+			annovar_error =1
 		if not os.path.isfile('./convert2annovar.pl'):
 			print('Another ANOVAR scirpt (convert2annovar.pl)is missing, to fix download and unzip all ANNOVAR files to main LAVA directory')
 			error_code += 1
+			annovar_error = 1
 		if not os.path.isfile('annotate_variation.pl'):
 			print('Another ANNOVAR script (annotate_variation.pl) is missing to fix download and uzip all ANNOVAR files to main LAVA directory')
 			error_code += 1
+			annovar_error = 1
 
 		bwa_run = distutils.spawn.find_executable('bwa')
 		if bwa_run == None:
@@ -215,7 +219,8 @@ if __name__ == '__main__':
 			print('Something is weird with your java installation - make sure you have a JRE that can run -jar files properly '
 				'installed check out https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html')
 			error_code += 1
-
+		if error_code == 3 and annovar_error ==1:
+			print('Everything working except ANNOVAR which is normal for first time installation - check out the error messeges or the readme for how to install ANNOVAR')
 		if error_code == 0:
 			print('All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD')
 
