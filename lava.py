@@ -293,6 +293,8 @@ def add_passage(sample, passage):
 			g.write(line)
 	g.close()
 
+#def clean_up(new_dir):
+
 
 if __name__ == '__main__':
 
@@ -315,6 +317,8 @@ if __name__ == '__main__':
 										 'days, or whatever condition your experiment happens to have.')
 	parser.add_argument('-o', help='Optional flag to name the output folder that lava will stuff output into. If a name isn\'t provided '
 								   'folder will be named lava-date')
+	parser.add_argument('-save', action='store_true', help='Optional argument to save intermediate alignment files (sams, bams, vcfs, ect) '
+		'LAVA\'s default behavior is to remove these after use to save disk footprint')
 
 	# check for argument sanity
 	try:
@@ -365,7 +369,8 @@ if __name__ == '__main__':
 	if args.f != None and args.g != None:
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
 		print('This method of reference generation assumes that your fasta and .gff file are formated correctly')
-		print('If you are using this method and lava is crashing or producing whack output verify these files. A helpful guide is avalible in the README')
+		print('If you are using this method and lava is crashing or producing whack output verify these files. A helpful guide '
+			'is avalible in the README')
 		reference_fasta = args.f
 		reference_gff = args.g
 		subprocess.call('cp ' + reference_fasta + ' ' + new_dir + '/', shell=True)
@@ -498,6 +503,10 @@ if __name__ == '__main__':
 			# go through and make sure that we have passage data in the preliminary csv files 
 			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
+	
+	#print('Cleaning up...')
+	#if args.save:
+		#clean_up(new_dir)
 
 	print('generating Vizualisation')
 	if os.path.isfile('ngls_test.html'):
