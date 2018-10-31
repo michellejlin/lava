@@ -99,5 +99,6 @@ In this case you need to use your favorite method of generating a consensus fast
 To do this you first need to have your start and end nucleotide postitions for your protein locations - these must be relative to the start of the provided reference fasta. (So if you're using a reference fasta that you added 200 Ns to the start of the sequence, all protein starts and stops would need to be increased by 200). 
 
 The first two lines of the .gff file are comments, you can safely ignore these. Then all proteins are coded by 3 tab seperated lines. The first column must be the name of your fasta reference sequence. (So if the first line of your reference fasta is `>example` the first column of each row should read `example`. Second column doesn't matter. Then change the start/stop and protein name for your proteins in blocks of 3. 
+![Visual Guide](https://github.com/michellejlin/lava/blob/master/GFF_editing_guide.png)
 
 See the picture for a more clear explination. If you expereince any difficulties doing this feel free to email us at uwvirongs@gmail.com and I'll be happy to help you out!
