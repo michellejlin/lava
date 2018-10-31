@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 import re
 import os.path
-
+gatk_version = 'gatk-4.0.11.0'
 Entrez.email = 'uwvirongs@gmail.com'
 
 VERSION = 'v0.9rs'
@@ -31,10 +31,10 @@ def check_picard():
 		sys.exit(1)
 
 def check_gatk():
-	if os.path.isfile('./gatk-4.0.11.0/gatk'):
-		return './gatk-4.0.11.0/gatk'
-	elif os.path.isfile('../gatk-4.0.11.0/gatk'):
-		return '../gatk-4.0.11.0/gatk'
+	if os.path.isfile('./' + gatk_version + '/gatk'):
+		return './' + gatk_version + '/gatk'
+	elif os.path.isfile('../' + gatk_version + '/gatk'):
+		return '../' + gatk_version + '/gatk'
 	else:
 		print('GATK not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
@@ -420,7 +420,7 @@ if __name__ == '__main__':
 		subprocess.call('samtools mpileup -f ' + reference_fasta + ' ' + sample + '.bam > ' + sample + '.pileup' + ' 2>> ' + 
 			new_dir + '/lava.log', shell=True)
 	# create annovar /db from reference gff 
-	subprocess.call('gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
+	subprocess.call('./gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
 		+ '/lava.log', shell=True)
 	# check for these files in both the current directory and one directory up, if not present print helpful error message 
 	if os.path.isfile('../retrieve_seq_from_fasta.pl'):
