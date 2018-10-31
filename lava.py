@@ -293,7 +293,16 @@ def add_passage(sample, passage):
 			g.write(line)
 	g.close()
 
-#def clean_up(new_dir):
+# removes the bigger files that cause running lava a bunch to completely use up all the disk space 
+def clean_up(new_dir):
+	subprocess.call('rm ' + new_dir + '/*.bam', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.sam', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.avinput', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.vcf*', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.pileup', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.bai', shell=True)
+	subprocess.call('rm ' + new_dir + '/*variant_function', shell=True)
+	subprocess.call('rm ' + new_dir + '/*.txt', shell=True)
 
 
 if __name__ == '__main__':
@@ -504,9 +513,9 @@ if __name__ == '__main__':
 			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
 	
-	#print('Cleaning up...')
-	#if args.save:
-		#clean_up(new_dir)
+	print('Cleaning up...')
+	if args.save:
+		clean_up(new_dir)
 
 	print('generating Vizualisation')
 	if os.path.isfile('ngls_test.html'):
@@ -526,6 +535,3 @@ if __name__ == '__main__':
 	else:
 		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
 		sys.exit(1)
-
-
-
