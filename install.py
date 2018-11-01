@@ -72,7 +72,7 @@ if __name__ == '__main__':
 		if not os.path.isfile('gatk-4.0.11.0.zip'):
 			print('Downloading GATK and installing GATK')
 			subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
-			subprocess.call('tar -xvzf gatk-4.0.11.0.zip', shell=True)
+			subprocess.call('unzip gatk-4.0.11.0.zip', shell=True)
 			# clean up
 			subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
 		if not os.path.isfile('VarScan'):
