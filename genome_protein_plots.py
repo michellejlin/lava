@@ -22,7 +22,6 @@ from palette import color_palette
 import subprocess
 
 
-
 #Uses info from protein csv to shade every other protein in light green, and annotate with protein names
 def protein_annotation(first):
 	protein_locs = []
@@ -355,33 +354,24 @@ if __name__ == '__main__':
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
 			# save output both as standalone HTML file and as a javascript element and a script tag 
-			save(column(tabs_genomes, tabs_proteins))
-			js, tag = autoload_static(column(tabs_genomes, tabs_proteins), CDN, "js_test.js")
-			e = open(new_dir + '/js_test.js', 'w')
-			e.write(js)
-			e.close()
-			f = open(new_dir + '/script.tag', 'w')
-			f.write(tag)
-			f.close()
-			# go through provided ngl viewer and insert reference to javascript tag 
-			# NOTE: this creates a file that cannot be shared
-			# TODO: fix this 
-			g = open('ngls_test.html')
-			z = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
-			for line in g:
-				if line.strip() == '$@PLOTSGOHERE@$':
-					z.write(tag)
-				elif line.strip == '<h2>$@TITLEHERE$@</h2>':
-					z.write('<h2>' + new_dir + '</h2>\n' )
-				else:
-					z.write(line)
-			g.close()
-			z.close()
-			#subprocess.call('cp js_test.js ' + new_dir + '/',shell=True)
-			#subprocess.call('cp script.tag ' + new_dir + '/',shell=True)
-			subprocess.call('cp ngls_test.html ' + new_dir + '/',shell=True)
-			#subprocess.call('cp graphs_and_viewer.html ' + new_dir + '/',shell=True)
-			# we open the file on the default browser
 			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
 			output_file(new_dir + "/" + new_dir + "_plots.html")
+			subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
+			save(column(tabs_genomes, tabs_proteins))
+			# now the file exists
+			plot_file = open(new_dir + '/' + new_dir + '_plots.html')
+			viewer_code_file = open(new_dir + '/' + 'ngls_test.html')
+			new_file = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
+			script_tag_count = 0
+			for line in plot_file:
+				new_file.write(line)
+				if line.strip() == '</script>':
+					script_tag_count += 1 
+				if script_tag_count == 3:
+					for line_two in viewer_code_file:
+						new_file.write(line_two)
+			plot_file.close()
+			viewer_code_file.close()
+			new_file.close()
 			show(column(tabs_genomes, tabs_proteins))
+
