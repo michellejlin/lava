@@ -537,10 +537,10 @@ if __name__ == '__main__':
 
 	# merged, proteins, reads 
 	if os.path.isfile('../genome_protein_plots.py'):
-		subprocess.call('pythonw ../genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
+		subprocess.call('python ../genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
 			new_dir + ' ' + nuc_flag + ' ' + png_flag, shell=True)
 	elif os.path.isfile('genome_protein_plots.py'):
-		subprocess.call('pythonw genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
+		subprocess.call('python genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
 			new_dir+ ' ' + nuc_flag + ' ' + png_flag, shell=True)
 	else:
 		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
