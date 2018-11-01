@@ -373,5 +373,9 @@ if __name__ == '__main__':
 			plot_file.close()
 			viewer_code_file.close()
 			new_file.close()
-			show(column(tabs_genomes, tabs_proteins))
+			try:
+				show(column(tabs_genomes, tabs_proteins))
+			except:
+				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths')
+				
 
