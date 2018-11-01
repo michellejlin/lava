@@ -31,7 +31,8 @@ That's it! Now you're ready to do some longitudinal analysis of minor alleles!
 
 **Mandatory Files**
 
-To run LAVA you need, at a minimum: (Example files are included in the example folder)
+To run LAVA you need, at a minimum: (Example files are included in the example folder) It is HIGHLY reccomended you examine each of the example files before performing your own analysis. 
+
 1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example1.fastq example2.fastq`
 2. A fasta file representing the majority consensus of your first sample. `example_reference.fasta`
 3. Either a .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
@@ -52,33 +53,35 @@ Note: currently you must place your files either directly inside the main lava f
 
 To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running LAVA:
 
-1. With a reference fasta and a reference gff
+1. With a reference fasta and a reference gff, placing output into a folder named output
 
-`python lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -o output`
 
-2. And to pull the reference from Genbank
+2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time
 
-`python lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq metadata.csv`
+`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq metadata.csv`
 
 3. To examine nucleotide changes by type (A -> C, ect) 
 
-`python lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -nuc`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -nuc -o output`
 
 4. To remove PCR dupicates from reads 
 
-`python lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -dedup`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -dedup -o output`
 
 For additional help you can also run 
 
 `python lava.py -help`
 
-
-
 # Output Files
 
 Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
 
-Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (I.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.)
+Another file is created which contains an integrated viewer provided by NGL (provided graciously under the MIT licence - which is the same as this software) (https://github.com/arose/ngl)
+
+Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
+
+You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (I.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.) These files are automatically deleted by defualt, but to save them run lava with `-save` option.
 
 # Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
