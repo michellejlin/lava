@@ -250,7 +250,7 @@ if __name__ == '__main__':
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
 		div=Div(text="""<font size="2" color="gray"><b>Total reads: </b>"""+str(reads_info.iloc[0]["Total"])+
 			"""<br><b>Total reads mapped: </b>"""+str(reads_info.iloc[0]["Mapped"])+"""<br><b>Percentage of reads mapped: </b>
-			"""+reads_info.iloc[0]["Percentage"]+"""</font>""", width=300, height=100)
+			"""+str(reads_info.iloc[0]["Percentage"])+"""</font>""", width=300, height=100)
 		
 		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
