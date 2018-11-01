@@ -1,0 +1,26 @@
+##gff-version 3
+##source-version geneious 9.1.7
+example	Geneious	gene	28	2898	.	+	.	ID=gene:PB2;biotype=protein_coding
+example	Geneious	CDS	28	2898	.	+	0	ID=CDS:PB2;Parent=transcript:PB2;biotype=protein_coding
+example	Geneious	transcript	28	2898	.	+	.	ID=transcript:PB2;Parent=gene:PB2;biotype=protein_coding
+example	Geneious	gene	3180	5453	.	+	.	ID=gene:PB1;biotype=protein_coding
+example	Geneious	CDS	3180	5453	.	+	0	ID=CDS:PB1;Parent=transcript:PB1;biotype=protein_coding
+example	Geneious	transcript	3180	5453	.	+	.	ID=transcript:PB1;Parent=gene:PB1;biotype=protein_coding
+example	Geneious	gene	5621	7771	.	+	.	ID=gene:PA;biotype=protein_coding
+example	Geneious	CDS	5621	7771	.	+	0	ID=CDS:PA;Parent=transcript:PA;biotype=protein_coding
+example	Geneious	transcript	5621	7771	.	+	.	ID=transcript:PA;Parent=gene:PA;biotype=protein_coding
+example	Geneious	gene	7962	9659	.	+	.	ID=gene:HA;biotype=protein_coding
+example	Geneious	CDS	7962	9659	.	+	0	ID=CDS:HA;Parent=transcript:HA;biotype=protein_coding
+example	Geneious	transcript	7962	9659	.	+	.	ID=transcript:HA;Parent=gene:HA;biotype=protein_coding
+example	Geneious	gene	9850	11346	.	+	.	ID=gene:NP;biotype=protein_coding
+example	Geneious	CDS	9850	11346	.	+	0	ID=CDS:NP;Parent=transcript:NP;biotype=protein_coding
+example	Geneious	transcript	9850	11346	.	+	.	ID=transcript:NP;Parent=gene:NP;biotype=protein_coding
+example	Geneious	gene	11489	12850	.	+	.	ID=gene:N;biotype=protein_coding
+example	Geneious	CDS	11489	12850	.	+	0	ID=CDS:N;Parent=transcript:N;biotype=protein_coding
+example	Geneious	transcript	11489	12850	.	+	.	ID=transcript:N;Parent=gene:N;biotype=protein_coding
+example	Geneious	gene	13004	13762	.	+	.	ID=gene:M1;biotype=protein_coding
+example	Geneious	CDS	13004	13762	.	+	0	ID=CDS:M1;Parent=transcript:M1;biotype=protein_coding
+example	Geneious	transcript	13004	13762	.	+	.	ID=transcript:M1;Parent=gene:M1;biotype=protein_coding
+example	Geneious	gene	14132	14824	.	+	.	ID=gene:NS1;biotype=protein_coding
+example	Geneious	CDS	14132	14824	.	+	0	ID=CDS:NS1;Parent=transcript:NS1;biotype=protein_coding
+example	Geneious	transcript	14132	14824	.	+	.	ID=transcript:NS1;Parent=gene:NS1;biotype=protein_coding
