@@ -221,8 +221,8 @@ if __name__ == '__main__':
 		else:
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'Syn', line_color='white', line_width=2, line_alpha=1,
-				fill_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple'], factors=merged.Syn.unique()), 
-				hover_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple'], factors=merged.Syn.unique()),
+				fill_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=merged.Syn.unique()), 
+				hover_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=merged.Syn.unique()),
 				source=depth_sample, hover_line_color='white')
 		
 		g.add_tools(HoverTool(tooltips=TOOLTIPS))
