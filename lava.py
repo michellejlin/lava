@@ -434,8 +434,14 @@ if __name__ == '__main__':
 		subprocess.call('samtools mpileup -f ' + reference_fasta + ' ' + sample + '.bam > ' + sample + '.pileup' + ' 2>> ' + 
 			new_dir + '/lava.log', shell=True)
 	# create annovar /db from reference gff 
-	subprocess.call('./gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
-		+ '/lava.log', shell=True)
+	if os.path.isfile('../gff3ToGenePred'):
+		subprocess.call('../gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
+			+ '/lava.log', shell=True)
+	elif os.path.isfile('./gff3ToGenePred'):
+		subprocess.call('./gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
+			+ '/lava.log', shell=True)
+	else:
+		print('gff3ToGenePred not found - ')
 	# check for these files in both the current directory and one directory up, if not present print helpful error message 
 	if os.path.isfile('../retrieve_seq_from_fasta.pl'):
 		subprocess.call('../retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
@@ -514,7 +520,7 @@ if __name__ == '__main__':
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
 	
 	print('Cleaning up...')
-	if args.save:
+	if not args.save:
 		clean_up(new_dir)
 
 	print('generating Vizualisation')
