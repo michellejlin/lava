@@ -19,7 +19,7 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 1. Ensure you have the requirements listed in the 'Before you get started section' 
 2. Download the LAVA repository. If you have git installed on the command line you can open up a terminal window and type `git clone https://github.com/michellejlin/lava.git`. Or if you're not comfortable doing that you can click the green button that says Clone or download and click on download zip. Then unzip the folder to wherever you want on your computer. 
 
-3. Open up a terminal window and change directories to the main lava folder. If you downloaded the zip file to your downloads folder this would look something like: `cd /Users/username/Downloads/lava-master/' 
+3. Open up a terminal window and change directories to the main lava folder. If you downloaded the zip file to your downloads folder this would look something like: `cd /Users/username/Downloads/lava-master/` 
 
 4. Run the install script by typing into the terminal window `python install.py`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message `Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.`
 
@@ -45,6 +45,8 @@ Once you've got all the required files above collected make a new folder and pla
 In the example lava will align the reads from `example1.fastq` to `example_reference.fasta` and annotate any minor variants in protein coding space as defined by `example_reference.gff`. Lava will read `metadata.csv` for other samples `example2.fastq` and will annotate minor variants in the sample relative to earlier samples. 
 
 `python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv`
+
+Note: currently you must place your files either directly inside the main lava folder or inside a folder in the main lava folder. 
 
 # Usage
 
