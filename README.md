@@ -33,10 +33,10 @@ That's it! Now you're ready to do some longitudinal analysis of minor alleles!
 
 To run LAVA you need, at a minimum: (Example files are included in the example folder) It is HIGHLY reccomended you examine each of the example files before performing your own analysis. 
 
-1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example1.fastq example2.fastq`
+1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `example-P0.fastq example-P2.fastq`
 2. A fasta file representing the majority consensus of your first sample. `example_reference.fasta`
 3. Either a .gff file with protein annotation for the above reference fasta OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `example_reference.gff`
-4. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `metadata.csv`
+4. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `example_metadata.csv`
 
 
 Once you've got all the required files above collected make a new folder and place all the files into this folder (This has obviously already been done for the expample files). Then execute LAVA from inside this folder. 
@@ -45,7 +45,7 @@ Once you've got all the required files above collected make a new folder and pla
 
 In the example lava will align the reads from `example1.fastq` to `example_reference.fasta` and annotate any minor variants in protein coding space as defined by `example_reference.gff`. Lava will read `metadata.csv` for other samples `example2.fastq` and will annotate minor variants in the sample relative to earlier samples. 
 
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv`
 
 Note: currently you must place your files either directly inside the main lava folder or inside a folder in the main lava folder. 
 
@@ -55,19 +55,19 @@ To run LAVA you need to make sure you have placed all the fastq files you want t
 
 1. With a reference fasta and a reference gff, placing output into a folder named output
 
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -o output`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time
 
-`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example1.fastq metadata.csv`
+`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
 
 3. To examine nucleotide changes by type (A -> C, ect) 
 
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -nuc -o output`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output`
 
 4. To remove PCR dupicates from reads 
 
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example1.fastq metadata.csv -dedup -o output`
+`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
 
 For additional help you can also run 
 
