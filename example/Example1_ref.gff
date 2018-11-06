@@ -1,0 +1,20 @@
+##gff-version 3
+##source-version geneious 9.1.7
+Example1_ref	Geneious	gene	56	1603	.	+	.	ID=gene:nucleocapsid;biotype=protein_coding
+Example1_ref	Geneious	CDS	56	1603	.	+	0	ID=CDS:nucleocapsid;Parent=transcript:nucleocapsid;biotype=protein_coding
+Example1_ref	Geneious	transcript	56	1603	.	+	.	ID=transcript:nucleocapsid;Parent=gene:nucleocapsid;biotype=protein_coding
+Example1_ref	Geneious	gene	1729	3540	.	+	.	ID=gene:phosphoprotein;biotype=protein_coding
+Example1_ref	Geneious	CDS	1729	3540	.	+	0	ID=CDS:phosphoprotein;Parent=transcript:phosphoprotein;biotype=protein_coding
+Example1_ref	Geneious	transcript	1729	3540	.	+	.	ID=transcript:phosphoprotein;Parent=gene:phosphoprotein;biotype=protein_coding
+Example1_ref	Geneious	gene	3698	4759	.	+	.	ID=gene:matrix;biotype=protein_coding
+Example1_ref	Geneious	CDS	3698	4759	.	+	0	ID=CDS:matrix;Parent=transcript:matrix;biotype=protein_coding
+Example1_ref	Geneious	transcript	3698	4759	.	+	.	ID=transcript:matrix;Parent=gene:matrix;biotype=protein_coding
+Example1_ref	Geneious	gene	5019	6638	.	+	.	ID=gene:fusion;biotype=protein_coding
+Example1_ref	Geneious	CDS	5019	6638	.	+	0	ID=CDS:fusion;Parent=transcript:fusion;biotype=protein_coding
+Example1_ref	Geneious	transcript	5019	6638	.	+	.	ID=transcript:fusion;Parent=gene:fusion;biotype=protein_coding
+Example1_ref	Geneious	gene	6753	8471	.	+	.	ID=gene:hemagglutinin-neuraminidase;biotype=protein_coding
+Example1_ref	Geneious	CDS	6753	8471	.	+	0	ID=CDS:hemagglutinin-neuraminidase;Parent=transcript:hemagglutinin-neuraminidase;biotype=protein_coding
+Example1_ref	Geneious	transcript	6753	8471	.	+	.	ID=transcript:hemagglutinin-neuraminidase;Parent=gene:hemagglutinin-neuraminidase;biotype=protein_coding
+Example1_ref	Geneious	gene	8593	15294	.	+	.	ID=gene:large;biotype=protein_coding
+Example1_ref	Geneious	CDS	8593	15294	.	+	0	ID=CDS:large;Parent=transcript:large;biotype=protein_coding
+Example1_ref	Geneious	transcript	8593	15294	.	+	.	ID=transcript:large;Parent=gene:large;biotype=protein_coding
