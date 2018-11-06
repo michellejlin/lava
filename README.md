@@ -8,7 +8,7 @@ Although we have a script that wil do the bulk of the installation for you - thi
 
 1. Mac or Linux operating system. 
 2. An internet connection. 
-3. Python - This should come installed by default on most Mac and Linux operating systems. However if for some reason it isn't you can download it from (https://www.python.org/)
+3. Python - This should come installed by default on most Mac and Linux operating systems. However if for some reason it isn't you can [download Python](https://www.python.org/)
 4. If you are on a Mac operating system you need to have brew installed. Instructions for downloading and installing brew can be found at (https://brew.sh/)
 5. You also need a java runtime enviornment if not already installed on your computer this can be installed with brew (for Mac) with `brew cask install java` and with apt-get (Linux) via  `sudo apt-get install openjdk-8-jdk`
 
@@ -23,7 +23,7 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 4. Run the install script by typing into the terminal window `python install.py`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message `Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.`
 
-5. Download ANNOVAR (http://www.openbioinformatics.org/annovar/annovar_download_form.php). This program requires registration with a .edu email, or request for access. Once you've recieved access to the annovar download, download and unzip it. Then copy and paste all the files inside the ANNOVAR folder into your main lava folder. 
+5. [Download ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download_form.php). This program requires registration with a .edu email, or request for access. Once you've recieved access to the annovar download, download and unzip it. Then copy and paste all the files inside the ANNOVAR folder into your main lava folder. 
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
@@ -36,7 +36,7 @@ To run LAVA you need, at a minimum: (Example files are included in the example f
 1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand. (trimmomatic ect. ). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`
 2. A fasta file representing the majority consensus of your first sample. `Example1_ref.fasta` and a .gff file with protein annotation for the above reference fasta `Example1_ref.gff` OR a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `MF795094.1`( Genbank Reference For Example 2) 
 
-Note: The examples provided are mainly to illustrate how to use either method - each could be done with the other just as easily. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in (https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC332 Example1_file2 is CUL332. Example 2 is SC1201 and CUL1201. I have drastically reduced the number of reads in the fastq files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis all files used are publically availibe on SRA. 
+Note: The examples provided are mainly to illustrate how to use either method - each could be done with the other just as easily. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC332 Example1_file2 is CUL332. Example 2 is SC1201 and CUL1201. I have drastically reduced the number of reads in the fastq files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis all files used are publically availibe on SRA. 
 
 3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `Example1_metadata.csv`
 
