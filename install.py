@@ -31,8 +31,6 @@ if __name__ == '__main__':
 		if platform.system == 'Darwin':
 			print('Installing wget')
 			subprocess.call('brew install wget', shell = True)
-		else:
-			subprocess.call('apt-get install python-tk',shell=True)
 
 		# Either install pip or upgrade it to the latest version 
 		print('Installing pip')
@@ -122,12 +120,6 @@ if __name__ == '__main__':
 			import pandas
 		except ImportError:
 			print('Pandas python module not correctly installed!')
-			error_code += 1
-
-		try: 
-			import scipy
-		except ImportError:
-			print('scipy python module not correctly installed')
 			error_code += 1
 
 
