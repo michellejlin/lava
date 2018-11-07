@@ -34,8 +34,9 @@ if __name__ == '__main__':
 
 		# Either install pip or upgrade it to the latest version 
 		print('Installing pip')
-		subprocess.call('wget https://bootstrap.pypa.io/get-pip.py', shell=True)
-		subprocess.call('python get-pip.py', shell=True)
+		if not os.path.isfile('get-pip.py'):
+			subprocess.call('wget https://bootstrap.pypa.io/get-pip.py', shell=True)
+			subprocess.call('python get-pip.py', shell=True)
 
 		print('Installing python modules...')
 		print('First we\'re going to update pip and some other setuptools')
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 		if not os.path.isfile('picard.jar'):
 			print('Downloading Picard')
 			subprocess.call('wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar', shell=True)
-		if not os.path.isfile('gatk-4.0.11.0.zip'):
+		if not os.path.isdir('gatk-4.0.11.0'):
 			print('Downloading GATK and installing GATK')
 			subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
 			subprocess.call('unzip gatk-4.0.11.0.zip', shell=True)
@@ -72,14 +73,16 @@ if __name__ == '__main__':
 			subprocess.call('mv download VarScan', shell=True)
 
 		if platform.system() == 'Linux':
-			subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred', shell=True)
+			if not os.path.isfile('gff3ToGenePred'):
+				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred', shell=True)
 			subprocess.call('apt-get install bedtools', shell=True)
 			subprocess.call('apt-get install samtools', shell=True)
 			subprocess.call('apt-get install bwa', shell=True)
 			subprocess.call('apt-get install mafft', shell=True)
 			subprocess.call('apt-get install bcftools', shell=True)
 		elif platform.system() == 'Darwin':
-			subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/gff3ToGenePred', shell = True)
+			if not os.path.isfile('gff3ToGenePred'):
+				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/gff3ToGenePred', shell = True)
 			subprocess.call('brew install bedtools', shell=True)
 			subprocess.call('brew install samtools', shell=True)
 			subprocess.call('brew install bwa', shell=True)
@@ -121,8 +124,7 @@ if __name__ == '__main__':
 		except ImportError:
 			print('Pandas python module not correctly installed!')
 			error_code += 1
-
-
+			
 		try:
 			import bokeh
 		except ImportError:
