@@ -4,7 +4,7 @@ LAVA analyzes and visualizes minor allele variants in longitudinal sequence data
 # Installation
 **Before you get started**
 
-Although we have a script that wil do the bulk of the installation for you - this script requires a few things. 
+Although we have a script that will do the bulk of the installation for you - this script requires a few things. 
 
 1. Mac or Linux operating system. 
 2. An Internet connection. 
@@ -48,12 +48,10 @@ Once you've got all the required files above collected make a new folder and pla
 `cd /User/uwvirongs/Downloads/LAVA/example/` 
 
 To run Example 1:
-
-`python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output`
+	`python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output`
 
 To run Example 2:
-
-`python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output`
+	`python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output`
 
 
 Note: currently you must place your files either directly inside the main LAVA folder or inside a folder in the main LAVA folder. 
@@ -63,23 +61,22 @@ Note: currently you must place your files either directly inside the main LAVA f
 To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running LAVA:
 
 1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output:
-
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
+	
+	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time
 
-`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
+	`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
 
 Other optional arguments include:
 
 Examining nucleotide changes by type (A -> C, etc.) with the -nuc argument:
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output`
+	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output`
 
 Removing PCR dupicates from reads with the -dedup argument:
-`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
+	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
 
-For additional help you can also run:
-`python lava.py -help`
+For additional help you can also run `python lava.py -help`
 
 # Output Files
 
