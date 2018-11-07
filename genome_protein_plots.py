@@ -4,9 +4,6 @@ import argparse
 import sys
 import numpy as np
 import pandas as pd
-from scipy import stats
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 from bokeh.io import export_png, save
 from bokeh.resources import CDN
 from bokeh.embed import components, file_html, autoload_static
