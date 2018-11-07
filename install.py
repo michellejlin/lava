@@ -4,7 +4,7 @@ import sys
 import subprocess
 import os
 import argparse
-
+import distutils.spawn
 
 if __name__ == '__main__':
 	# TODO: have a flag for install and a flag for checking dependencies in the same way that lava does 
