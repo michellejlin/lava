@@ -36,6 +36,7 @@ Example files are included in the 'example' folder. It is HIGHLY recommended you
 To run LAVA you need, at a minimum:
 
 1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`
+
 2. A fasta file representing the majority consensus of your first sample. There are two options: 1) A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` OR 2) a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `MF795094.1` (This is the Genbank reference for Example 2, included in the example folder.) 
 
 Note: The examples provided are mainly to illustrate how to use either method - fasta and gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC332, and Example1_file2 is CUL332. Example 2 is SC1201 and CUL1201. I have drastically reduced the number of reads in the fastq files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically availibe on SRA. 
@@ -48,9 +49,11 @@ Once you've got all the required files above collected make a new folder and pla
 `cd /User/uwvirongs/Downloads/LAVA/example/` 
 
 To run Example 1:
+
 	`python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output`
 
 To run Example 2:
+
 	`python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output`
 
 
@@ -64,16 +67,18 @@ To run LAVA you need to make sure you have placed all the fastq files you want t
 	
 	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
 
-2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time
+2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time.
 
 	`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
 
 Other optional arguments include:
 
 Examining nucleotide changes by type (A -> C, etc.) with the -nuc argument:
+
 	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output`
 
 Removing PCR dupicates from reads with the -dedup argument:
+
 	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
 
 For additional help you can also run `python lava.py -help`
