@@ -4,7 +4,6 @@ import argparse
 import sys
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from scipy import stats
 import matplotlib as mpl
 import matplotlib.pyplot as plt
