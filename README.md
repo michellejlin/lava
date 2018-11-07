@@ -81,7 +81,7 @@ Removing PCR dupicates from reads with the -dedup argument:
 
 	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
 
-For additional help you can also run `python lava.py -help`
+For additional help you can also run `python lava.py -help`.
 
 # Output Files
 
@@ -121,4 +121,4 @@ The first two lines of the .gff file are comments, you can safely ignore these. 
 
 ![Visual Guide](https://github.com/michellejlin/lava/blob/master/GFF_editing_guide.png)
 
-See the picture for a clearer explanation. If you experience any difficulties doing, this feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
+See the picture for a clearer explanation. If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
