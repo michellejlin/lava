@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 	if args.i:
 		print('Please note that this script assumes you have python installed on your system and that you are executing this '
-			'file from the main lava folder')
+			'file from the main LAVA folder')
 		print('If running on Mac OS you also need to have brew properly installed.')
 		print('Currently you are running this install script from:')
 		subprocess.call('pwd', shell=True)
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 			error_code += 1
 			annovar_error =1
 		if not os.path.isfile('./convert2annovar.pl'):
-			print('Another ANNOVAR scirpt (convert2annovar.pl) is missing, to fix download and unzip all ANNOVAR files to main LAVA directory.')
+			print('Another ANNOVAR script (convert2annovar.pl) is missing, to fix download and unzip all ANNOVAR files to main LAVA directory.')
 			error_code += 1
 			annovar_error = 1
 		if not os.path.isfile('annotate_variation.pl'):
