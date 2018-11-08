@@ -490,7 +490,7 @@ if __name__ == '__main__':
 			subprocess.call('../annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
-				subprocess.call('awk -F":" \'($18+0)>=5{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
+				subprocess.call('awk -F":" \'($18+0){print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
 					+ new_dir + '/ref.txt > ' + new_dir + '/ref.csv', shell=True)
@@ -511,7 +511,7 @@ if __name__ == '__main__':
 			subprocess.call('printf ' + sample + '"," >> ' + new_dir + '/reads.csv', shell=True)
 			subprocess.call('samtools flagstat ' + sample + '.bam | awk \'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}\' >> ' 
 				+ new_dir + '/reads.csv 2>> ' + new_dir + '/lava.log', shell=True)
-			subprocess.call('awk -F":" \'($24+0)>=5{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
+			subprocess.call('awk -F":" \'($24+0){print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
 
 			subprocess.call('grep "SNV" ' + sample + '.txt > a.tmp ', shell=True)
 			subprocess.call('grep "stop" ' + sample + '.txt >> a.tmp', shell=True)
