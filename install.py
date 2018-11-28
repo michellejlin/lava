@@ -28,7 +28,7 @@ if __name__ == '__main__':
 		subprocess.call('pwd', shell=True)
 
 		# for super fresh OS systems]
-		if platform.system == 'Darwin':
+		if platform.system() == 'Darwin':
 			print('Installing wget')
 			subprocess.call('brew install wget', shell = True)
 
