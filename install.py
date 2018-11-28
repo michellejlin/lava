@@ -49,10 +49,10 @@ if __name__ == '__main__':
 		subprocess.call('python -m pip install numpy', shell=True)
 		#install('numpy')
 		print('Installing pandas...')
-		subprocess.call('python -m pip install pandas', shell=True)
+		subprocess.call('python -m pip install --ignore-installed pandas --user', shell=True)
 		#install('pandas')
 		print('Installing bokeh..')
-		subprocess.call('python -m pip install bokeh', shell=True)
+		subprocess.call('python -m pip install --ignore-installed bokeh --user', shell=True)
 		#install('bokeh')
 		print('Python modules installed')
 
