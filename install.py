@@ -36,17 +36,17 @@ if __name__ == '__main__':
 		print('Installing pip')
 		if not os.path.isfile('get-pip.py'):
 			subprocess.call('wget https://bootstrap.pypa.io/get-pip.py', shell=True)
-			subprocess.call('python get-pip.py', shell=True)
+			subprocess.call('python get-pip.py --user', shell=True)
 
 		print('Installing python modules...')
 		print('First we\'re going to update pip and some other setuptools')
 
 
 		print('Installing biopython...')
-		subprocess.call('python -m pip install biopython', shell=True)
+		subprocess.call('python -m pip install biopython --user', shell=True)
 		#install('biopython')
 		print('Installing numpy...')
-		subprocess.call('python -m pip install numpy', shell=True)
+		subprocess.call('python -m pip install numpy --user ', shell=True)
 		#install('numpy')
 		print('Installing pandas...')
 		subprocess.call('python -m pip install --ignore-installed pandas --user', shell=True)
