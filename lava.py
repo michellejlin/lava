@@ -26,8 +26,8 @@ def check_picard():
 	else:
 		print('Picard not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
-		print('LAVA checked for picard in the above folder and the main lava folder')
-		print('to fix this error download picard and unzip it into the main lava directory - for more indepth help check out the readme')
+		print('LAVA checked for picard in the above folder and the main lava folder.')
+		print('To fix this error download picard and unzip it into the main lava directory - for more in-depth help check out the readme.')
 		sys.exit(1)
 
 def check_gatk():
@@ -38,8 +38,8 @@ def check_gatk():
 	else:
 		print('GATK not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
-		print('LAVA checked for GATK in the above folder and the main lava folder')
-		print('to fix this error download GATK and unzip it into the main lava directory - for more indepth help check out the readme')
+		print('LAVA checked for GATK in the above folder and the main lava folder.')
+		print('To fix this error download GATK and unzip it into the main lava directory - for more in-depth help check out the readme.')
 		sys.exit(1)
 
 def check_varscan():
@@ -50,8 +50,8 @@ def check_varscan():
 	else:
 		print('VarScan not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
-		print('LAVA checked for VarScan in the above folder and the main lava folder')
-		print('to fix this error download VarScan and unzip it into the main lava directory NOTE: the jar file needs to be named VarScan - for more indepth help check out the readme')
+		print('LAVA checked for VarScan in the above folder and the main lava folder.')
+		print('To fix this error download VarScan and unzip it into the main lava directory. NOTE: the jar file needs to be named VarScan - for more in-depth help check out the readme.')
 		sys.exit(1)
 
 
@@ -145,7 +145,7 @@ def read_metadata(filepath):
 			sample_time_list.append(line.split(',')[1])
 
 	if not os.path.isfile(sample_list[0]):
-		print('METADATA file is incorecctly formatted!')
+		print('METADATA file is incorrectly formatted!')
 		print(sample_list[0] + ' was the first sample but could not be found in the working direcotry')
 		print('Please move your samples to the directory you are running lava from, this is:')
 		subprocess.call('pwd', shell=True)
@@ -312,26 +312,26 @@ def clean_up(new_dir):
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Version ' + VERSION + '\nLongitudinal analysis of minor variants across whole viral'
-												 ' genomes. Use either -g and -f together or use -q to annotate control fastq')
+												 ' genomes. Use either -g and -f together or use -q to annotate control fastq.')
 	parser.add_argument('-f', help='Specify a reference fasta with the majority consensus of the control fastq. This option must be used '
 								   'with the -g flag to specify the protein annotations relative to the start of this fasta.')
-	parser.add_argument('-g', help='Specify a refernce gff file with the protein annotations for the reference fasta supplied with the -f flag.'
-								   ' This option must be paired with the -f flag')
+	parser.add_argument('-g', help='Specify a reference gff file with the protein annotations for the reference fasta supplied with the -f flag.'
+								   ' This option must be paired with the -f flag.')
 	parser.add_argument('-q', help='Provide a Genbank accession number. This record will be used to generate a majority consensus from the '
-								   'control fastq, this consensus will be annotated from the downloaded genbank record as well')
-	parser.add_argument('-nuc', action='store_true', help='Results are listed as nucleotide changes not amino acid changes. Do not use with -png')
-	parser.add_argument('-png', action='store_true', help='Output results as a png. Do not use with -nuc')
-	parser.add_argument('-dedup', action='store_true', help='Optional flag, will perform automatic removal of PCR duplicates via DeDup')
+								   'control fastq, and this consensus will be annotated from the downloaded genbank record as well.')
+	parser.add_argument('-nuc', action='store_true', help='Results are listed as nucleotide changes not amino acid changes. Do not use with -png.')
+	parser.add_argument('-png', action='store_true', help='Output results as a png. Do not use with -nuc.')
+	parser.add_argument('-dedup', action='store_true', help='Optional flag, will perform automatic removal of PCR duplicates via DeDup.')
 	parser.add_argument('control_fastq', help='Required argument: The fastq reads for the first sample in your longitudinal analysis')
-	parser.add_argument('metadata', help='Required argument: A two column csv the first column is the name of all the fastqs you wish '
+	parser.add_argument('metadata', help='Required argument: A two column csv - the first column is the name of all the fastqs you wish '
 										 'to include in your analysis. All fastqs that you want to include need to be specified in this '
 										 'file AND be located in the folder from which you are running lava. The second column is the '
 										 'temporal seperation between the samples.  This is unitless so you can input passage number, '
 										 'days, or whatever condition your experiment happens to have.')
 	parser.add_argument('-o', help='Optional flag to name the output folder that lava will stuff output into. If a name isn\'t provided '
-								   'folder will be named lava-date')
+								   'folder will be named lava-date.')
 	parser.add_argument('-save', action='store_true', help='Optional argument to save intermediate alignment files (sams, bams, vcfs, ect) '
-		'LAVA\'s default behavior is to remove these after use to save disk footprint')
+		'LAVA\'s default behavior is to remove these after use to save disk footprint.')
 
 	# check for argument sanity
 	try:
@@ -381,9 +381,9 @@ if __name__ == '__main__':
 	# make sure that we've got a way of pulling annotations, if the user gives -f -g and -q then we only use -f and -g 
 	if args.f != None and args.g != None:
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
-		print('This method of reference generation assumes that your fasta and .gff file are formated correctly')
-		print('If you are using this method and lava is crashing or producing whack output verify these files. A helpful guide '
-			'is avalible in the README')
+		print('This method of reference generation assumes that your fasta and .gff file are formatted correctly')
+		print('If you are using this method and LAVA is crashing or producing whack output verify these files. A helpful guide '
+			'is available in the README.')
 		reference_fasta = args.f
 		reference_gff = args.g
 		subprocess.call('cp ' + reference_fasta + ' ' + new_dir + '/', shell=True)
@@ -396,8 +396,8 @@ if __name__ == '__main__':
 		reference_fasta, reference_gff = process(args.q, control_fastq, new_dir)
 
 	else:
-		print('Improper arguments for proper reference generation. Either use -f and -g to specify a fasta and gff file, '
-			  'respectively or use -q to automatically pull a genbank record to use as a reference for your control fastq')
+		print('Improper arguments for proper reference generation. Either use -f and -g to specify a fasta and gff file '
+			  'respectively, or use -q to automatically pull a genbank record to use as a reference for your control fastq')
 		sys.exit(1)
 
 	
@@ -418,7 +418,7 @@ if __name__ == '__main__':
 	print(sample_path_list)
 	for sample in sample_path_list:
 
-		print('Aligning reads for sample ' + sample)
+		print('Aligning reads for sample ' + sample + '...')
 		subprocess.call('bwa mem -M -R \'@RG\\tID:group1\\tSM:' + sample + '\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] ' + 
 			reference_fasta + ' ' + sample + ' > ' + sample + '.sam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 
@@ -426,11 +426,11 @@ if __name__ == '__main__':
 			'.bam SORT_ORDER=coordinate VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 
 		if args.dedup:
-			print('Removing PCR duplicates from sample ' + sample)
+			print('Removing PCR duplicates from sample ' + sample + '...')
 			subprocess.call('java -jar ' + PICARD + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
 				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log',shell=True)
 			subprocess.call('cat ' + name + '_dedup.bam > ' + name + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
-			print('done removing PCR duplicates from sample ' + sample)
+			print('Done removing PCR duplicates from sample ' + sample + '.')
 
 		subprocess.call('java -jar ' + PICARD + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 		subprocess.call('echo sample\tposition\tcov > ' + sample + '.genomecov', shell=True)
@@ -454,7 +454,7 @@ if __name__ == '__main__':
 		subprocess.call('./retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
 			+ new_dir + '/lava.log', shell=True)
 	else:
-		print('retrieve_seq_from_fasta.pl not found, to fix this move these files from ANNOVAR into the main lava directory. For more information and help check out the readme')
+		print('retrieve_seq_from_fasta.pl not found, to fix this move these files from ANNOVAR into the main lava directory. For more information and help check out the readme.')
 		sys.exit(1)
 
 	subprocess.call('mkdir ' + new_dir + '/db/', shell=True)
@@ -476,7 +476,7 @@ if __name__ == '__main__':
 		# RYAN IS CHANGING THIS TO ALWAYS EXECUTE
 		#if sample != control_fastq:
 		if 1 == 1:
-			print('Analyzing variants in sample ' + sample)
+			print('Analyzing variants in sample ' + sample + '...')
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
 
@@ -527,13 +527,13 @@ if __name__ == '__main__':
 	if not args.save:
 		clean_up(new_dir)
 
-	print('generating Vizualisation')
+	print('Generating visualization...')
 	if os.path.isfile('ngls_test.html'):
 		shutil.copy('ngls_test.html', new_dir)
 	elif os.path.isfile('../ngls_test.html'):
 		subprocess.call('cp ../ngls_test.html .', shell=True)
 	else:
-		print('ngls_test.html file not found - 3d crystal structure will not be integrated')
+		print('ngls_test.html file not found - 3d crystal structure will not be integrated.')
 
 	# merged, proteins, reads 
 	if os.path.isfile('../genome_protein_plots.py'):

@@ -29,7 +29,7 @@ def protein_annotation(first):
 			x1 = 0
 		elif(proteins.iloc[i,1] < proteins.iloc[i-1,2]) and first:
 			print('WARNING: Protein-' + str(proteins.iloc[i,0]) + ' is overlapping with Protein-' + str(proteins.iloc[i-1,0]))
-			print('Analysis will continue but the visualization for these two proteins will look a little funny. Often the fix for this is simply deleting the small ancilary proteins that overlapping from the gff file and using the -f and -g flags. For more help see the README')
+			print('Analysis will continue but the visualization for these two proteins will look a little funny. Often the fix for this is simply deleting the small ancilary proteins that overlapping from the gff file and using the -f and -g flags. For more help see the readme.')
 			x1 = proteins.iloc[i,1]
 		else:
 			x1 = proteins.iloc[i,1]
@@ -350,7 +350,7 @@ if __name__ == '__main__':
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
 			# save output both as standalone HTML file and as a javascript element and a script tag 
-			print('Opening output file genome_protein_plots.html\nGraphs_and_viewer.html includes the protein viewer')
+			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
 			output_file(new_dir + "/" + new_dir + "_plots.html")
 			subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
@@ -372,6 +372,6 @@ if __name__ == '__main__':
 			try:
 				show(column(tabs_genomes, tabs_proteins))
 			except:
-				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths')
+				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths.')
 				
 

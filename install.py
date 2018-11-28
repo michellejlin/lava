@@ -21,11 +21,13 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	if args.i:
-		print('Please note that this scirpt assumes you have python installed on your system and that you are executing this '
-			'file from the main lava folder')
-		print('If running on Mac OS you also need to have brew properly installed')
-		print('currently you are running this install script from:')
+		print('Please note that this script assumes you have python installed on your system and that you are executing this '
+			'file from the main lava folder.')
+		print('If running on Mac OS you also need to have brew properly installed.')
+		print
+		print('Currently you are running this install script from:')
 		subprocess.call('pwd', shell=True)
+		print
 
 		# for super fresh OS systems]
 		if platform.system() == 'Darwin':
@@ -33,7 +35,7 @@ if __name__ == '__main__':
 			subprocess.call('brew install wget', shell = True)
 
 		# Either install pip or upgrade it to the latest version 
-		print('Installing pip')
+		print('Installing pip...')
 		if not os.path.isfile('get-pip.py'):
 			subprocess.call('wget https://bootstrap.pypa.io/get-pip.py', shell=True)
 			subprocess.call('python get-pip.py --user', shell=True)
@@ -51,10 +53,12 @@ if __name__ == '__main__':
 		print('Installing pandas...')
 		subprocess.call('python -m pip install --ignore-installed pandas --user', shell=True)
 		#install('pandas')
-		print('Installing bokeh..')
+		print('Installing bokeh...')
 		subprocess.call('python -m pip install --ignore-installed bokeh --user', shell=True)
 		#install('bokeh')
-		print('Python modules installed')
+		print
+		print('Python modules installed!')
+		print
 
 		
 		# TODO: add detection to only do this if picard.jar isn't found in the main lava folder 
@@ -202,5 +206,7 @@ if __name__ == '__main__':
 		if error_code == 3 and annovar_error ==1:
 			print('Everything working except ANNOVAR which is normal for first time installation - check out the error messeges or the readme for how to install ANNOVAR')
 		if error_code == 0:
+			print
 			print('All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD')
+			print
 
