@@ -526,7 +526,9 @@ if __name__ == '__main__':
 	print('Cleaning up...')
 	if not args.save:
 		clean_up(new_dir)
-
+	num_lines = sum(1 for line in open(new_dir + '/merged.csv'))
+	if num_lines > 5000:
+		print('WARNING: greater than 5,000 lines detected in the final output folder. This may cause browsers to crash when using depth or allele frequncy sliders. If this happens you may need to perform more QC on your reads or on the merged.csv file.')
 	print('Generating visualization...')
 	if os.path.isfile('ngls_test.html'):
 		shutil.copy('ngls_test.html', new_dir)
