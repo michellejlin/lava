@@ -184,10 +184,18 @@ def process(ref_seq_gb, fastq, new_dir):
 	
 	subprocess.call('bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f ' + new_dir + '/lava_ref.fasta ' + new_dir + '/aln.sorted.bam | bcftools call -m -Oz -o ' + 
 		new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
-	subprocess.call('tabix ' + new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
-	# create the consensus and write it to the output folder 
-	subprocess.call('cat ' + new_dir + '/lava_ref.fasta | bcftools consensus ' + new_dir + '/calls.vcf.gz > ' + new_dir + '/consensus.fasta', shell=True)
 
+	subprocess.call('tabix ' + new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
+
+	#filter first so consensus actually takes most common allele
+	subprocess.call('gunzip ' + new_dir + '/calls.vcf.gz', shell=True)
+	subprocess.call('bcftools filter -i \'(DP4[0]+DP4[1]) < (DP4[2]+DP4[3]) && ((DP4[2]+DP4[3]) > 0)\' ' + new_dir + '/calls.vcf -o ' 
+		+ new_dir + '/calls2.vcf 2>>' + new_dir + '/lava.log', shell=True)
+	subprocess.call('bgzip ' + new_dir + '/calls2.vcf 2>> ' + new_dir + '/lava.log', shell=True)
+	subprocess.call('tabix ' + new_dir + '/calls2.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
+
+	# create the consensus and write it to the output folder 
+	subprocess.call('cat ' + new_dir + '/lava_ref.fasta | bcftools consensus ' + new_dir + '/calls2.vcf.gz > ' + new_dir + '/consensus.fasta', shell=True)
 
 	# rewrite fasta with lava as the sequence header so that annovar can match this with the reference .gff
 	fasta = new_dir + '/consensus.fasta'
@@ -392,7 +400,7 @@ if __name__ == '__main__':
 		reference_gff = new_dir + '/' + reference_gff
 
 	elif args.q != None:
-		print('Using -q flag to automatically create reference from control fastq and genbank record.')
+		print('Using -q flag to automatically create reference from control fastq and genbank record...')
 		reference_fasta, reference_gff = process(args.q, control_fastq, new_dir)
 
 	else:
@@ -522,6 +530,9 @@ if __name__ == '__main__':
 			# go through and make sure that we have passage data in the preliminary csv files 
 			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
+
+			#get rid of transcripts in merged.csv
+			subprocess.call('grep -v "transcript" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
 	
 	print('Cleaning up...')
 	if not args.save:

@@ -50,11 +50,11 @@ Once you've got all the required files above collected make a new folder and pla
 
 To run Example 1:
 
-	`python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output`
+	python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output
 
 To run Example 2:
 
-	`python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output`
+	python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
 
 
 Note: currently you must place your files either directly inside the main LAVA folder or inside a folder in the main LAVA folder. 
@@ -75,11 +75,11 @@ Other optional arguments include:
 
 Examining nucleotide changes by type (A -> C, etc.) with the -nuc argument:
 
-	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output`
+	python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output
 
 Removing PCR dupicates from reads with the -dedup argument:
 
-	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output`
+	python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output
 
 For additional help you can also run `python lava.py -help`.
 
