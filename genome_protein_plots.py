@@ -97,6 +97,15 @@ def sliderCallback(ref_source, source, slider, slider_af, syngroup):
 				}
 			}
 		}
+		if (checkbox.active.indexOf(3)>-1) {
+			for (let i = 0; i < ref.data['Depth'].length; i++) {
+				if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
+					for (let b = 0; b < colnames.length; b++) {
+						depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+					}
+				}
+			}
+		}
         depth_sample.change.emit();
     """)
 
@@ -130,6 +139,15 @@ def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose):
 			if (checkbox.active.indexOf(2)>-1) {
 				for (let i = 0; i < ref.data['Depth'].length; i++) {
 					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+			}
+			if (checkbox.active.indexOf(3)>-1) {
+				for (let i = 0; i < ref.data['Depth'].length; i++) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
 						for (let b = 0; b < colnames.length; b++) {
 							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
 						}
@@ -233,7 +251,8 @@ if __name__ == '__main__':
 		"""))
 		ose = TextInput(title='Manually input depth:')
 		
-		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", "Show stopgains and stoplosses"], active=[0,1,2])
+		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", 
+			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
 		
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=5, title='Depth Cutoff')
 		slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
@@ -324,8 +343,9 @@ if __name__ == '__main__':
 		
 		ose = TextInput(title='Manually input depth:')
 		
-		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", "Show stopgains and stoplosses"], active=[0,1,2])
-		
+		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", 
+			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
+					
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=5, title='Depth Cutoff')
 		slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
 		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
