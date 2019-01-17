@@ -16,13 +16,11 @@ import os.path
 gatk_version = 'gatk-4.0.11.0'
 Entrez.email = 'uwvirongs@gmail.com'
 
-VERSION = 'v0.9rs'
+VERSION = 'v0.91'
 
 def check_picard():
-	if os.path.isfile('./picard.jar'):
-		return './picard.jar'
-	elif os.path.isfile('../picard.jar'):
-		return '../picard.jar'
+	if os.path.isfile(dir_path + '/picard.jar'):
+		return dir_path + '/picard.jar'
 	else:
 		print('Picard not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
@@ -31,10 +29,8 @@ def check_picard():
 		sys.exit(1)
 
 def check_gatk():
-	if os.path.isfile('./' + gatk_version + '/gatk'):
-		return './' + gatk_version + '/gatk'
-	elif os.path.isfile('../' + gatk_version + '/gatk'):
-		return '../' + gatk_version + '/gatk'
+	if os.path.isfile(dir_path + '/' + gatk_version + '/gatk'):
+		return dir_path + '/' + gatk_version + '/gatk'
 	else:
 		print('GATK not found - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
@@ -43,12 +39,10 @@ def check_gatk():
 		sys.exit(1)
 
 def check_varscan():
-	if os.path.isfile('./VarScan'):
-		return './VarScan'
-	elif os.path.isfile('../VarScan'):
-		return '../VarScan'
+	if os.path.isfile(dir_path + '/VarScan'):
+		return dir_path + '/VarScan'
 	else:
-		print('VarScan not found - lava is being executed from : ')
+		print('VarScan not found alias lava.py="python `pwd`/lava.py" - lava is being executed from : ')
 		subprocess.call('pwd', shell=True)
 		print('LAVA checked for VarScan in the above folder and the main lava folder.')
 		print('To fix this error download VarScan and unzip it into the main lava directory. NOTE: the jar file needs to be named VarScan - for more in-depth help check out the readme.')
@@ -366,6 +360,8 @@ if __name__ == '__main__':
 	else:
 		png_flag = ''
 
+	dir_path = os.path.dirname(os.path.realpath(__file__))
+
 	# check for picard, gatk, and varscan exit if we can't find them 
 	PICARD = check_picard()
 	GATK = check_gatk()
@@ -446,20 +442,14 @@ if __name__ == '__main__':
 		subprocess.call('samtools mpileup -f ' + reference_fasta + ' ' + sample + '.bam > ' + sample + '.pileup' + ' 2>> ' + 
 			new_dir + '/lava.log', shell=True)
 	# create annovar /db from reference gff 
-	if os.path.isfile('../gff3ToGenePred'):
-		subprocess.call('../gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
-			+ '/lava.log', shell=True)
-	elif os.path.isfile('./gff3ToGenePred'):
-		subprocess.call('./gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
+	if os.path.isfile(dir_path + '/gff3ToGenePred'):
+		subprocess.call(dir_path + '/gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
 			+ '/lava.log', shell=True)
 	else:
 		print('gff3ToGenePred not found - ')
 	# check for these files in both the current directory and one directory up, if not present print helpful error message 
-	if os.path.isfile('../retrieve_seq_from_fasta.pl'):
-		subprocess.call('../retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
-			+ new_dir + '/lava.log', shell=True)
-	elif os.path.isfile('./retrieve_seq_from_fasta.pl'):
-		subprocess.call('./retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
+	if os.path.isfile(dir_path + '/retrieve_seq_from_fasta.pl'):
+		subprocess.call(dir_path + '/retrieve_seq_from_fasta.pl --format refGene --seqfile ' + reference_fasta + ' ' + new_dir + '/AT_refGene.txt --out AT_refGeneMrna.fa 2>> ' 
 			+ new_dir + '/lava.log', shell=True)
 	else:
 		print('retrieve_seq_from_fasta.pl not found, to fix this move these files from ANNOVAR into the main lava directory. For more information and help check out the readme.')
@@ -493,9 +483,9 @@ if __name__ == '__main__':
 			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
 
-			subprocess.call('../convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
 			#annotates all mutations with codon changes
-			subprocess.call('../annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call(dir_path + '/annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
 				subprocess.call('awk -F":" \'($18+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
@@ -549,8 +539,8 @@ if __name__ == '__main__':
 		print('ngls_test.html file not found - 3d crystal structure will not be integrated.')
 
 	# merged, proteins, reads 
-	if os.path.isfile('../genome_protein_plots.py'):
-		subprocess.call('python ../genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
+	if os.path.isfile(dir_path + '/genome_protein_plots.py'):
+		subprocess.call('python ' + dir_path + '/genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
 			new_dir + ' ' + nuc_flag + ' ' + png_flag, shell=True)
 	elif os.path.isfile('genome_protein_plots.py'):
 		subprocess.call('python genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 

@@ -25,6 +25,14 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 5. Run the install script by typing into the terminal window `python install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message `Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.` On certain Linux machines this install script may throw some root errors, but as long as you see this final message, LAVA should work properly!
 
+Now we have to make sure the script can be run from anywhere. Navigate to your main LAVA folder (same as step #3).
+
+1. Type in `vi ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
+2. This will open up an editor in the terminal window. Hit 'G' to get to the bottom of this file.
+3. Now press 'i' to go into insert mode.
+4. Copy paste `alias lava.py="python `pwd`/lava.py"` into the terminal. 
+5. Hit the Esc button, and then type in `:wq!` to save and quit.
+
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
 # Input
