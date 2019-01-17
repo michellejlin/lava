@@ -30,7 +30,7 @@ Now we have to make sure the script can be run from anywhere. Navigate to your m
 1. Type in `vi ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
 2. This will open up an editor in the terminal window. Hit 'G' to get to the bottom of this file.
 3. Now press 'i' to go into insert mode.
-4. Copy paste `alias lava.py="python ``pwd``/lava.py"` into the terminal. 
+4. Copy paste ``alias lava.py="python `pwd`/lava.py"`` into the terminal. 
 5. Hit the Esc button, and then type in `:wq!` to save and quit.
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
