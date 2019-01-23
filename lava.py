@@ -322,7 +322,6 @@ if __name__ == '__main__':
 								   'control fastq, and this consensus will be annotated from the downloaded genbank record as well.')
 	parser.add_argument('-nuc', action='store_true', help='Results are listed as nucleotide changes not amino acid changes. Do not use with -png.')
 	parser.add_argument('-png', action='store_true', help='Output results as a png. Do not use with -nuc.')
-	parser.add_argument('-ptitle', help='Optional flag to allow renaming of plot title.')
 	parser.add_argument('-dedup', action='store_true', help='Optional flag, will perform automatic removal of PCR duplicates via DeDup.')
 	parser.add_argument('control_fastq', help='Required argument: The fastq reads for the first sample in your longitudinal analysis')
 	parser.add_argument('metadata', help='Required argument: A two column csv - the first column is the name of all the fastqs you wish '
@@ -359,7 +358,7 @@ if __name__ == '__main__':
 		png_flag = '-png'
 	else:
 		png_flag = ''
-	plot_title = args.ptitle
+	plot_title = new_dir
 
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 
