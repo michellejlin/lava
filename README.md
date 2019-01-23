@@ -63,7 +63,7 @@ To run Example 1:
 
 To run Example 2:
 
-	/lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
+	lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
 
 
 # Usage
