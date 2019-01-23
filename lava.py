@@ -1,4 +1,4 @@
-# lava Version 0.912
+# lava Version 0.913
 # Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -12,40 +12,11 @@ import time
 from datetime import datetime
 import re
 import os.path
-gatk_version = 'gatk-4.0.11.0'
+from install_check import check_picard, check_gatk, check_varscan
+
 Entrez.email = 'uwvirongs@gmail.com'
 
-VERSION = 'v0.912'
-
-def check_picard():
-	if os.path.isfile(dir_path + '/picard.jar'):
-		return dir_path + '/picard.jar'
-	else:
-		print('Picard not found - lava is being executed from : ')
-		subprocess.call('pwd', shell=True)
-		print('LAVA checked for picard in the above folder and the main lava folder.')
-		print('To fix this error download picard and unzip it into the main lava directory - for more in-depth help check out the readme.')
-		sys.exit(1)
-
-def check_gatk():
-	if os.path.isfile(dir_path + '/' + gatk_version + '/gatk'):
-		return dir_path + '/' + gatk_version + '/gatk'
-	else:
-		print('GATK not found - lava is being executed from : ')
-		subprocess.call('pwd', shell=True)
-		print('LAVA checked for GATK in the above folder and the main lava folder.')
-		print('To fix this error download GATK and unzip it into the main lava directory - for more in-depth help check out the readme.')
-		sys.exit(1)
-
-def check_varscan():
-	if os.path.isfile(dir_path + '/VarScan'):
-		return dir_path + '/VarScan'
-	else:
-		print('VarScan not found alias lava.py="python `pwd`/lava.py" - lava is being executed from : ')
-		subprocess.call('pwd', shell=True)
-		print('LAVA checked for VarScan in the above folder and the main lava folder.')
-		print('To fix this error download VarScan and unzip it into the main lava directory. NOTE: the jar file needs to be named VarScan - for more in-depth help check out the readme.')
-		sys.exit(1)
+VERSION = 'v0.913'
 
 
 # Takes a file path pointing to a fasta file and returns two lists, the first is a list of all the fasta headers and the second is 
@@ -363,9 +334,9 @@ if __name__ == '__main__':
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 
 	# check for picard, gatk, and varscan, exit if we can't find them 
-	PICARD = check_picard()
-	GATK = check_gatk()
-	VARSCAN = check_varscan()
+	PICARD = check_picard(dir_path)
+	GATK = check_gatk(dir_path)
+	VARSCAN = check_varscan(dir_path)
 	# write new output folder 
 	subprocess.call('mkdir -p ' + new_dir, shell=True)
 	# debuggin console print
