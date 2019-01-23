@@ -59,14 +59,12 @@ Once you've got all the required files above collected make a new folder and pla
 
 To run Example 1:
 
-	python ../lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output
+	lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output
 
 To run Example 2:
 
-	python ../lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
+	/lava.py -q MF795094.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
 
-
-Note: currently you must place your files either directly inside the main LAVA folder or inside a folder in the main LAVA folder. 
 
 # Usage
 
@@ -74,23 +72,23 @@ To run LAVA you need to make sure you have placed all the fastq files you want t
 
 1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output:
 	
-	`python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
+	`lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time.
 
-	`python ../lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
+	`lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
 
 Other optional arguments include:
 
 Examining nucleotide changes by type (A -> C, etc.) with the -nuc argument:
 
-	python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output
+	lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output
 
 Removing PCR dupicates from reads with the -dedup argument:
 
-	python ../lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output
+	lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output
 
-For additional help you can also run `python lava.py -help`.
+For additional help you can also run `lava.py -help`.
 
 # Output Files
 
@@ -117,7 +115,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 4. `Picard not found - lava is being executed from : ` (or with GATK or VARSCAN replacing picard in this error)
 
-	This error is generally caused by one of two factors. 1) You didn't run the install.py script or the script was unable to download the appropriate tool or 2) (and this is the more common cause) You're not running LAVA from either the main LAVA directory or inside a folder inside the main LAVA folder. To fix this error create a new folder inside the main LAVA directory (exactly like the example folder). Then place all your files inside this folder cd to the new folder `cd /path/to/lava/new_folder` then execute LAVA as in the examples `python ../lava.py `. 
+	This error is because LAVA couldn't find PICARD in the LAVA folder. Check to see if you ran the install.py script corectly. You can do this by navigating to the LAVA folder and typing in `python install.py -c` to check if all the dependencies are there.
 	
 # GFF Creation Guide
 Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
