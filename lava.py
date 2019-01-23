@@ -1,4 +1,4 @@
-# lava Version 0.911
+# lava Version 0.912
 # Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -8,7 +8,6 @@ from Bio.Blast import NCBIWWW
 from Bio import Entrez
 import shutil
 import sys
-import timeit
 import time
 from datetime import datetime
 import re
@@ -16,7 +15,7 @@ import os.path
 gatk_version = 'gatk-4.0.11.0'
 Entrez.email = 'uwvirongs@gmail.com'
 
-VERSION = 'v0.911'
+VERSION = 'v0.912'
 
 def check_picard():
 	if os.path.isfile(dir_path + '/picard.jar'):
@@ -360,10 +359,11 @@ if __name__ == '__main__':
 		png_flag = '-png'
 	else:
 		png_flag = ''
+	plot_title = args.ptitle
 
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 
-	# check for picard, gatk, and varscan exit if we can't find them 
+	# check for picard, gatk, and varscan, exit if we can't find them 
 	PICARD = check_picard()
 	GATK = check_gatk()
 	VARSCAN = check_varscan()
@@ -405,8 +405,6 @@ if __name__ == '__main__':
 			  'respectively, or use -q to automatically pull a genbank record to use as a reference for your control fastq')
 		sys.exit(1)
 
-	plot_title = args.ptitle
-
 	# move users provided files into new output directory, slow but protects original input 
 	sample_path_list = []
 	for sample in sample_list:
@@ -420,7 +418,7 @@ if __name__ == '__main__':
 
 	subprocess.call('samtools faidx ' + reference_fasta + ' 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call(GATK + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR 2>> ' + new_dir + '/lava.log', shell=True)
-	# debuggin print command 
+	# debugging print command 
 	print(sample_path_list)
 	for sample in sample_path_list:
 
@@ -460,8 +458,8 @@ if __name__ == '__main__':
 	subprocess.call('mkdir ' + new_dir + '/db/', shell=True)
 	subprocess.call('mv AT_refGeneMrna.fa ' + new_dir + '/db/', shell=True)
 	subprocess.call('mv ' + new_dir + '/AT_refGene.txt ' + new_dir + '/db/', shell=True)
-	# TODO: Re-write these in python 
-	# intialzie merged.csv 
+
+	# initialize merged.csv 
 	subprocess.call('echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > ' + 
 		new_dir + '/merged.csv', shell=True)
 
@@ -477,48 +475,66 @@ if __name__ == '__main__':
 		#if sample != control_fastq:
 		if 1 == 1:
 			print('Analyzing variants in sample ' + sample + '...')
+
+			#makes vcf using varscan
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
 
-
+			#cleans up vcf files to fix ploidy issues
 			subprocess.call('mv ' + sample + '.vcf.validation ' + sample + '.vcf', shell=True)
 			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
 
+			#converts to files annovar can accept
 			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
-			#annotates all mutations with codon changes
 			subprocess.call(dir_path + '/annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			if not ref_done:
+				#grabs mutations that are snvs with AF > 1% from the reference vcf into a separate file
 				subprocess.call('awk -F":" \'($18+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
+
+				#grabs data from columns into csv: sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
+				#nuc letter change, type of mutation, depth, 0 (because it's the reference)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
 					+ new_dir + '/ref.txt > ' + new_dir + '/ref.csv', shell=True)
 				# removed this line to attempt to fix duplication of control tabs - RCS
 				#subprocess.call('cat ' + new_dir + '/ref.csv >> ' + new_dir + '/merged.csv', shell=True)
 				subprocess.call('printf ' + control_fastq + '"," > ' + new_dir + '/reads.csv', shell=True)
 
+				#gets reads data for ref sample
 				subprocess.call('samtools flagstat ' + control_fastq + '.bam | awk \'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}\' '
 					'>> ' + new_dir + '/reads.csv  2>> ' + new_dir + '/lava.log', shell=True)
+
+				#gets genome coverage data for ref sample
 				subprocess.call('echo sample	position	cov > ' + sample + '.genomecov', shell=True)
 				subprocess.call('bedtools genomecov -d -ibam ' + sample + '.bam >> ' + sample + '.genomecov 2>> ' + new_dir + '/lava.log', shell=True)
 
 				ref_done = True
 
-
+			#gets genome coverage data for sample
 			subprocess.call('echo \'sample	position	cov\' > ' + sample + '.genomecov', shell=True)
 			subprocess.call('bedtools genomecov -d -ibam ' + sample + '.bam >> ' + sample + '.genomecov 2>> ' + new_dir + '/lava.log', shell=True)
+
+			#gets reads data for sample
 			subprocess.call('printf ' + sample + '"," >> ' + new_dir + '/reads.csv', shell=True)
 			subprocess.call('samtools flagstat ' + sample + '.bam | awk \'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}\' >> ' 
 				+ new_dir + '/reads.csv 2>> ' + new_dir + '/lava.log', shell=True)
-			subprocess.call('awk -F":" \'($24+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
 
+			#grabs SNVs and stops with AF > 1%
+			subprocess.call('awk -F":" \'($24+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
 			subprocess.call('grep "SNV" ' + sample + '.txt > a.tmp ', shell=True)
 			subprocess.call('grep "stop" ' + sample + '.txt >> a.tmp', shell=True)
 			subprocess.call('mv a.tmp ' + sample + '.txt', shell=True)
+
+			#gets sample metadata
 			subprocess.call('SAMPLE="$(awk -F"," -v name=' + sample + ' \'$1==name {print $2}\' ' + metadata_location + ')" ', shell=True)
+
+			#grabs data from columns into csv: sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
+			#nuc letter change, type of mutation, depth, sample metadata
 			subprocess.call('awk -v name=' + sample + ' -v sample=$SAMPLE -F\'[\t:,]\' \'{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}\' ' + 
 				sample + '.txt > ' + sample + '.csv', shell = True)
+
 			# go through and make sure that we have passage data in the preliminary csv files 
 			add_passage(sample + '.csv',passage )
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
