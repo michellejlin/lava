@@ -191,6 +191,8 @@ if __name__ == '__main__':
 	unique_samples = np.sort(merged.Sample.unique())
 	num_Passages = merged['Passage'].max()
 
+	curdoc().title = "fefef"
+
 	TOOLTIPS = [
 		("Amino Acid Change", "@Change"),
 		("Nucleotide Change", "@NucleotideChange"),
@@ -204,6 +206,8 @@ if __name__ == '__main__':
 	for sample_name, merged_Sample in merged.groupby('Sample', sort=False):
 		sample = merged_Sample
 		name = sample_name
+
+		syn_factors = ['nonsynonymous SNV', 'synonymous SNV', 'complex', 'stopgain', 'stoploss']
 		
 		# Plot per base coverage for each sample as a subplot 
 		coverage = pd.read_table(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0)
@@ -225,17 +229,20 @@ if __name__ == '__main__':
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		# this creates console errors when complex mutations are detected, can probobly fix this by adding more colors 
+		#				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
+
+
 		if(args.nuc):
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'LetterChange', line_color='white', line_width=2, line_alpha=1,
-				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
-				hover_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()),
+				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=syn_factors), 
+				hover_color=factor_cmap('LetterChange', palette=color_palette, factors=syn_factors),
 				source=depth_sample, hover_line_color='white')
 		else:
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'Syn', line_color='white', line_width=2, line_alpha=1,
-				fill_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=merged.Syn.unique()), 
-				hover_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=merged.Syn.unique()),
+				fill_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=syn_factors), 
+				hover_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=syn_factors),
 				source=depth_sample, hover_line_color='white')
 		
 		g.add_tools(HoverTool(tooltips=TOOLTIPS))
@@ -282,14 +289,15 @@ if __name__ == '__main__':
 	for protein_name, merged_Protein in merged.groupby('Protein'):
 		protein = merged_Protein
 		name = protein_name
-		
+
 		source_protein = ColumnDataSource(protein)
 		depth_sample_p = ColumnDataSource(data=source_protein.data)
-		#CHANGE RANGE AS NEEDED
+
 		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=protein_name,
- 			x_range=DataRange1d(bounds=(-1,num_Passages+2), start=-1, end=num_Passages+2))
-			#x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
+			title=protein_name, sizing_mode = 'stretch_both',
+ 			x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
+
+ 		#x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
 		#creates list of lists by getting all the xvalues and yvalues for multiline
 		xlist_all = []
@@ -311,7 +319,7 @@ if __name__ == '__main__':
 		#makes visible multiline when hovered over
 		#g.multi_line(xlist_all, ylist_all, color=palette[total_num_mutations:(total_num_mutations+num_mutations)])
 		line = g.multi_line(xlist_all, ylist_all, line_width=2, alpha=0, hover_line_alpha=0.6,
-			hover_line_color="gray", line_cap = 'round', line_dash = 'dotted')
+			hover_line_color="black", line_cap = 'round', line_dash = 'dotted')
 		
 		total_num_mutations+=num_mutations
 		
