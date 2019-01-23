@@ -1,4 +1,4 @@
-# lava Version 0.9rs 
+# lava Version 0.911
 # Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import os.path
 gatk_version = 'gatk-4.0.11.0'
 Entrez.email = 'uwvirongs@gmail.com'
 
-VERSION = 'v0.91'
+VERSION = 'v0.911'
 
 def check_picard():
 	if os.path.isfile(dir_path + '/picard.jar'):
@@ -323,6 +323,7 @@ if __name__ == '__main__':
 								   'control fastq, and this consensus will be annotated from the downloaded genbank record as well.')
 	parser.add_argument('-nuc', action='store_true', help='Results are listed as nucleotide changes not amino acid changes. Do not use with -png.')
 	parser.add_argument('-png', action='store_true', help='Output results as a png. Do not use with -nuc.')
+	parser.add_argument('-ptitle', help='Optional flag to allow renaming of plot title.')
 	parser.add_argument('-dedup', action='store_true', help='Optional flag, will perform automatic removal of PCR duplicates via DeDup.')
 	parser.add_argument('control_fastq', help='Required argument: The fastq reads for the first sample in your longitudinal analysis')
 	parser.add_argument('metadata', help='Required argument: A two column csv - the first column is the name of all the fastqs you wish '
@@ -404,7 +405,8 @@ if __name__ == '__main__':
 			  'respectively, or use -q to automatically pull a genbank record to use as a reference for your control fastq')
 		sys.exit(1)
 
-	
+	plot_title = args.ptitle
+
 	# move users provided files into new output directory, slow but protects original input 
 	sample_path_list = []
 	for sample in sample_list:
@@ -541,10 +543,10 @@ if __name__ == '__main__':
 	# merged, proteins, reads 
 	if os.path.isfile(dir_path + '/genome_protein_plots.py'):
 		subprocess.call('python ' + dir_path + '/genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
-			new_dir + ' ' + nuc_flag + ' ' + png_flag, shell=True)
+			new_dir + ' ' + nuc_flag + ' ' + png_flag + ' ' + plot_title, shell=True)
 	elif os.path.isfile('genome_protein_plots.py'):
 		subprocess.call('python genome_protein_plots.py ' + new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + 
-			new_dir+ ' ' + nuc_flag + ' ' + png_flag, shell=True)
+			new_dir+ ' ' + nuc_flag + ' ' + png_flag + ' ' + plot_title, shell=True)
 	else:
 		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
 		sys.exit(1)
