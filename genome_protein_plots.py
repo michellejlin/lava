@@ -166,6 +166,7 @@ if __name__ == '__main__':
 	parser.add_argument('proteins', help='Internal call pointing to the proteins.csv file created by the main lava script')
 	parser.add_argument('reads', help='Internal call pointing to the reads.csv file created by the main lava script')
 	parser.add_argument('dir', help='Dir created by main lava program')
+	parser.add_argument('ptitle', help='Optional plot title specified by user.')
 	
 	try:
 		args = parser.parse_args()
@@ -191,7 +192,7 @@ if __name__ == '__main__':
 	unique_samples = np.sort(merged.Sample.unique())
 	num_Passages = merged['Passage'].max()
 
-	curdoc().title = "fefef"
+	plot_title = args.ptitle
 
 	TOOLTIPS = [
 		("Amino Acid Change", "@Change"),
@@ -370,7 +371,7 @@ if __name__ == '__main__':
 	
 #can only either have html or pngs because of weird Bokeh voodoo
 	if(args.nuc):
-		output_file("nucleotide_changes.html")
+		output_file("nucleotide_changes.html", title=plot_title)
 		show(tabs_genomes)
 	else:
 		if(args.png):
@@ -379,7 +380,7 @@ if __name__ == '__main__':
 		else:
 			# save output both as standalone HTML file and as a javascript element and a script tag 
 			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
-			output_file(new_dir + "/" + new_dir + "_plots.html")
+			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 			subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
 			# now the file exists
@@ -402,4 +403,3 @@ if __name__ == '__main__':
 			except:
 				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths.')
 				
-
