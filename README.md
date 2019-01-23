@@ -27,10 +27,12 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 Now we have to make sure the script can be run from anywhere. Navigate to your main LAVA folder (same as step #3).
 
+1. Type in `pwd`. This will give you the current path. Copy this path.
 1. Type in `nano ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
 2. This will open up an editor in the terminal window. Scroll down to get to the bottom of this file.
-3. Copy paste ``alias lava.py="python `pwd`/lava.py"`` into the terminal. 
+3. Copy paste ``alias lava.py="python PATH/lava.py"`` into the terminal, where you replace PATH with the path you just copied. An example might look like `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
 5. Hit Ctrl+X to quit out of the editor, and press Enter if a new prompt shows up.
+6. Type in `source ~/.bashrc` (or replace 'bashrc' with 'bash_profile' for Mac OSX), to refresh the file.
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
