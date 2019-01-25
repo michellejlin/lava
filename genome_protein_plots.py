@@ -8,10 +8,9 @@ from bokeh.io import export_png, save
 from bokeh.resources import CDN
 from bokeh.embed import components, file_html, autoload_static
 from bokeh.plotting import figure, show, output_file
-from bokeh.palettes import Dark2, Category20, Category20c, Spectral10, Colorblind
 from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
 from bokeh.models.tickers import FixedTicker
-from bokeh.transform import jitter, factor_cmap, linear_cmap
+from bokeh.transform import jitter, factor_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
@@ -46,6 +45,8 @@ def protein_annotation(first):
 	#adds protein labels as tick marks
 	g.xaxis.ticker = protein_locs
 	g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
+
+	return protein_names
 
 
 #Creates the legend and configures some of the toolbar stuff
@@ -167,6 +168,7 @@ if __name__ == '__main__':
 	parser.add_argument('reads', help='Internal call pointing to the reads.csv file created by the main lava script')
 	parser.add_argument('dir', help='Dir created by main lava program')
 	parser.add_argument('ptitle', help='Optional plot title specified by user.')
+	parser.add_argument('-af', help="Provide a specific allele frequency to cut off.")
 	
 	try:
 		args = parser.parse_args()
@@ -191,7 +193,11 @@ if __name__ == '__main__':
 	unique_samples = merged.Sample.unique()
 	unique_samples = np.sort(merged.Sample.unique())
 	num_Passages = merged['Passage'].max()
+	protein_names = []
 
+	user_af = -123
+	if args.af:
+		user_af = int(args.af)
 	plot_title = args.ptitle
 
 	TOOLTIPS = [
@@ -230,14 +236,14 @@ if __name__ == '__main__':
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		#graphs scatterplot, with different colors for non/synonymous mutations
 		# this creates console errors when complex mutations are detected, can probobly fix this by adding more colors 
-		#				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
+		# fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
 
 
 		if(args.nuc):
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'LetterChange', line_color='white', line_width=2, line_alpha=1,
-				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=syn_factors), 
-				hover_color=factor_cmap('LetterChange', palette=color_palette, factors=syn_factors),
+				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
+				hover_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()),
 				source=depth_sample, hover_line_color='white')
 		else:
 			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
@@ -249,7 +255,7 @@ if __name__ == '__main__':
 		g.add_tools(HoverTool(tooltips=TOOLTIPS))
 		g.xgrid.grid_line_alpha = 0
 		configurePlot()
-		protein_annotation(FIRST)
+		protein_names = protein_annotation(FIRST)
 		FIRST = False
 		g.xaxis.axis_label = "Protein"
 
@@ -263,9 +269,12 @@ if __name__ == '__main__':
 			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
 		
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=5, title='Depth Cutoff')
-		slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
+		if(user_af != -123):
+			slider_af = Slider(start=0, end=100, step=1, value=user_af, title='Allele Frequency Cutoff')
+		else:
+			slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
+		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af,syngroup))
 		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
-		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose ))
 		
@@ -286,6 +295,11 @@ if __name__ == '__main__':
 	plots_genomes = (column(list_plots))
 	
 	total_num_mutations = 0
+	print(merged.groupby('Protein'))
+
+	merged.Protein = merged.Protein.astype("category")
+	merged.Protein.cat.set_categories(protein_names, inplace=True)
+	merged.sort_values(["Protein"])
 	#creates protein plots
 	for protein_name, merged_Protein in merged.groupby('Protein'):
 		protein = merged_Protein
@@ -356,12 +370,19 @@ if __name__ == '__main__':
 			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
 					
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=5, title='Depth Cutoff')
-		slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
+		if(user_af != -123):
+			slider_af = Slider(start=0, end=100, step=1, value=user_af, title='Allele Frequency Cutoff')
+		else:
+			slider_af = Slider(start=0, end=100, step=1, value=5, title='Allele Frequency Cutoff')
 		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		slider_af.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_protein, depth_sample_p, slider, slider_af, syngroup))
 		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose ))
 		g = layout(row([g, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),b])]))
+		
+		# for i, num_protein in enumerate(protein_names):
+		# 	if(name==num_protein):
+		# 		name = str(i) + name
 		tab = Panel(child=g, title=name)
 		list2_tabs.append(tab)
 		list2_plots.append(g)		
@@ -371,7 +392,7 @@ if __name__ == '__main__':
 	
 #can only either have html or pngs because of weird Bokeh voodoo
 	if(args.nuc):
-		output_file("nucleotide_changes.html", title=plot_title)
+		output_file(new_dir + "/" + "nucleotide_changes.html", title=plot_title)
 		show(tabs_genomes)
 	else:
 		if(args.png):
@@ -403,3 +424,4 @@ if __name__ == '__main__':
 			except:
 				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths.')
 				
+
