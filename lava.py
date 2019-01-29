@@ -338,7 +338,7 @@ if __name__ == '__main__':
 		user_af = '-af ' + args.af
 	else:
 		user_af = ''
-	print user_af
+	print(user_af)
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 
 	# check for picard, gatk, and varscan, exit if we can't find them 
