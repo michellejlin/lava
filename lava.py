@@ -1,4 +1,4 @@
-# lava Version 0.914
+# lava Version 0.915
 # Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -12,11 +12,12 @@ import time
 from datetime import datetime
 import re
 import os.path
+import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
 
-VERSION = 'v0.914'
+VERSION = 'v0.915'
 
 
 # Takes a file path pointing to a fasta file and returns two lists, the first is a list of all the fasta headers and the second is 
@@ -338,7 +339,7 @@ if __name__ == '__main__':
 		user_af = '-af ' + args.af
 	else:
 		user_af = ''
-	print(user_af)
+	print (user_af)
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 
 	# check for picard, gatk, and varscan, exit if we can't find them 
@@ -444,6 +445,16 @@ if __name__ == '__main__':
 	# pull annotations for plotting 
 	subprocess.call('grep "ID=transcript:" ' + reference_gff + ' | awk -F\'[\t;:]\' \'{print $12 "," $4 "," $5}\' | sort -t \',\' -k2 -n > ' + 
 		new_dir + '/proteins.csv', shell=True)
+		
+	# checks if protein list has duplicates
+	# if(any(df.duplicated(subset='Protein'))):
+# 		sys.exit("Duplicate protein names found. Use custom GFF without duplicates.")
+
+	df = pd.read_csv(new_dir + "/proteins.csv", names = ["Protein","First", "Last"])
+	col = list(df.Protein)
+	for i in col:
+		if col.count(i) > 1:
+			sys.exit("ERROR: Duplicate protein names found. Use custom GFF file without duplicates.")
 
 	ref_done = False
 	for x in range(0, len(sample_path_list)):
