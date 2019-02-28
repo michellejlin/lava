@@ -119,7 +119,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 5. ``import: not authorized `subprocess' @ error/constitute.c/WriteImage/1028.``
 	
-	Type in `nano ~/.bashrc` or bash_profile for mac, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
+	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
 	
 # GFF Creation Guide
 Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
