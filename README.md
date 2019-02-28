@@ -118,6 +118,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 	This error is because LAVA couldn't find PICARD in the LAVA folder. Check to see if you ran the install.py script corectly. You can do this by navigating to the LAVA folder and typing in `python install.py -c` to check if all the dependencies are there.
 
 5. ``import: not authorized `subprocess' @ error/constitute.c/WriteImage/1028.``
+	
 	Type in `nano ~/.bashrc` or bash_profile for mac, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
 	
 # GFF Creation Guide
