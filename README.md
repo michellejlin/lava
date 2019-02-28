@@ -23,14 +23,14 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 4. [Download ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download_form.php). This program requires registration with a .edu email, or request for access. Once you've recieved access to the annovar download, download and unzip it. Then copy and paste all the files with extension .pl inside the ANNOVAR folder into your main LAVA folder. (There is no need to copy example or humandb.)
 
-5. Run the install script by typing into the terminal window `python install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message `Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.` On certain Linux machines this install script may throw some root errors, but as long as you see this final message, LAVA should work properly!
+5. Run the install script by typing into the terminal window `python install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message: `Installation Complete! The only remaining step is to download ANNOVAR and put all of the files into this folder! For instructions on how to do this see the README.` On certain Linux machines this install script may throw some root errors, but as long as you see this final message, LAVA should work properly!
 
 Now we have to make sure the script can be run from anywhere. Navigate to your main LAVA folder (same as step #3).
 
 1. Type in `pwd`. This will give you the current path. Copy this path.
 1. Type in `nano ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
 2. This will open up an editor in the terminal window. Scroll down to get to the bottom of this file.
-3. Copy paste ``alias lava.py="python PATH/lava.py"`` into the terminal, where you replace PATH with the path you just copied. An example might look like `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
+3. Copy paste ``alias lava.py="python PATH/lava.py"`` into the terminal, where you replace PATH with the path you just copied. An example might look like this: `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
 5. Hit Ctrl+X to quit out of the editor, and press Enter if a new prompt shows up.
 6. Type in `source ~/.bashrc` (or replace 'bashrc' with 'bash_profile' for Mac OSX), to refresh the file.
 
@@ -44,13 +44,13 @@ Example files are included in the 'example' folder. It is HIGHLY recommended you
 
 To run LAVA you need, at a minimum:
 
-1. fastq files for all of your samples, LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`
+1. fastq files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`
 
 2. A fasta file representing the majority consensus of your first sample. There are two options: 1) A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` OR 2) a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `MF795094.1` (This is the Genbank reference for Example 2, included in the example folder.) 
 
 Note: The examples provided are mainly to illustrate how to use either method - fasta and gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC332, and Example1_file2 is CUL332. Example 2 is SC1201 and CUL1201. I have drastically reduced the number of reads in the fastq files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically availibe on SRA. 
 
-3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. `Example1_metadata.csv`
+3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. Take a look at the example metadata file to see the formatting. `Example1_metadata.csv`
 
 
 Once you've got all the required files above collected make a new folder and place all the files into this folder. (This has obviously already been done for the example files). Then execute LAVA from inside this folder. 
@@ -68,15 +68,15 @@ To run Example 2:
 
 # Usage
 
-To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. Then you have two choices for running LAVA:
+To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
 
-1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output:
+1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output (as seen in Example 1):
 	
 	`lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
 
-2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time.
+2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
 
-	`lava.py -f example_reference.fasta -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
+	`lava.py -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
 
 Other optional arguments include:
 
@@ -118,7 +118,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 	This error is because LAVA couldn't find PICARD in the LAVA folder. Check to see if you ran the install.py script corectly. You can do this by navigating to the LAVA folder and typing in `python install.py -c` to check if all the dependencies are there.
 	
 # GFF Creation Guide
-Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
+Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
 
 In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR (for reasons I don't fully understand) requires a VERY strict formatting of these gff files. Therefore, I find that the easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `example.gff`. 
 
