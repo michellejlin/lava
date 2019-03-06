@@ -73,7 +73,7 @@ if __name__ == '__main__':
 			subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
 		if not os.path.isfile('VarScan'):
 			print('Downloading VarScan')
-			subprocess.call('wget https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
+			subprocess.call('wget --no-check-certificate https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
 			subprocess.call('mv download VarScan', shell=True)
 
 		if platform.system() == 'Linux':
