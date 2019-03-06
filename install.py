@@ -17,7 +17,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	if args.i == False and args.c == False:
-		print('try running python install.py -h for some help')
+		print('Try running python install.py -h for some help')
 		sys.exit(1)
 
 	if args.i:
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 		# for super fresh OS systems]
 		if platform.system() == 'Darwin':
-			print('Installing wget')
+			print('Installing wget...')
 			subprocess.call('brew install wget', shell = True)
 
 		# Either install pip or upgrade it to the latest version 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 			subprocess.call('python get-pip.py --user', shell=True)
 
 		print('Installing python modules...')
-		print('First we\'re going to update pip and some other setuptools')
+		print('First we\'re going to update pip and some other setuptools.')
 
 
 		print('Installing biopython...')
@@ -79,11 +79,9 @@ if __name__ == '__main__':
 		if platform.system() == 'Linux':
 			if not os.path.isfile('gff3ToGenePred'):
 				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred', shell=True)
-			subprocess.call('apt-get install bedtools', shell=True)
-			subprocess.call('apt-get install samtools', shell=True)
-			subprocess.call('apt-get install bwa', shell=True)
-			subprocess.call('apt-get install mafft', shell=True)
-			subprocess.call('apt-get install bcftools', shell=True)
+			print
+			print "Some tools require root access."
+			subprocess.call('sudo apt-get install bedtools samtools bwa mafft bcftools', shell=True)
 		elif platform.system() == 'Darwin':
 			if not os.path.isfile('gff3ToGenePred'):
 				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/gff3ToGenePred', shell = True)
@@ -148,7 +146,7 @@ if __name__ == '__main__':
 			error_code += 1
 
 		if not os.path.isfile('./VarScan'):
-			print('LAVA cannot find VarScan in the main LAVA folder')
+			print('LAVA cannot find VarScan in the main LAVA folder.')
 			error_code += 1
 
 		if not os.path.isfile('./gff3ToGenePred'):
