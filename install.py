@@ -63,16 +63,16 @@ if __name__ == '__main__':
 		
 		# TODO: add detection to only do this if picard.jar isn't found in the main lava folder 
 		if not os.path.isfile('picard.jar'):
-			print('Downloading Picard')
+			print('Downloading Picard...')
 			subprocess.call('wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar', shell=True)
 		if not os.path.isdir('gatk-4.0.11.0'):
-			print('Downloading GATK and installing GATK')
+			print('Downloading GATK and installing GATK...')
 			subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
 			subprocess.call('unzip gatk-4.0.11.0.zip', shell=True)
 			# clean up
 			subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
 		if not os.path.isfile('VarScan'):
-			print('Downloading VarScan')
+			print('Downloading VarScan...')
 			subprocess.call('wget --no-check-certificate https://sourceforge.net/projects/varscan/files/latest/download', shell=True)
 			subprocess.call('mv download VarScan', shell=True)
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 			if not os.path.isfile('gff3ToGenePred'):
 				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred', shell=True)
 			print
-			print "Some tools require root access."
+			print("Some tools require root access.")
 			subprocess.call('sudo apt-get install bedtools samtools bwa mafft bcftools', shell=True)
 		elif platform.system() == 'Darwin':
 			if not os.path.isfile('gff3ToGenePred'):
