@@ -203,7 +203,7 @@ if __name__ == '__main__':
 	user_af = -123
 	if args.af:
 		user_af = int(args.af)
-	plot_title = args.ptitle
+	plot_title = args.ptitle.split('/')[-1]
 
 	TOOLTIPS = [
 		("Amino Acid Change", "@Change"),
@@ -301,7 +301,7 @@ if __name__ == '__main__':
 		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
     	
 		# Creates both tabs and different plots for each sample.
-		tab = Panel(child=g, title=name.split('/')[1])
+		tab = Panel(child=g, title=name.split('/')[-1])
 		list_tabs.append(tab)
 		list_plots.append(g)
 	
@@ -365,6 +365,8 @@ if __name__ == '__main__':
 				hover_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),
 				line_color='white', line_width=2, hover_line_color='white', line_alpha=1,legend = 'Change',source=depth_sample_p)
 
+		unique_passages = merged.Passage.unique().tolist()
+		g.xaxis.ticker = FixedTicker(ticks=unique_passages)
 		g.xaxis.axis_label = "Passage"
 		configurePlot()
 		# Don't want the tooltips to show up for multiline, so makes separate hovertools for each glyph.
@@ -418,7 +420,7 @@ if __name__ == '__main__':
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
 			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
-			subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
+			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
 			plot_file = open(new_dir + '/' + new_dir + '_plots.html')
 			viewer_code_file = open(new_dir + '/' + 'ngls_test.html')
