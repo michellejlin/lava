@@ -1,4 +1,4 @@
-## lava Version 0.916
+## lava Version 0.917
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.916'
+VERSION = 'v0.917'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -338,11 +338,6 @@ if __name__ == '__main__':
 	else:
 		user_af = ''
 
-	# Checks for picard, gatk, and varscan, and exits if we can't find them.
-	PICARD = check_picard(dir_path)
-	GATK = check_gatk(dir_path)
-	VARSCAN = check_varscan(dir_path)
-
 	# Writes new output folder.
 	subprocess.call('mkdir -p ' + new_dir, shell=True)
 
@@ -351,6 +346,11 @@ if __name__ == '__main__':
 	metadata_location = args.metadata
 	control_fastq = args.control_fastq
 	sample_list, sample_time_list = read_metadata(metadata_location)
+
+	# Checks for picard, gatk, and varscan, and exits if we can't find them.
+	PICARD = check_picard(dir_path)
+	GATK = check_gatk(dir_path)
+	VARSCAN = check_varscan(dir_path)
 
 	# Copies fastqs to new directory - slow but protects user data from the insanity that is about to occur.
 	subprocess.call('cp ' + control_fastq + ' ' + new_dir + '/', shell=True)
@@ -558,12 +558,9 @@ if __name__ == '__main__':
 
 	# Pipeline is done! Now on to the visualization.
 	print('Generating visualization...')
-	if os.path.isfile('ngls_test.html'):
-		shutil.copy('ngls_test.html', new_dir)
-	elif os.path.isfile('../ngls_test.html'):
-		subprocess.call('cp ../ngls_test.html .', shell=True)
-	else:
-		print('ngls_test.html file not found - 3D crystal structure will not be integrated.')
+
+	# Copies the ngls_test.html into the new directory.
+	shutil.copy(dir_path + '/ngls_test.html', new_dir)
 
 	# Calls visualizer genome_protein_plots.py depending on what directory the user is in.
 	## merged, proteins, reads 
