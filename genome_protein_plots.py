@@ -287,9 +287,12 @@ if __name__ == '__main__':
 		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose ))
+
+		# When mousing over Bokeh plot, allele frequency updated to user input.
 		if(user_af!= -123):
 			slider_af.value = user_af
-			g.js_on_event(events.PlotEvent, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+			# g.js_on_event(events.PlotEvent, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+			g.js_on_event(events.MouseEnter, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 
 		# Creates labels with read information
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
