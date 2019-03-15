@@ -53,11 +53,11 @@ Note: The examples provided are mainly to illustrate how to use either method - 
 3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. Take a look at the example metadata file to see the formatting. `Example1_metadata.csv` 
 
 
-Once you've got all the required files above collected make a new folder and place all the files into this folder. (This has obviously already been done for the example files). NOTE: The metadata file MUST be in the folder LAVA is executed from, because LAVA takes the sample names from the metadata file to search for the .fastqs. This means the metadata file can be in the folder and contain sample names like "Sample1.fastq, Sample2.fastq" or the sample names can be paths to the different fastq files.
+Once you've got all the required files above collected make a new folder and place all the files into this folder. (This has obviously already been done for the example files). 
 
-Execute LAVA from inside this folder. 
+NOTE: The metadata file MUST be in the folder LAVA is executed from, because LAVA takes the sample names from the metadata file to search for the .fastqs. This means the metadata file can be in the folder and contain sample names like "Sample1.fastq, Sample2.fastq" or the sample names can be paths to the different fastq files.
 
-`cd /User/uwvirongs/Downloads/LAVA/example/` 
+We strongly recommend running the examples to see how it works. To do this, navigate to the example folder inside your downloaded LAVA folder. For example, this may look like: `cd /User/uwvirongs/Downloads/LAVA/example/`.
 
 To run Example 1:
 
