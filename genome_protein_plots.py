@@ -425,21 +425,6 @@ if __name__ == '__main__':
 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
-			plot_file = open(new_dir + '/' + new_dir + '_plots.html')
-			viewer_code_file = open(new_dir + '/' + 'ngls_test.html')
-			new_file = open(new_dir + '/' + new_dir + '_plots_and_viewer.html', 'w')
-			script_tag_count = 0
-			for line in plot_file:
-				new_file.write(line)
-				if line.strip() == '</script>':
-					script_tag_count += 1 
-				if script_tag_count == 3:
-					for line_two in viewer_code_file:
-						new_file.write(line_two)
-			plot_file.close()
-			viewer_code_file.close()
-			new_file.close()
-
 			# Automatically opens output file, otherwise prints error message.
 			try:
 				show(column(tabs_genomes, tabs_proteins))
