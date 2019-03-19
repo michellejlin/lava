@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.917'
+VERSION = 'v0.918'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -558,9 +558,6 @@ if __name__ == '__main__':
 
 	# Pipeline is done! Now on to the visualization.
 	print('Generating visualization...')
-
-	# Copies the ngls_test.html into the new directory.
-	shutil.copy(dir_path + '/ngls_test.html', new_dir)
 
 	# Calls visualizer genome_protein_plots.py depending on what directory the user is in.
 	## merged, proteins, reads 
