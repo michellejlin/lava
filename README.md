@@ -96,8 +96,6 @@ For additional help you can also run `lava.py -help`.
 
 Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
 
-Another file is created which contains an integrated viewer provided by NGL (provided graciously under the MIT licence - which is the same as this software). The source code is available at https://github.com/arose/ngl.
-
 Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
 
 You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (i.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.) These files are automatically deleted by defualt, but to save them run lava with the `-save` option.
