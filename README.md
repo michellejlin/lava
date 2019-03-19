@@ -105,7 +105,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 # Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
 
-	This error will occur when annovar finds an error in an open reading frame. This is most often due to an incorrect gff file. (If the start and stop positions for a protein is wrong annovar will detect this and produce this error). Therefore the solution is to make sure the protein start and stops in your gff file are in the correct location nucleotide position should be relative to the matching fasta file. 
+	This error will occur when annovar finds an error in an open reading frame. This is most often due to an incorrect gff file. (If the start and stop positions for a protein is wrong annovar will detect this and produce this error). Therefore the solution is to make sure the protein start and stops in your gff file are in the correct location nucleotide position should be relative to the matching fasta file. This will also occur when there is a early stop codon.
 	
 2. `Can't find annotation record "transcript:3D" referenced by "3D" Parent attribute`
 
@@ -127,10 +127,14 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 	Make sure your terminal is based in the directory with your metadata file and fastq files! You can type `pwd` to check where your terminal is located. 
 	
+7. ``WARNING: Unable to retrieve regions at Example1_ref due to lack of sequence information. WARNING: Cannot identify sequence for transcript:L (starting from Example1_ref:8590). WARNING: Cannot identify sequence for gene:L (starting from Example1_ref:8590)``
+
+	Examine your reference fasta and reference gff files. Make sure that internally, both have the same name as the file name. For example, the first column of Example1_ref.gff must say Example1_ref.
+
 # GFF Creation Guide
 Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
 
-In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR (for reasons I don't fully understand) requires a VERY strict formatting of these gff files. Therefore, I find that the easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `example.gff`. 
+In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR (for reasons I don't fully understand) requires a VERY strict formatting of these gff files. Therefore, I find that the easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `Example1_ref.gff`. 
 
 To do this you first need to have your start and end nucleotide postitions for your protein locations - these must be relative to the start of the provided reference fasta. (So if you're using a reference fasta that you added 200 Ns to the start of the sequence, all protein starts and stops would need to be increased by 200). 
 
