@@ -1,4 +1,4 @@
-# install sript for all dependencies except for annovar
+# install script for all dependencies except for annovar
 import platform
 import sys
 import subprocess
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='LAVA install script. Once you have Python and an internet connection '
 		'and Brew if running on a Mac, use this script to install almost all dependencies')
 	parser.add_argument('-i',action='store_true', help='Use -i to download and install all dependencies')
-	parser.add_argument('-c',action='store_true', help ='Use -c to check that all dependencies are avalible to LAVA')
+	parser.add_argument('-c',action='store_true', help ='Use -c to check that all dependencies are available to LAVA')
 	gatk_version = 'gatk-4.0.11.0/'
 
 	args = parser.parse_args()
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 		subprocess.call('pwd', shell=True)
 		print
 
-		# for super fresh OS systems]
+		# For super fresh OS systems
 		if platform.system() == 'Darwin':
 			print('Installing wget...')
 			subprocess.call('brew install wget', shell = True)
@@ -40,22 +40,18 @@ if __name__ == '__main__':
 			subprocess.call('wget https://bootstrap.pypa.io/get-pip.py', shell=True)
 			subprocess.call('python get-pip.py --user', shell=True)
 
+		# Installing python modules
 		print('Installing python modules...')
 		print('First we\'re going to update pip and some other setuptools.')
 
-
 		print('Installing biopython...')
 		subprocess.call('python -m pip install biopython --user', shell=True)
-		#install('biopython')
 		print('Installing numpy...')
 		subprocess.call('python -m pip install numpy --user ', shell=True)
-		#install('numpy')
 		print('Installing pandas...')
 		subprocess.call('python -m pip install --ignore-installed pandas --user', shell=True)
-		#install('pandas')
 		print('Installing bokeh...')
 		subprocess.call('python -m pip install --ignore-installed bokeh --user', shell=True)
-		#install('bokeh')
 		print
 		print('Python modules installed!')
 		print
@@ -94,19 +90,19 @@ if __name__ == '__main__':
 
 	# This way we support doing both -i and -c one after the other to install and check in one execution 
 	if args.c:
-		# if this is still 0 at the end of this block then we know there's nothing fishy about the enviornment 
+		# if this is still 0 at the end of this block then we know there's nothing fishy about the environment 
 		error_code = 0 
 		annovar_error = 0
 		try:
 			from Bio.Seq import Seq
 		except ImportError:
-			print('Biopython not correctly installed! - Specifically Bio.Seq is not avalible to Python')
+			print('Biopython not correctly installed! - Specifically Bio.Seq is not available to Python')
 			error_code += 1
 
 		try: 
 			from Bio.Blast import NCBIWWW 
 		except ImportError:
-			print('Biopython not correctly installed! - Specifically Bio.Blast is not avalible')
+			print('Biopython not correctly installed! - Specifically Bio.Blast is not available')
 			error_code += 1
 
 		try:
@@ -130,7 +126,7 @@ if __name__ == '__main__':
 		try:
 			import bokeh
 		except ImportError:
-			print('bokeh python module not correctly installed')
+			print('bokeh python module not correctly installed!')
 			error_code += 1
 
 
@@ -151,23 +147,23 @@ if __name__ == '__main__':
 
 		if not os.path.isfile('./gff3ToGenePred'):
 			print('gff3ToGenePred not in the main LAVA folder. NOTE: if you are receiving errors related to this file but you have '
-				'verifed that it is in the main LAVA folder you might try runing \'chmod +x gff3ToGenePred\' from inside the main LAVA '
+				'verified that it is in the main LAVA folder you might try running \'chmod +x gff3ToGenePred\' from inside the main LAVA '
 				'directory')
 			error_code += 1
 
 		if not os.path.isfile('./retrieve_seq_from_fasta.pl'):
-			print('retrieve_seq_from_fasta.pl not avalible in the main LAVA directory - this means that you have yet to download ANNOVAR '
+			print('retrieve_seq_from_fasta.pl not available in the main LAVA directory - this means that you have yet to download ANNOVAR '
 				'and place it into the main LAVA directory. To fix this error check out the readme or simply go to '
 				'http://www.openbioinformatics.org/annovar/annovar_download_form.php and request acsess, download, unzip and place all '
 				'files into the main LAVA directory')
 			error_code += 1
 			annovar_error =1
 		if not os.path.isfile('./convert2annovar.pl'):
-			print('Another ANOVAR scirpt (convert2annovar.pl)is missing, to fix download and unzip all ANNOVAR files to main LAVA directory')
+			print('Another ANNOVAR scirpt (convert2annovar.pl)is missing, to fix download and unzip all ANNOVAR files to main LAVA directory')
 			error_code += 1
 			annovar_error = 1
 		if not os.path.isfile('annotate_variation.pl'):
-			print('Another ANNOVAR script (annotate_variation.pl) is missing to fix download and uzip all ANNOVAR files to main LAVA directory')
+			print('Another ANNOVAR script (annotate_variation.pl) is missing to fix download and unzip all ANNOVAR files to main LAVA directory')
 			error_code += 1
 			annovar_error = 1
 
