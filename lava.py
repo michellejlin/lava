@@ -491,7 +491,11 @@ if __name__ == '__main__':
 			if not ref_done:
 
 				# Grabs mutations that are SNVs with AF > 1% from the reference vcf into a separate file.
-				subprocess.call('awk -F":" \'($18+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
+				if user_af=='':
+					subprocess.call('awk -F":" \'($18+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
+				# Filters data by user specified allele frequency.
+				else:
+					subprocess.call('awk -v af=' + args.af + ' -F":" \'($18+0)>=' + args.af + '{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 
 				# Grabs data from columns into csv: sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
@@ -523,7 +527,11 @@ if __name__ == '__main__':
 				+ new_dir + '/reads.csv 2>> ' + new_dir + '/lava.log', shell=True)
 
 			# Grabs SNVs and stops with AF > 1%.
-			subprocess.call('awk -F":" \'($24+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
+			if user_af=='':
+				subprocess.call('awk -F":" \'($24+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
+			# Filters data by user specified allele frequency.
+			else:
+				subprocess.call('awk -v af=' + args.af + ' -F":" \'($24+0)>=' + args.af+ '{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
 			subprocess.call('grep "SNV" ' + sample + '.txt > a.tmp ', shell=True)
 			subprocess.call('grep "stop" ' + sample + '.txt >> a.tmp', shell=True)
 			subprocess.call('mv a.tmp ' + sample + '.txt', shell=True)
