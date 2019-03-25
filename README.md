@@ -129,7 +129,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 	Examine your reference fasta and reference gff files. Make sure that internally, both have the same name as the file name. For example, the first column of Example1_ref.gff must say Example1_ref.
 	
-8. ``My genome_protein_plots and merged.csv file is blank. Help!``
+8. *My genome_protein_plots and merged.csv file is blank. Help!*
 
 	This can be caused by a number of different factors. Most likely it is a GFF issue. Make sure you are following the GFF creation guide closely. Some of the most common problems that should be fixed are: 
 	* Make sure you have gene, CDS, and transcript for all your proteins.
