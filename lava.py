@@ -1,4 +1,4 @@
-## lava Version 0.917
+## lava Version 0.919
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.918'
+VERSION = 'v0.919'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
