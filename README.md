@@ -128,6 +128,15 @@ You can also examine the alignments and read mapping of each of your fastq files
 7. ``WARNING: Unable to retrieve regions at Example1_ref due to lack of sequence information. WARNING: Cannot identify sequence for transcript:L (starting from Example1_ref:8590). WARNING: Cannot identify sequence for gene:L (starting from Example1_ref:8590)``
 
 	Examine your reference fasta and reference gff files. Make sure that internally, both have the same name as the file name. For example, the first column of Example1_ref.gff must say Example1_ref.
+	
+8. ``My genome_protein_plots and merged.csv file is blank. Help!``
+
+	This can be caused by a number of different factors. Most likely it is a GFF issue. Make sure you are following the GFF creation guide closely. Some of the most common problems that should be fixed are: 
+	* Make sure you have gene, CDS, and transcript for all your proteins.
+	* CDS should be in all caps.
+	* For all CDS, make sure there is a `Parent=transcript:`, and for all transcripts, make sure there is a `Parent=gene:` in the last column. Look at the GFF guide for how to format this.
+	* For all CDS, make sure the phase is set to "0". This is the second to last column. Everyything else (genes, transcripts) should have the phase set to "."
+
 
 # GFF Creation Guide
 Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
