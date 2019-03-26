@@ -37,19 +37,35 @@ def protein_annotation(first):
 		else:
 			x2 = proteins.iloc[(i+1),1]
 		if(i%2==0):
-			g.add_layout(BoxAnnotation(left=x1, right=x2, fill_alpha=0.1, fill_color='green'))
+			genome_plot.add_layout(BoxAnnotation(left=x1, right=x2, fill_alpha=0.1, fill_color='green'))
 		protein_locs.append((x1+x2)/2)
 		protein_names.append(proteins.iloc[i,0])
 
 	# Adds protein labels as tick marks.
-	g.xaxis.ticker = protein_locs
-	g.xaxis.major_label_overrides = dict(zip(protein_locs, protein_names))
+	genome_plot.xaxis.ticker = protein_locs
+	protein_locs2 = []
+	for protein_loc in protein_locs:
+		str_protein_loc = str(protein_loc)
+		print("old str_protein_loc" + str_protein_loc)
+		if ".0" in str_protein_loc:
+			str_protein_loc = str_protein_loc.split('.')[0]
+			print("split" + str_protein_loc)
+			protein_locs2.append(int(str_protein_loc))
+		else:
+			protein_locs2.append(float(str_protein_loc))
+
+	print(protein_locs2)
+	print(protein_names)
+	genome_plot.xaxis.major_label_overrides = dict(zip(protein_locs2, protein_names))
+	output_file(new_dir + "_plots.html", title=plot_title)
+	save(genome_plot)
+
 
 	return protein_names
 
 
 #Creates the legend and configures some of the toolbar stuff.
-def configurePlot():
+def configurePlot(g):
 	g.legend.location = "top_right"
 	# Adjusts size of scatter points within legend.
 	g.legend.glyph_width = 35
@@ -230,8 +246,8 @@ if __name__ == '__main__':
 		cov_sample.data['position'].astype(float)
 		cov_val_sample = ColumnDataSource(data=cov_sample.data)
 		
-		f = figure(plot_width=400, plot_height=200, title='Coverage')
-		f.line(x='position', y='cov',source=cov_val_sample)
+		cov_graph = figure(plot_width=400, plot_height=200, title='Coverage')
+		cov_graph.line(x='position', y='cov',source=cov_val_sample)
 		
 		# Initializes sample data.
 		source_sample = ColumnDataSource(merged_Sample)
@@ -240,36 +256,38 @@ if __name__ == '__main__':
 
 		# Creates a graph with x-axis being genome length (based on protein csv).
 		## Took out active_scroll = "wheel_zoom" -RCS
-		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
+		genome_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 			title=sample_name.split('/')[1], sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 
+		
 		# Plots by nucleotide letter change.
 		if(args.nuc):
-			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
+			genome_plot.circle(x='Position', y=jitter('AF', width=2, range=genome_plot.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'LetterChange', line_color='white', line_width=2, line_alpha=1,
 				fill_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()), 
 				hover_color=factor_cmap('LetterChange', palette=color_palette, factors=merged.LetterChange.unique()),
 				source=depth_sample, hover_line_color='white')
 		# Plots by amino acid change type.
 		else:
-			g.circle(x='Position', y=jitter('AF', width=2, range=g.y_range), size=15, alpha=0.6, hover_alpha=1, 
+			genome_plot.circle(x='Position', y=jitter('AF', width=2, range=genome_plot.y_range), size=15, alpha=0.6, hover_alpha=1, 
 				legend = 'Syn', line_color='white', line_width=2, line_alpha=1,
 				fill_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=syn_factors), 
 				hover_color=factor_cmap('Syn', palette=['firebrick', 'cornflowerblue', 'green', 'purple', 'yellow'], factors=syn_factors),
 				source=depth_sample, hover_line_color='white')
 		
 		# Sets up visualization and hover tool.
-		g.add_tools(HoverTool(tooltips=TOOLTIPS))
-		g.xgrid.grid_line_alpha = 0
-		configurePlot()
+		genome_plot.add_tools(HoverTool(tooltips=TOOLTIPS))
+		genome_plot.xgrid.grid_line_alpha = 0
+		configurePlot(genome_plot)
 		protein_names = protein_annotation(FIRST)
+		print("finished first time")
 		FIRST = False
-		g.xaxis.axis_label = "Protein"
+		genome_plot.xaxis.axis_label = "Protein"
 
 		# Creates button that allows reset of plot to original state.
-		b = Button(label="Reset Plot")
-		b.js_on_click(CustomJS(args=dict(g=g), code="""
+		reset_button = Button(label="Reset Plot")
+		reset_button.js_on_click(CustomJS(args=dict(g=genome_plot), code="""
 			g.reset.emit()
 		"""))
 
@@ -292,7 +310,7 @@ if __name__ == '__main__':
 		if(user_af!= -123):
 			slider_af.value = user_af
 			# g.js_on_event(events.PlotEvent, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
-			g.js_on_event(events.MouseEnter, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+			genome_plot.js_on_event(events.MouseEnter, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
 
 		# Creates labels with read information
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
@@ -301,12 +319,12 @@ if __name__ == '__main__':
 			"""+str(reads_info.iloc[0]["Percentage"])+"""</font>""", width=300, height=100)
 		
 		# Plots layout of all components.
-		g = layout(row([g, column([Div(text="""""", width=300, height=220),f,ose, slider, slider_af, syngroup, widgetbox(div),b])]))
+		genome_plot = layout(row([genome_plot, column([Div(text="""""", width=300, height=220),cov_graph,ose, slider, slider_af, syngroup, widgetbox(div),reset_button])]))
     	
 		# Creates both tabs and different plots for each sample.
-		tab = Panel(child=g, title=name.split('/')[-1])
+		tab = Panel(child=genome_plot, title=name.split('/')[-1])
 		list_tabs.append(tab)
-		list_plots.append(g)
+		list_plots.append(genome_plot)
 	
 	tabs_genomes = Tabs(tabs=list_tabs)
 	plots_genomes = (column(list_plots))
@@ -330,57 +348,31 @@ if __name__ == '__main__':
 		source_protein = ColumnDataSource(protein)
 		depth_sample_p = ColumnDataSource(data=source_protein.data)
 
-		g = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
+		protein_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 			title=protein_name, sizing_mode = 'stretch_both',
  			x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
  		## x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
-		# Creates list of lists by getting all the xvalues and yvalues for multiline
-		xlist_all = []
-		ylist_all = []
-		protein_mut = merged.loc[merged['Protein']==protein_name]
-		
-		num_mutations = 0
-		unique_mutations = (protein_mut.groupby('Change')[['Passage', 'AF']].apply(lambda x: x.values.tolist()))
-		for unique_mutation in unique_mutations:
-			xlist = []
-			ylist = []
-			for individual in unique_mutation:
-				xlist.append(individual[0])
-				ylist.append(individual[1])
-			xlist_all.append(xlist)
-			ylist_all.append(ylist)
-			num_mutations+=1
-		
-		# Makes visible multiline when hovered over.
-		line = g.multi_line(xlist_all, ylist_all, line_width=2, alpha=0, hover_line_alpha=0.6,
-			hover_line_color="black", line_cap = 'round', line_dash = 'dotted')
-		total_num_mutations+=num_mutations
-		
 		# Increases jitter to increase visibility when using -png.
 		if (args.png):
-			circle = g.circle(x=jitter('Passage',width=0.35, range=g.x_range), y='AF', size=15, alpha=0.8,
+			circle = protein_plot.circle(x=jitter('Passage',width=0.35, range=protein_plot.x_range), y='AF', size=15, alpha=0.8,
 				fill_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),
 				line_color='white', line_width=2, line_alpha=1,legend = 'Change',source=depth_sample_p)
 		else:
-			circle = g.circle(x=jitter('Passage',width=0.08), y='AF', size=15, alpha=0.7, hover_alpha = 1,
+			circle = protein_plot.circle(x=jitter('Passage',width=0.08), y='AF', size=15, alpha=0.7, hover_alpha = 1,
 				fill_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()), 
 				hover_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),
 				line_color='white', line_width=2, hover_line_color='white', line_alpha=1,legend = 'Change',source=depth_sample_p)
 
 		unique_passages = merged.Passage.unique().tolist()
-		g.xaxis.ticker = FixedTicker(ticks=unique_passages)
-		g.xaxis.axis_label = "Passage"
-		configurePlot()
-		# Don't want the tooltips to show up for multiline, so makes separate hovertools for each glyph.
-		ht = HoverTool(renderers=[circle], tooltips=TOOLTIPS)
-		ht2 = HoverTool(renderers=[line], tooltips=None)
-		g.tools.append(ht)
-		g.tools.append(ht2)
+		protein_plot.xaxis.ticker = FixedTicker(ticks=unique_passages)
+		protein_plot.xaxis.axis_label = "Passage"
+		configurePlot(protein_plot)
+		protein_plot.add_tools(HoverTool(tooltips=TOOLTIPS))
 		
 		# Creates button to allow reset of plot.
-		b = Button(label="Reset Plot")
-		b.js_on_click(CustomJS(args=dict(g=g), code="""
+		reset_button = Button(label="Reset Plot")
+		reset_button.js_on_click(CustomJS(args=dict(g=protein_plot), code="""
 			g.reset.emit()
 		"""))
 		
@@ -403,10 +395,10 @@ if __name__ == '__main__':
 		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose ))
 		
 		# Lays out the different components.
-		g = layout(row([g, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),b])]))
-		tab = Panel(child=g, title=name)
+		protein_plot = layout(row([protein_plot, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),reset_button])]))
+		tab = Panel(child=protein_plot, title=name)
 		list2_tabs.append(tab)
-		list2_plots.append(g)		
+		list2_plots.append(protein_plot)		
 	
 	tabs_proteins = Tabs(tabs=list2_tabs)
 	plots_proteins = (column(list2_plots))
@@ -422,9 +414,9 @@ if __name__ == '__main__':
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
 			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
-			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
-			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
-			save(column(tabs_genomes, tabs_proteins))
+# 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
+# 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
+# 			save(column(tabs_genomes, tabs_proteins))
 			# Automatically opens output file, otherwise prints error message.
 			try:
 				show(column(tabs_genomes, tabs_proteins))
