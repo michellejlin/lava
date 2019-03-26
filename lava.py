@@ -552,6 +552,9 @@ if __name__ == '__main__':
 
 			# Gets rid of "transcript"s in merged.csv.
 			subprocess.call('grep -v "transcript" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
+
+			# Gets rid of "delins" in merged.csv
+			subprocess.call('grep -v "delins" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
 	
 	# Removes intermediate files (default behavior), unless otherwise specified by -save.
 	print('Cleaning up...')
@@ -570,10 +573,10 @@ if __name__ == '__main__':
 	# Calls visualizer genome_protein_plots.py depending on what directory the user is in.
 	## merged, proteins, reads 
 	if os.path.isfile(dir_path + '/genome_protein_plots.py'):
-		subprocess.call('python ' + dir_path + '/genome_protein_plots.py ' + nuc_flag + ' ' + png_flag + ' ' + user_af + ' ' +
+		subprocess.call('python3 ' + dir_path + '/genome_protein_plots.py ' + nuc_flag + ' ' + png_flag + ' ' + user_af + ' ' +
 			new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + new_dir + ' ' + plot_title, shell=True)
 	elif os.path.isfile('genome_protein_plots.py'):
-		subprocess.call('python genome_protein_plots.py ' + nuc_flag + ' ' + png_flag + ' ' + user_af + ' ' +
+		subprocess.call('python3 genome_protein_plots.py ' + nuc_flag + ' ' + png_flag + ' ' + user_af + ' ' +
 			+ new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + new_dir+ ' ' + plot_title, shell=True)
 	else:
 		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
