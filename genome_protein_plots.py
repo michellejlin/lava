@@ -46,24 +46,20 @@ def protein_annotation(first):
 	protein_locs2 = []
 	for protein_loc in protein_locs:
 		str_protein_loc = str(protein_loc)
-		print("old str_protein_loc" + str_protein_loc)
+		#print("old str_protein_loc" + str_protein_loc)
 		if ".0" in str_protein_loc:
 			str_protein_loc = str_protein_loc.split('.')[0]
-			print("split" + str_protein_loc)
+			#print("split" + str_protein_loc)
 			protein_locs2.append(int(str_protein_loc))
 		else:
 			protein_locs2.append(float(str_protein_loc))
-
-	print(protein_locs2)
-	print(protein_names)
+			
+	#print(protein_locs2)
+	#print(protein_names)
 	genome_plot.xaxis.major_label_overrides = dict(zip(protein_locs2, protein_names))
-	output_file(new_dir + "_plots.html", title=plot_title)
-	save(genome_plot)
-
-
 	return protein_names
 
-
+	
 #Creates the legend and configures some of the toolbar stuff.
 def configurePlot(g):
 	g.legend.location = "top_right"
@@ -228,7 +224,7 @@ if __name__ == '__main__':
 		("Depth", "@Depth"),
 	]
 	FIRST = True
-
+	
 
 	# Create genome plots.
 	# These graphs plot genome position on the x-axis (indicated by proteins), and allele frequency on the y-axis. Tabs allow
@@ -241,7 +237,7 @@ if __name__ == '__main__':
 		syn_factors = ['nonsynonymous SNV', 'synonymous SNV', 'complex', 'stopgain', 'stoploss']
 		
 		# Plot per base coverage for each sample as a subplot to the side.
-		coverage = pd.read_table(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0)
+		coverage = pd.read_csv(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0, sep='\t')
 		cov_sample = ColumnDataSource(coverage)
 		cov_sample.data['position'].astype(float)
 		cov_val_sample = ColumnDataSource(data=cov_sample.data)
@@ -281,7 +277,7 @@ if __name__ == '__main__':
 		genome_plot.xgrid.grid_line_alpha = 0
 		configurePlot(genome_plot)
 		protein_names = protein_annotation(FIRST)
-		print("finished first time")
+		#print("finished first time")
 		FIRST = False
 		genome_plot.xaxis.axis_label = "Protein"
 
@@ -370,6 +366,7 @@ if __name__ == '__main__':
 		configurePlot(protein_plot)
 		protein_plot.add_tools(HoverTool(tooltips=TOOLTIPS))
 		
+		
 		# Creates button to allow reset of plot.
 		reset_button = Button(label="Reset Plot")
 		reset_button.js_on_click(CustomJS(args=dict(g=protein_plot), code="""
@@ -413,10 +410,11 @@ if __name__ == '__main__':
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
+			output_file(new_dir + "_plots.html", title=plot_title)
 			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
-# 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
+#			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 # 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
-# 			save(column(tabs_genomes, tabs_proteins))
+			save(column(tabs_genomes, tabs_proteins))
 			# Automatically opens output file, otherwise prints error message.
 			try:
 				show(column(tabs_genomes, tabs_proteins))
