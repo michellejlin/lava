@@ -1,4 +1,4 @@
-## lava Version 0.919
+## lava Version 0.92
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.919'
+VERSION = 'v0.92'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -33,6 +33,7 @@ def read_fasta(fasta_file_loc):
                 genome_list.append(dna_string)
                 dna_string = ''
         else:
+
             dna_string += line.strip()
     genome_list.append(dna_string.replace('U', 'T'))
     return strain_list, genome_list
@@ -104,7 +105,7 @@ def read_metadata(filepath):
 			first = False
 		# Protects against empty lines
 		elif ',' in line:
-			print(line)
+			#print(line)
 			sample_list.append(line.split(',')[0])
 			sample_time_list.append(line.split(',')[1])
 
@@ -176,7 +177,7 @@ def process(ref_seq_gb, fastq, new_dir):
 
 	# Pulls CDS annotations from downloaded genbank file 
 	for line in open(new_dir + '/lava_ref.gbk'):
-		if ' CDS ' in line:
+		if 'CDS' in line and '..' in line:
 			gene_loc_list.append(re.findall(r'\d+', line))
 			allow_one = True
 		if '/product="' in line and allow_one:
@@ -184,7 +185,8 @@ def process(ref_seq_gb, fastq, new_dir):
 			px = line.split('=')[1][1:-2]
 			px = px.split()[0]
 			gene_product_list.append(px)
-
+	#print(gene_product_list)
+	#print(gene_loc_list)
 	# Writes a new file for MAFFT input 
 	z = open(new_dir + '/aligner.fasta', 'w')
 	fe = open(fasta)
@@ -216,24 +218,25 @@ def process(ref_seq_gb, fastq, new_dir):
 	g.write('##gff-version 3\n##source-version geneious 9.1.7\n')
 	name= 'lava'
 	for x in range(0, len(gene_product_list)):
-		g.write(name + '\tGeneious\tgene\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t.\tID=gene:' + 
-			gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tGeneious\tCDS\t' +  gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t0\tID=CDS:' + 
-			gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tGeneious\ttranscript\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t.\tID=transcript:' + 
-			gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		#print(gene_loc_list[x][0])
+		#print(gene_product_list[x])
+		g.write(name + '\tGeneious\tgene\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		g.write(name + '\tGeneious\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		g.write(name + '\tGeneious\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
 	# Returns the filepaths for the new fasta and .gff file as strings 
 	return fasta, new_dir + '/lava_ref.gff'
 
 # Goes through the merged.csv file and makes sure that the temporal metadata has been added correctly to the output.
 # Scans for complex mutations and prints a helpful warning message to the terminal listing what samples and their changes.
 # Re-writes the file with complex mutations being annotated as 'complex'.
-def add_passage(sample, passage):
+def add_passage(sample, passage, the_dir):
 	complex_list = []
 	line_list = []
 	last = ''
 	last_line = ''
 	add_a_complex = False
+	seen_one_complex = False
+	complex_log = open(the_dir + '/complex.log', 'w')
 	for line in open(sample):
 		# Make sure we only read lines that contain data 
 		if ',' in line:
@@ -241,9 +244,12 @@ def add_passage(sample, passage):
 			## This assumes that merged.csv is in sorted order, which we guaruntee that it is.
 			## Prints a warning message if complex mutation is detected.
 			if line.split(',')[4][:-1] == last:
-				print(line)
-				print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
-				  	' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
+				if not seen_one_complex:
+					print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
+				  		' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4] + ' this may happen again but future warnings will be supressed. You can find the complete list in the output folder under complex.txt')
+					seen_one_complex = True
+				
+				complex_log.write('Sample=' + line.split(',')[0] + ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
 				complex_list.append(last_line)
 				add_a_complex = True
 
@@ -545,7 +551,7 @@ if __name__ == '__main__':
 				sample + '.txt > ' + sample + '.csv', shell = True)
 
 			# Goes through and make sure that we have passage data in the preliminary csv files.
-			add_passage(sample + '.csv',passage )
+			add_passage(sample + '.csv',passage, new_dir)
 
 			# Adds preliminary csv file into giant merged.csv file that combines all sample data.
 			subprocess.call('cat ' + sample + '.csv >> ' + new_dir + '/merged.csv', shell=True)
@@ -566,7 +572,15 @@ if __name__ == '__main__':
 	if num_lines > 5000:
 		print('WARNING: greater than 5,000 lines detected in the final output folder. This may cause browsers to crash when using depth or allele frequncy sliders. If this happens you may need to perform more QC on your reads or on the merged.csv file.')
 	
+	for line in open(new_dir + '/lava.log'):
+		if 'WARNING: Unable to retrieve regions at' in line and 'due to lack of sequence information' in line:
+			print('LAVA has crashed due to improper formatting of gff/fasta pair. Make sure that your fasta header has the same name as the first column of the gff file. For more information look at the gff formatting guide on the README')
+			sys.exit()
+		if 'A total of' in line and 'sequences will be ignored due to lack of correct ORF annotation' in line:
+			print('Some (or all) of your feature annotations have failed to improper formatting of gff/fasta pair. Make sure that your gff file is formated as specified in the README. Also check to make sure that your gff protein locations are correct and contain valid open reading frames. If using an online reference, make sure it is correct, references that have different protein lengths than your sample will produce this error.')
 
+		if 'Warning: skipping: invalid strand' in line:
+			print('One (or more) of the features on your gff file is improperly formatted, please check the gff guide on the readme for more help. Other coding features should still be annotated correctly')
 	# Pipeline is done! Now on to the visualization.
 	print('Generating visualization...')
 
