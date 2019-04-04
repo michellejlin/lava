@@ -44,7 +44,7 @@ Example files are included in the 'example' folder. It is HIGHLY recommended you
 
 To run LAVA you need, at a minimum:
 
-1. fastq files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`
+1. fastq files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference fastq for LAVA to point at.
 
 2. A fasta file representing the majority consensus of your first sample. There are two options: 1) A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` OR 2) a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `NC_039477.1` (This is the Genbank reference for Example 2, included in the example folder.) 
 
