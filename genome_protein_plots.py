@@ -46,21 +46,18 @@ def protein_annotation(first):
 	protein_locs2 = []
 	for protein_loc in protein_locs:
 		str_protein_loc = str(protein_loc)
-		#print("old str_protein_loc" + str_protein_loc)
+		## print("old str_protein_loc" + str_protein_loc)
 		if ".0" in str_protein_loc:
 			str_protein_loc = str_protein_loc.split('.')[0]
-			#print("split" + str_protein_loc)
+			## print("split" + str_protein_loc)
 			protein_locs2.append(int(str_protein_loc))
 		else:
-			protein_locs2.append(float(str_protein_loc))
-			
-	#print(protein_locs2)
-	#print(protein_names)
+			protein_locs2.append(float(str_protein_loc))	
 	genome_plot.xaxis.major_label_overrides = dict(zip(protein_locs2, protein_names))
 	return protein_names
 
 	
-#Creates the legend and configures some of the toolbar stuff.
+# Creates the legend and configures some of the toolbar stuff.
 def configurePlot(g):
 	g.legend.location = "top_right"
 	# Adjusts size of scatter points within legend.
@@ -79,8 +76,8 @@ def configurePlot(g):
 
 # Callback for the sliders and the checkboxes for non/synonymous mutations.
 # Goes through data and selects/pushes the data with the matching criteria.
-def sliderCallback(ref_source, source, slider, slider_af, syngroup):
-	return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup), code = """
+def sliderCallback(ref_source, source, slider, slider_af, syngroup, muts):
+	return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup, muts=unique_longitudinal_muts), code = """
 		let depth = slider.value;
 		let af = slider_af.value;
 		let colnames = Object.keys(ref.data);
@@ -89,36 +86,72 @@ def sliderCallback(ref_source, source, slider, slider_af, syngroup):
 		}
 		if (checkbox.active.indexOf(0)>-1) {
 			for (let i = 0; i < ref.data['Depth'].length; i++) {
-				if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
-					for (let b = 0; b < colnames.length; b++) {
-						depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+				if (checkbox.active.indexOf(4)>-1) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+				else {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV' && muts.includes(ref.data['Change'][i])) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
 					}
 				}
 			}
 		}
 		if (checkbox.active.indexOf(1)>-1) {
 			for (let i = 0; i < ref.data['Depth'].length; i++) {
-				if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
-					for (let b = 0; b < colnames.length; b++) {
-						depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+				if (checkbox.active.indexOf(4)>-1) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+				else {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV' && muts.includes(ref.data['Change'][i])) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
 					}
 				}
 			}
 		}
 		if (checkbox.active.indexOf(2)>-1) {
 			for (let i = 0; i < ref.data['Depth'].length; i++) {
-				if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
-					for (let b = 0; b < colnames.length; b++) {
-						depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+				if (checkbox.active.indexOf(4)>-1) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+				else {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss') && muts.includes(ref.data['Change'][i])) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
 					}
 				}
 			}
 		}
 		if (checkbox.active.indexOf(3)>-1) {
 			for (let i = 0; i < ref.data['Depth'].length; i++) {
-				if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
-					for (let b = 0; b < colnames.length; b++) {
-						depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+				if (checkbox.active.indexOf(4)>-1) {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
+					}
+				}
+				else {
+					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex') && muts.includes(ref.data['Change'][i])) {
+						for (let b = 0; b < colnames.length; b++) {
+							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+						}
 					}
 				}
 			}
@@ -127,8 +160,8 @@ def sliderCallback(ref_source, source, slider, slider_af, syngroup):
     """)
 
 # Second slider callback so that manual depth input overrides the slider.
-def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose):
-		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup, ose=ose), code = """
+def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose, muts):
+		return CustomJS(args=dict(ref=ref_source, depth_sample=source, slider=slider, slider_af=slider_af, checkbox=syngroup, ose=ose, muts=unique_longitudinal_muts), code = """
 			let depth = Number(ose.value);
 			let af = slider_af.value;
 			let colnames = Object.keys(ref.data);
@@ -137,36 +170,72 @@ def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose):
 			}
 			if (checkbox.active.indexOf(0)>-1) {
 				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+					if (checkbox.active.indexOf(4)>-1) {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV') {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
+						}
+					} 
+					else {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='synonymous SNV' && muts.includes(ref.data['Mut'][i])) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
 						}
 					}
 				}
 			}
 			if (checkbox.active.indexOf(1)>-1) {
 				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+					if (checkbox.active.indexOf(4)>-1) {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV') {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
+						}
+					}
+					else {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && ref.data['Syn'][i]=='nonsynonymous SNV' && muts.includes(ref.data['Mut'][i])) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
 						}
 					}
 				}
 			}
 			if (checkbox.active.indexOf(2)>-1) {
 				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+					if (checkbox.active.indexOf(4)>-1) {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss')) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
+						}
+					}
+						else {
+							if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='stopgain'||ref.data['Syn'][i]=='stoploss') && muts.includes(ref.data['Mut'][i])) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
 						}
 					}
 				}
 			}
 			if (checkbox.active.indexOf(3)>-1) {
 				for (let i = 0; i < ref.data['Depth'].length; i++) {
-					if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
-						for (let b = 0; b < colnames.length; b++) {
-							depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+					if (checkbox.active.indexOf(4)>-1) {
+						if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex')) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
+						}
+					}
+						else {
+							if (depth <= ref.data['Depth'][i] && af <= ref.data['AF'][i] && (ref.data['Syn'][i]=='complex') && muts.includes(ref.data['Mut'][i])) {
+							for (let b = 0; b < colnames.length; b++) {
+								depth_sample.data[colnames[b]].push(ref.data[colnames[b]][i]);
+							}
 						}
 					}
 				}
@@ -255,7 +324,6 @@ if __name__ == '__main__':
 		genome_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 			title=sample_name.split('/')[1], sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
-
 		
 		# Plots by nucleotide letter change.
 		if(args.nuc):
@@ -277,7 +345,6 @@ if __name__ == '__main__':
 		genome_plot.xgrid.grid_line_alpha = 0
 		configurePlot(genome_plot)
 		protein_names = protein_annotation(FIRST)
-		#print("finished first time")
 		FIRST = False
 		genome_plot.xaxis.axis_label = "Protein"
 
@@ -292,21 +359,25 @@ if __name__ == '__main__':
 		
 		# Creates checkboxes to show different types of mutations.
 		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", 
-			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
+			"Show stopgains and stoplosses", "Show complex mutations", "Show mutations without longitudinal data"], active=[0,1,2,3,4])
+
+		# Grabs the mutations that occur multiple times across samples.
+		longitudinal_muts = merged_Sample[merged_Sample.duplicated('Change', keep=False)]
+		unique_longitudinal_muts = longitudinal_muts.Change.unique()
 		
 		# Initializes and filters data based on slider values.
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=2, title='Depth Cutoff')
 		slider_af = Slider(start=0, end=100, step=1, value=1, title='Allele Frequency Cutoff')
-		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af,syngroup))
-		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
-		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
-		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose ))
+		slider_af.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af,syngroup, unique_longitudinal_muts))
+		slider.js_on_change('value', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup, unique_longitudinal_muts))
+		syngroup.js_on_change('active', sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup, unique_longitudinal_muts))
+		ose.js_on_change('value', sliderCallback2(source_sample, depth_sample, slider, slider_af, syngroup, ose, unique_longitudinal_muts))
 
 		# When mousing over Bokeh plot, allele frequency updated to user input.
 		if(user_af!= -123):
 			slider_af.value = user_af
-			# g.js_on_event(events.PlotEvent, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
-			genome_plot.js_on_event(events.MouseEnter, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+			## g.js_on_event(events.PlotEvent, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup))
+			genome_plot.js_on_event(events.MouseEnter, sliderCallback(source_sample, depth_sample, slider, slider_af, syngroup, unique_longitudinal_muts))
 
 		# Creates labels with read information
 		reads_info = (reads.loc[reads['Sample'] == name.strip()])
@@ -349,13 +420,16 @@ if __name__ == '__main__':
  			x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
  		## x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
+		# Calculates amount of jitter based on scale of x-axis passages.
+		jitter_amount = num_Passages * 0.05
+
 		# Increases jitter to increase visibility when using -png.
 		if (args.png):
 			circle = protein_plot.circle(x=jitter('Passage',width=0.35, range=protein_plot.x_range), y='AF', size=15, alpha=0.8,
 				fill_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),
 				line_color='white', line_width=2, line_alpha=1,legend = 'Change',source=depth_sample_p)
 		else:
-			circle = protein_plot.circle(x=jitter('Passage',width=0.08), y='AF', size=15, alpha=0.7, hover_alpha = 1,
+			circle = protein_plot.circle(x=jitter('Passage',width=jitter_amount), y='AF', size=15, alpha=0.7, hover_alpha = 1,
 				fill_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()), 
 				hover_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),
 				line_color='white', line_width=2, hover_line_color='white', line_alpha=1,legend = 'Change',source=depth_sample_p)
@@ -375,10 +449,14 @@ if __name__ == '__main__':
 		
 		# Creates text input to allow users to manually input depth.
 		ose = TextInput(title='Manually input depth:')
+
+		# Grabs the mutations that occur multiple times across samples.
+		longitudinal_muts = merged_Protein[merged_Protein.duplicated('Change', keep=False)]
+		unique_longitudinal_muts = longitudinal_muts.Change.unique()
 		
 		# Create checkboxes to allow toggling of visibility of different types of mutations.
 		syngroup = CheckboxGroup(labels=["Show synonymous mutations", "Show nonsynonymous mutations", 
-			"Show stopgains and stoplosses", "Show complex mutations"], active=[0,1,2,3])
+			"Show stopgains and stoplosses", "Show complex mutations", "Show mutations without longitudinal data"], active=[0,1,2,3,4])
 		
 		# Initializes sliders that filter the plot when values are changed.
 		slider = Slider(start=0, end=merged['Depth'].max(), step=1, value=2, title='Depth Cutoff')
@@ -386,10 +464,10 @@ if __name__ == '__main__':
 			slider_af = Slider(start=0, end=100, step=1, value=user_af, title='Allele Frequency Cutoff')
 		else:
 			slider_af = Slider(start=0, end=100, step=1, value=1, title='Allele Frequency Cutoff')
-		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
-		slider_af.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup))
-		syngroup.js_on_change('active', sliderCallback(source_protein, depth_sample_p, slider, slider_af, syngroup))
-		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose ))
+		slider.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup, unique_longitudinal_muts))
+		slider_af.js_on_change('value', sliderCallback(source_protein, depth_sample_p, slider, slider_af,syngroup, unique_longitudinal_muts))
+		syngroup.js_on_change('active', sliderCallback(source_protein, depth_sample_p, slider, slider_af, syngroup, unique_longitudinal_muts))
+		ose.js_on_change('value', sliderCallback2(source_protein, depth_sample_p, slider, slider_af, syngroup, ose, unique_longitudinal_muts))
 		
 		# Lays out the different components.
 		protein_plot = layout(row([protein_plot, column([Div(width=100, height=260),ose,slider, slider_af, syngroup, Div(width=100, height=30),reset_button])]))
@@ -410,7 +488,7 @@ if __name__ == '__main__':
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
-			output_file(new_dir + "_plots.html", title=plot_title)
+			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
 #			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 # 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
