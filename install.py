@@ -32,7 +32,7 @@ if __name__ == '__main__':
 		# For super fresh OS systems
 		if platform.system() == 'Darwin':
 			print('Installing wget...')
-			subprocess.call('brew install wget', shell = True)
+			subprocess.call('brew list wget || brew install wget', shell = True)
 
 		# Either install pip or upgrade it to the latest version 
 		print('Installing pip...')
@@ -45,13 +45,13 @@ if __name__ == '__main__':
 		print('First we\'re going to update pip and some other setuptools.')
 
 		print('Installing biopython...')
-		subprocess.call('python -m pip install biopython --user', shell=True)
+		subprocess.call('python3 -m pip install biopython --user', shell=True)
 		print('Installing numpy...')
-		subprocess.call('python -m pip install numpy --user ', shell=True)
+		subprocess.call('python3 -m pip install numpy --user ', shell=True)
 		print('Installing pandas...')
-		subprocess.call('python -m pip install --ignore-installed pandas --user', shell=True)
+		subprocess.call('python3 -m pip install pandas --user', shell=True)
 		print('Installing bokeh...')
-		subprocess.call('python -m pip install --ignore-installed bokeh --user', shell=True)
+		subprocess.call('python3 -m pip install bokeh --user', shell=True)
 		print
 		print('Python modules installed!')
 		print
@@ -65,7 +65,6 @@ if __name__ == '__main__':
 			print('Downloading GATK and installing GATK...')
 			subprocess.call('wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip', shell=True)
 			subprocess.call('unzip gatk-4.0.11.0.zip', shell=True)
-			# clean up
 			subprocess.call('rm gatk-4.0.11.0.zip', shell=True)
 		if not os.path.isfile('VarScan'):
 			print('Downloading VarScan...')
@@ -81,11 +80,11 @@ if __name__ == '__main__':
 		elif platform.system() == 'Darwin':
 			if not os.path.isfile('gff3ToGenePred'):
 				subprocess.call('wget http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/gff3ToGenePred', shell = True)
-			subprocess.call('brew install bedtools', shell=True)
-			subprocess.call('brew install samtools', shell=True)
-			subprocess.call('brew install bwa', shell=True)
-			subprocess.call('brew install mafft', shell= True)
-			subprocess.call('brew install bcftools', shell=True)
+			subprocess.call('brew list bedtools || brew install bedtools', shell=True)
+			subprocess.call('brew list samtools || brew install samtools', shell=True)
+			subprocess.call('brew list bwa || brew install bwa', shell=True)
+			subprocess.call('brew list mafft || brew install mafft', shell= True)
+			subprocess.call('brew list bcftools || brew install bcftools', shell=True)
 		subprocess.call('chmod +x gff3ToGenePred', shell =True)
 
 	# This way we support doing both -i and -c one after the other to install and check in one execution 
@@ -203,4 +202,3 @@ if __name__ == '__main__':
 			print
 			print('All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD')
 			print
-
