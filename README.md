@@ -16,7 +16,7 @@ Although we have a script that will do the bulk of the installation for you - th
 
 1. Mac or Linux operating system. 
 2. An Internet connection. 
-3. Python - This should come installed by default on most Mac and Linux operating systems. However if for some reason it isn't you can [download Python](https://www.python.org/).
+3. Python 3 - This should come installed by default on most Mac and Linux operating systems. However if for some reason it isn't you can [download Python](https://www.python.org/). If you have both Python 2.7 and Python 3, LAVA will automatically choose to use Python 3.
 4. If you are on a Mac operating system you need to have brew installed. Instructions for downloading and installing brew can be found at https://brew.sh/.
 5. You also need a java runtime environment if not already installed on your computer. This can be installed with brew (for Mac) with `brew cask install java` and with apt-get (for Linux) via  `sudo apt-get install openjdk-8-jdk`. Both of these commands can be run simply by opening a terminal window and typing them in. For the Linux installation, make sure the package index is updated first by `sudo apt-get update`.
 
