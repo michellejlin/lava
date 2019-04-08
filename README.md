@@ -9,7 +9,7 @@ LAVA analyzes and visualizes minor allele variants in longitudinal sequence data
 [Common Errors](# Common Errors)
 [GFF Creation Guide](# GFF Creation Guide)
 
-# Installation
+## Installation
 **Before you get started**
 
 Although we have a script that will do the bulk of the installation for you - this script requires a few things. 
@@ -44,7 +44,7 @@ Now we have to make sure the script can be run from anywhere. Navigate to your m
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
-# Input
+## Input
 
 **Mandatory Files**
 
@@ -76,7 +76,7 @@ To run Example 2:
 	lava.py -q NC_039477.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
 
 
-# Usage
+## Usage
 
 To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
 
@@ -100,7 +100,7 @@ Removing PCR dupicates from reads with the -dedup argument:
 
 For additional help you can also run `lava.py -help`.
 
-# Output Files
+## Output Files
 
 Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
 
@@ -108,7 +108,7 @@ Additionally you can examine the data more in depth via the merged.csv file whic
 
 You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (i.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.) These files are automatically deleted by defualt, but to save them run lava with the `-save` option.
 
-# Common Errors
+## Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
 
 	This error will occur when annovar finds an error in an open reading frame. This is most often due to an incorrect gff file. (If the start and stop positions for a protein is wrong annovar will detect this and produce this error). Therefore the solution is to make sure the protein start and stops in your gff file are in the correct location nucleotide position should be relative to the matching fasta file. This will also occur when there is a early stop codon.
@@ -146,7 +146,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 	* For all CDS, make sure the phase is set to "0". This is the second to last column. Everyything else (genes, transcripts) should have the phase set to "."
 
 
-# GFF Creation Guide
+## GFF Creation Guide
 Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
 
 In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR (for reasons I don't fully understand) requires a VERY strict formatting of these gff files. Therefore, I find that the easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `Example1_ref.gff`. 
