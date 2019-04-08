@@ -2,12 +2,12 @@
 LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes a reference fasta (normally representing the first sample in your longitudinal analysis), fastq files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser. LAVA will only work on Mac and Linux machines.
 
 # Table of Contents
-[Installation](#Installation)
-[Input](#Input)
-[Usage](#Usage)
-[Output Files](#Output Files)
-[Common Errors](#Common Errors)
-[GFF Creation Guide](#GFF Creation Guide)
+1. [Installation](#Installation)
+2. [Input](#Input)
+3. [Usage](#Usage)
+4. [Output Files](#Output-Files)
+5. [Common Errors](#Common-Errors)
+6. [GFF Creation Guide](#GFF-Creation-Guide)
 
 ## Installation
 **Before you get started**
