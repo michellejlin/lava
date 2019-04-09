@@ -147,14 +147,40 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 
 ## GFF Creation Guide
-Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. One potential fix for this is to use the `-q` flag and specify a genbank record that is a reference for your samples. When using the -q flag LAVA will automatically assemble a consensus sequence for your first set of reads and use this as the reference. However, for situations that are not covered by genbank references (For example if you wanted to analyze all Influenza A segments at once) you would need to manually generate your .fasta and .gff files.
+Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. 
 
-In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR (for reasons I don't fully understand) requires a VERY strict formatting of these gff files. Therefore, I find that the easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `Example1_ref.gff`. 
+In order to avoid this issue, we recommend using the `-q` flag to specify a GenBank record that is a reference for your samples. Assuming the selected reference has accurate annotations, LAVA will automatically assemble a working consensus sequence for your first set of reads and use this as the reference. 
+
+However, for situations that are not covered by GenBank references, you would need to manually generate your own .fasta and .gff files.
+
+**Example: Using the Template GFF**
+An example of something that would not be covered by GenBank references, and thus would not be recommended to use the `-q` flag, is if you wanted to analyze all Influenza A segments at once.
+
+In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR requires a VERY strict formatting of these gff files. 
+
+The easiest way of generating a new gff file is to edit gene/CDS/transcript names and locations in the provided `Example1_ref.gff`. We highly recommend this method to avoid lots of formatting issues.
 
 To do this you first need to have your start and end nucleotide postitions for your protein locations - these must be relative to the start of the provided reference fasta. (So if you're using a reference fasta that you added 200 Ns to the start of the sequence, all protein starts and stops would need to be increased by 200). 
 
-The first two lines of the .gff file are comments, you can safely ignore these. Then all proteins are coded by 3 tab seperated lines. The first column must be the name of your fasta reference sequence. (So if the first line of your reference fasta is `>example` the first column of each row should read `example`. Second column doesn't matter. Then change the start/stop and protein name for your proteins in blocks of 3. 
+Below is a visual guide of what you need to change the template `Example1_ref.gff` for your purposes.
 
 ![Visual Guide](https://github.com/michellejlin/lava/blob/master/Gff-editing-guide.png)
 
-See the picture for a clearer explanation. If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
+The color coded regions are the only portions that need to be changed. (The first two lines of the .gff files are comments and can be safely ignored.)
+
+Proteins are coded by 3 tab separated lines (gene, CDS, transcript). 
+
+```diff
+- The first column must be the name of your .fasta reference sequence. (So if the first line of your reference .fasta is >example, the first column of each row should read `example`. Here, the name is `WSN_reference2`.
++ The fourth column should contain your start and end nucleotide positions of protein locations. Change the numbers to match your fasta file. Make sure to keep the blocks of 3, so that there are correct protein locations for each of gene, CDS, transcript.
+```
+The last column has protein names that need to be replaced. Make sure you are replacing after both the `ID=` and the `Parent=`.
+
+**Specific Requirements**
+If you don't want to use the template GFF, or want to potentially troubleshoot any problems with the GFF that may be popping up, here are the specific formatting requirements for each column.
+
+| Fasta Name | Source | Feature | Start | End | Score | Strand | Phase | Attributes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| This must match the name of your .fasta reference sequence, both the first line, and the file name. | You can put anything in this column. | This must be one of three things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | The beginning position of the protein. | The end position of the protein. | This column should only contain a "." | This column should only contain a "+". | This column should contain a "0" for all CDS lines, and a "." for all others. | This must contain ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
+
+If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
