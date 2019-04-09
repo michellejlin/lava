@@ -170,11 +170,9 @@ The color coded regions are the only portions that need to be changed. (The firs
 
 Proteins are coded by 3 tab separated lines (gene, CDS, transcript). 
 
-```diff
-- The first column must be the name of your .fasta reference sequence. (So if the first line of your reference .fasta is >example, the first column of each row should read `example`. Here, the name is `WSN_reference2`.
-+ The fourth column should contain your start and end nucleotide positions of protein locations. Change the numbers to match your fasta file. Make sure to keep the blocks of 3, so that there are correct protein locations for each of gene, CDS, transcript.
-The last column has protein names that need to be replaced. Make sure you are replacing after both the `ID=` and the `Parent=`.
-```
+* The first column must be the name of your .fasta reference sequence. (So if the first line of your reference .fasta is >example, the first column of each row should read `example`. Here, the name is `WSN_reference2`.
+* The fourth column should contain your start and end nucleotide positions of protein locations. Change the numbers to match your fasta file. Make sure to keep the blocks of 3, so that there are correct protein locations for each of gene, CDS, transcript.
+* The last column has protein names that need to be replaced. Make sure you are replacing after both the `ID=` and the `Parent=`.
 
 **Specific Requirements**
 If you don't want to use the template GFF, or want to potentially troubleshoot any problems with the GFF that may be popping up, here are the specific formatting requirements for each column.
