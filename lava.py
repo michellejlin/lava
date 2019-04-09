@@ -1,4 +1,4 @@
-## lava Version 0.92
+## lava Version 0.93
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.92'
+VERSION = 'v0.93'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -183,7 +183,7 @@ def process(ref_seq_gb, fastq, new_dir):
 		if '/product="' in line and allow_one:
 			allow_one = False
 			px = line.split('=')[1][1:-2]
-			px = px.split()[0]
+			px = px.replace(' ', '_')
 			gene_product_list.append(px)
 	#print(gene_product_list)
 	#print(gene_loc_list)
@@ -214,15 +214,25 @@ def process(ref_seq_gb, fastq, new_dir):
 			gene_loc_list[entry][y] = adjust(int(gene_loc_list[entry][y]), our_seq_num_array, ref_seq_num_array, genome)   
 
 	# Writes a new .gff file for annovar to use later 
+	print("Writing GFF file...")
 	g = open(new_dir + '/lava_ref.gff', 'w')
 	g.write('##gff-version 3\n##source-version geneious 9.1.7\n')
 	name= 'lava'
 	for x in range(0, len(gene_product_list)):
 		#print(gene_loc_list[x][0])
 		#print(gene_product_list[x])
-		g.write(name + '\tGeneious\tgene\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tGeneious\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tGeneious\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+
+		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		
+		# For ribosomal slippage, creates fake new protein to get the second set of values
+		if len(gene_loc_list[x]) == 4:
+			g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+			g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+			g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + '_ribosomal_slippage;Parent=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+
+
 	# Returns the filepaths for the new fasta and .gff file as strings 
 	return fasta, new_dir + '/lava_ref.gff'
 
@@ -275,6 +285,47 @@ def add_passage(sample, passage, the_dir):
 			g.write(line)
 	g.close()
 
+# Handles ribosomal slippage by adding a second protein after ribosomal slippage.
+## Currently not in use, because of wonky nucleotide numbers by Annovar.
+def add_ribosomal_slippage(new_dir):
+	start_num = ""
+	# Grabs where ribosomal slippage happens from proteins.csv.
+	start_num_list = []
+	for line in open(new_dir + "/proteins.csv"):
+		if '_ribosomal_slippage' in line:
+			start_num = line.split(',')[1]
+			if not start_num in start_num_list:
+				start_num_list.append(start_num)
+
+	# Writes corrected lines in new file.
+	temp = open(new_dir + '/temp.csv', 'w')
+	index = 0
+	if start_num != "":
+		for line in open(new_dir + "/merged.csv", 'r'):
+			# Adds the number of where ribosomal slippage happens to where Annovar begins.
+			if '_ribosomal_slippage' in line:
+				nuc = line.split(',')[6]
+				if 'del' in nuc:
+					nuc_num = int(nuc[0:-4])
+					print("del nuc_num" + str(nuc_num))
+				else:
+					nuc_num = int(nuc[1:-1])
+				amino = line.split(',')[4]
+				amino_num = int(amino[1:-1])
+				position = line.split(',')[2]
+				if position < int(start_num_list[index]):
+					index = index + 1
+				if 'del' in nuc:
+					new_line = line.replace(nuc, str(nuc_num + int(start_num_list[index])) + nuc[-4:])
+				else:
+					new_line = line.replace(nuc, nuc[0] + str(nuc_num + int(start_num_list[index])) + nuc[-1])
+				amino_num2 = int(start_num_list[index])/3
+				new_line = new_line.replace(amino, amino[0] + str(amino_num + amino_num2) + amino[-1])
+				temp.write(new_line)
+			else:
+				temp.write(line)
+	## subprocess.call('mv ' + new_dir + '/temp.csv ' + new_dir + '/merged.csv', shell=True)
+
 
 # Removes the bigger intermediate files that LAVA creates.
 def clean_up(new_dir):
@@ -299,7 +350,7 @@ if __name__ == '__main__':
 	parser.add_argument('-q', help='Provide a Genbank accession number. This record will be used to generate a majority consensus from the '
 								   'control fastq, and this consensus will be annotated from the downloaded genbank record as well.')
 	parser.add_argument('-nuc', action='store_true', help='Results are listed as nucleotide changes not amino acid changes. Do not use with -png.')
-	parser.add_argument('-af', help='Specify an allele frequency percentage to cut off (with a minimum of 1%), in whole numbers.')
+	parser.add_argument('-af', help='Specify an allele frequency percentage to cut off - with a minimum of 1 percent - in whole numbers.')
 	parser.add_argument('-png', action='store_true', help='Output results as a png. Do not use with -nuc.')
 	parser.add_argument('-dedup', action='store_true', help='Optional flag, will perform automatic removal of PCR duplicates via DeDup.')
 	parser.add_argument('control_fastq', help='Required argument: The fastq reads for the first sample in your longitudinal analysis')
@@ -318,7 +369,7 @@ if __name__ == '__main__':
 		args = parser.parse_args()
 	except:
 		parser.print_help()
-		sys.exit(0)
+		sys.exit(1)
 
 	# If an output directory is not provided by -o, pulls the date and time in isoformat with no colons.
 	if args.o != None:
@@ -561,7 +612,13 @@ if __name__ == '__main__':
 
 			# Gets rid of "delins" in merged.csv
 			subprocess.call('grep -v "delins" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
-	
+
+	# Corrects for ribosomal slippage.
+	add_ribosomal_slippage(new_dir)
+
+	# Gets rid of underscores in protein names.
+	subprocess.call('awk \'{gsub("_"," "); print}\' ' + new_dir + '/proteins.csv > a.tmp && mv a.tmp ' + new_dir + '/proteins.csv', shell=True)
+
 	# Removes intermediate files (default behavior), unless otherwise specified by -save.
 	print('Cleaning up...')
 	if not args.save:
