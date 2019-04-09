@@ -173,14 +173,14 @@ Proteins are coded by 3 tab separated lines (gene, CDS, transcript).
 ```diff
 - The first column must be the name of your .fasta reference sequence. (So if the first line of your reference .fasta is >example, the first column of each row should read `example`. Here, the name is `WSN_reference2`.
 + The fourth column should contain your start and end nucleotide positions of protein locations. Change the numbers to match your fasta file. Make sure to keep the blocks of 3, so that there are correct protein locations for each of gene, CDS, transcript.
-```
 The last column has protein names that need to be replaced. Make sure you are replacing after both the `ID=` and the `Parent=`.
+```
 
 **Specific Requirements**
 If you don't want to use the template GFF, or want to potentially troubleshoot any problems with the GFF that may be popping up, here are the specific formatting requirements for each column.
 
 | Fasta Name | Source | Feature | Start | End | Score | Strand | Phase | Attributes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| This must match the name of your .fasta reference sequence, both the first line, and the file name. | You can put anything in this column. | This must be one of three things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | The beginning position of the protein. | The end position of the protein. | This column should only contain a "." | This column should only contain a "+". | This column should contain a "0" for all CDS lines, and a "." for all others. | This must contain ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
+| Must match the name of your .fasta reference sequence: both the first line, and the file name. | Anything in this column. | One of 3 things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | Beginning position of the protein. | End position of the protein. | Only contains "." | Only contains "+". | Contains a "0" for all CDS lines, and "." for all others. | Contains ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
 
 If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
