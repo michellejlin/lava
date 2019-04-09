@@ -33,9 +33,9 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 5. Run the install script by typing into the terminal window `python install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message: `All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD.` This means LAVA should work properly!
 The dependencies that LAVA currently use are:
-* Python modules: biopython, numpy, pandas, bokeh
-* Picard, GATK, VarScan, Annovar
-* bedtools, samtools, bwa, mafft, bcftools
+	* Python modules: biopython, numpy, pandas, bokeh
+	* Picard, GATK, VarScan, Annovar
+	* bedtools, samtools, bwa, mafft, bcftools
 
 Now we have to make sure the script can be run from anywhere. Navigate to your main LAVA folder (same as step #3).
 
