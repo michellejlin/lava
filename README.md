@@ -155,6 +155,6 @@ To do this you first need to have your start and end nucleotide postitions for y
 
 The first two lines of the .gff file are comments, you can safely ignore these. Then all proteins are coded by 3 tab seperated lines. The first column must be the name of your fasta reference sequence. (So if the first line of your reference fasta is `>example` the first column of each row should read `example`. Second column doesn't matter. Then change the start/stop and protein name for your proteins in blocks of 3. 
 
-![Visual Guide](https://github.com/michellejlin/lava/blob/master/GFF_editing_guide.png)
+![Visual Guide](https://github.com/michellejlin/lava/blob/master/Gff-editing-guide.png)
 
 See the picture for a clearer explanation. If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
