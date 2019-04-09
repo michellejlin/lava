@@ -158,6 +158,7 @@ In order to avoid this issue, we recommend using the `-q` flag to specify a GenB
 However, for situations that are not covered by GenBank references, you would need to manually generate your own .fasta and .gff files.
 
 **Example: Using the Template GFF**
+
 An example of something that would not be covered by GenBank references, and thus would not be recommended to use the `-q` flag, is if you wanted to analyze all Influenza A segments at once.
 
 In this case you need to use your favorite method of generating a consensus fasta for your first set of reads (we mainly use Geneious). Once this is done you need to make your .gff file. However, ANNOVAR requires a VERY strict formatting of these gff files. 
