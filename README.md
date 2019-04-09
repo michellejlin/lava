@@ -175,7 +175,8 @@ Proteins are coded by 3 tab separated lines (gene, CDS, transcript).
 * The last column has protein names that need to be replaced. Make sure you are replacing after both the `ID=` and the `Parent=`.
 
 **Specific Requirements**
-If you don't want to use the template GFF, or want to potentially troubleshoot any problems with the GFF that may be popping up, here are the specific formatting requirements for each column.
+
+If you don't want to use the template GFF, or want to troubleshoot any problems with the GFF that may be popping up, here are the specific formatting requirements for each column.
 
 | Fasta Name | Source | Feature | Start | End | Score | Strand | Phase | Attributes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
