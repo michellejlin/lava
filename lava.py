@@ -1,4 +1,4 @@
-## lava Version 0.93
+## lava Version 1.0
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v0.93'
+VERSION = 'v1.0'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -219,18 +219,16 @@ def process(ref_seq_gb, fastq, new_dir):
 	g.write('##gff-version 3\n##source-version geneious 9.1.7\n')
 	name= 'lava'
 	for x in range(0, len(gene_product_list)):
-		#print(gene_loc_list[x][0])
-		#print(gene_product_list[x])
 
 		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		
 		# For ribosomal slippage, creates fake new protein to get the second set of values
-		if len(gene_loc_list[x]) == 4:
-			g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
-			g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
-			g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + '_ribosomal_slippage;Parent=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+		# if len(gene_loc_list[x]) == 4:
+		# 	g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+		# 	g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+		# 	g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + '_ribosomal_slippage;Parent=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
 
 
 	# Returns the filepaths for the new fasta and .gff file as strings 
@@ -256,7 +254,7 @@ def add_passage(sample, passage, the_dir):
 			if line.split(',')[4][:-1] == last:
 				if not seen_one_complex:
 					print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
-				  		' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4] + ' this may happen again but future warnings will be supressed. You can find the complete list in the output folder under complex.txt')
+				  		' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4] + ' this may happen again but future warnings will be supressed. You can find the complete list in the output folder under complex.log.')
 					seen_one_complex = True
 				
 				complex_log.write('Sample=' + line.split(',')[0] + ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
@@ -614,7 +612,7 @@ if __name__ == '__main__':
 			subprocess.call('grep -v "delins" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
 
 	# Corrects for ribosomal slippage.
-	add_ribosomal_slippage(new_dir)
+	## add_ribosomal_slippage(new_dir)
 
 	# Gets rid of underscores in protein names.
 	subprocess.call('awk \'{gsub("_"," "); print}\' ' + new_dir + '/proteins.csv > a.tmp && mv a.tmp ' + new_dir + '/proteins.csv', shell=True)
@@ -650,5 +648,5 @@ if __name__ == '__main__':
 		subprocess.call('python3 genome_protein_plots.py ' + nuc_flag + ' ' + png_flag + ' ' + user_af + ' ' +
 			+ new_dir + '/merged.csv ' + new_dir + '/proteins.csv ' + new_dir + '/reads.csv ' + new_dir+ ' ' + plot_title, shell=True)
 	else:
-		print('Genome_protein_plots could not be found. Output will not be visualized - go to XXXX for help')
+		print('Genome_protein_plots could not be found. Output will not be visualized - go to the README for help.')
 		sys.exit(1)
