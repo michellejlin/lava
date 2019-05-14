@@ -489,12 +489,13 @@ if __name__ == '__main__':
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
-			print('Opening output file genome_protein_plots.html...\nGraphs_and_viewer.html includes the protein viewer.')
+			print('Opening output file genome_protein_plots.html...')
 #			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 # 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
+
 			# Automatically opens output file, otherwise prints error message.
 			try:
 				show(column(tabs_genomes, tabs_proteins))
 			except:
-				print('Automatic opening of output files has failed - however generation worked. Check out your output at the above paths.')
+				print('Automatic opening of output files has failed - however generation worked. Check out your output at the output location specified.')
