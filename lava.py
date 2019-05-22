@@ -469,7 +469,7 @@ if __name__ == '__main__':
 			print('Removing PCR duplicates from sample ' + sample + '...')
 			subprocess.call('java -jar ' + PICARD + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
 				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log',shell=True)
-			subprocess.call('cat ' + name + '_dedup.bam > ' + name + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call('cat ' + sample + '_dedup.bam > ' + sample + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 			print('Done removing PCR duplicates from sample ' + sample + '.')
 		subprocess.call('java -jar ' + PICARD + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 		
