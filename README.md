@@ -31,7 +31,7 @@ To make installation easier (there are a lot of dependencies!), we've provided a
 
 4. [Download ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download_form.php). This program requires registration with a .edu email, or request for access. Once you've recieved access to the annovar download, download and unzip it. Then copy and paste all the files with extension .pl inside the ANNOVAR folder into your main LAVA folder. (There is no need to copy example or humandb.)
 
-5. Run the install script by typing into the terminal window `python install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message: `All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD.` This means LAVA should work properly!
+5. Run the install script by typing into the terminal window `python3 install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message: `All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD.` This means LAVA should work properly!
 The dependencies that LAVA currently use are:
 	* Python modules: biopython, numpy, pandas, bokeh
 	* Picard, GATK, VarScan, Annovar
