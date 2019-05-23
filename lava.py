@@ -1,4 +1,4 @@
-## lava Version 1.0
+## lava Version 1.01
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v1.0'
+VERSION = 'v1.01'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -26,15 +26,19 @@ def read_fasta(fasta_file_loc):
     genome_list = []
     dna_string = ''
 
+    # Opens the reference fasta file.
     for line in open(fasta_file_loc):
+    	# Grabs strain names from fasta headers, delineated by ">".
         if line[0] == '>':
             strain_list.append(line[1:].split()[0])
+            # For every new strain, add existing dna_string to genome list and continue.
             if dna_string != '':
                 genome_list.append(dna_string)
                 dna_string = ''
+        # Grabs sequence with removed whitespace.
         else:
-
             dna_string += line.strip()
+    # Replaces Us with Ts (causes problems downstream).
     genome_list.append(dna_string.replace('U', 'T'))
     return strain_list, genome_list
 
@@ -47,6 +51,7 @@ def build_num_arrays(our_seq, ref_seq):
     ref_num_array = []
     our_num_array = []
 
+    # Loops through the GenBank reference fasta sequence.
     for x in range(0, len(ref_seq)):
         if ref_seq[x] != '-':
             ref_count += 1
@@ -140,11 +145,12 @@ def process(ref_seq_gb, fastq, new_dir):
 	# Indexes reference fasta
 	subprocess.call('bwa index ' + new_dir + '/lava_ref.fasta 2> ' + new_dir + '/lava.log', shell=True)
 
-	# Aligns passed fastq reads to the downloaded reference fasta, then converts to bam files and sorts.
-	# Sterr is sent to lava.log.
 	## Deleted the -v flag to try to fix the dang consensus generation 
+	# Aligns first fartq to downloaded reference fasta.
 	subprocess.call('bwa mem -M ' + new_dir + '/lava_ref.fasta ' + fastq + ' > ' + new_dir + '/aln.sam 2>> ' + new_dir + '/lava.log', shell=True)
+	# Converts sam to bam.
 	subprocess.call('samtools view -S -b ' + new_dir + '/aln.sam > ' + new_dir + '/aln.bam 2>> '+ new_dir + '/lava.log', shell=True)
+	# Sorts the bam file.
 	subprocess.call('samtools sort ' + new_dir + '/aln.bam -o ' + new_dir + '/aln.sorted.bam 2>> ' + new_dir + '/lava.log', shell=True)
 	
 	# Creates vcf and indexes.
@@ -153,14 +159,14 @@ def process(ref_seq_gb, fastq, new_dir):
 		new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('tabix ' + new_dir + '/calls.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
 
-	# Filters first so consensus actually takes most the common allele
+	# Filters first so consensus actually takes most the common allele.
 	subprocess.call('gunzip ' + new_dir + '/calls.vcf.gz', shell=True)
 	subprocess.call('bcftools filter -i \'(DP4[0]+DP4[1]) < (DP4[2]+DP4[3]) && ((DP4[2]+DP4[3]) > 0)\' ' + new_dir + '/calls.vcf -o ' 
 		+ new_dir + '/calls2.vcf 2>>' + new_dir + '/lava.log', shell=True)
 	subprocess.call('bgzip ' + new_dir + '/calls2.vcf 2>> ' + new_dir + '/lava.log', shell=True)
 	subprocess.call('tabix ' + new_dir + '/calls2.vcf.gz 2>> ' + new_dir + '/lava.log', shell=True)
 
-	# Creates the consensus and writes it to the output folder 
+	# Creates the consensus "lava_ref.fasta" and writes it to the output folder 
 	subprocess.call('cat ' + new_dir + '/lava_ref.fasta | bcftools consensus ' + new_dir + '/calls2.vcf.gz > ' + new_dir + '/consensus.fasta', shell=True)
 
 	# Rewrites fasta with lava as the sequence header so that annovar can match this with the reference .gff
@@ -185,8 +191,7 @@ def process(ref_seq_gb, fastq, new_dir):
 			px = line.split('=')[1][1:-2]
 			px = px.replace(' ', '_')
 			gene_product_list.append(px)
-	#print(gene_product_list)
-	#print(gene_loc_list)
+
 	# Writes a new file for MAFFT input 
 	z = open(new_dir + '/aligner.fasta', 'w')
 	fe = open(fasta)
@@ -224,7 +229,7 @@ def process(ref_seq_gb, fastq, new_dir):
 		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
 		
-		# For ribosomal slippage, creates fake new protein to get the second set of values
+		## For ribosomal slippage, creates fake new protein to get the second set of values
 		# if len(gene_loc_list[x]) == 4:
 		# 	g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
 		# 	g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
@@ -248,9 +253,9 @@ def add_passage(sample, passage, the_dir):
 	for line in open(sample):
 		# Make sure we only read lines that contain data 
 		if ',' in line:
-			## Detects complex mutations by seeing if the amino acid residue is the same as the last one we read.
-			## This assumes that merged.csv is in sorted order, which we guaruntee that it is.
-			## Prints a warning message if complex mutation is detected.
+			# Detects complex mutations by seeing if the amino acid residue is the same as the last one we read.
+			# This assumes that merged.csv is in sorted order, which we guaruntee that it is.
+			# Prints a warning message if complex mutation is detected.
 			if line.split(',')[4][:-1] == last:
 				if not seen_one_complex:
 					print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
@@ -396,6 +401,7 @@ if __name__ == '__main__':
 	# Writes new output folder.
 	subprocess.call('mkdir -p ' + new_dir, shell=True)
 
+	# Setting variables
 	dir_path = os.path.dirname(os.path.realpath(__file__))
 	plot_title = new_dir
 	metadata_location = args.metadata
@@ -415,7 +421,7 @@ if __name__ == '__main__':
 	# If user-provided fasta and gff, copies into directory.
 	if args.f != None and args.g != None:
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
-		print('This method of reference generation assumes that your fasta and .gff file are formatted correctly')
+		print('This method of reference generation assumes that your fasta and .gff file are formatted correctly.')
 		print('If you are using this method and LAVA is crashing or producing whack output verify these files. A helpful guide '
 			'is available in the README.')
 		reference_fasta = args.f
@@ -467,8 +473,10 @@ if __name__ == '__main__':
 		# If -dedup specified, removes PCR duplicates with PICARD MarkDuplicates.
 		if args.dedup:
 			print('Removing PCR duplicates from sample ' + sample + '...')
+			# Tags and removes duplicates using Picard.
 			subprocess.call('java -jar ' + PICARD + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
-				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log',shell=True)
+				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true 2>> ' + new_dir + '/lava.log',shell=True)
+			# Copies over the _dedup bam into the actual bam.
 			subprocess.call('cat ' + sample + '_dedup.bam > ' + sample + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 			print('Done removing PCR duplicates from sample ' + sample + '.')
 		subprocess.call('java -jar ' + PICARD + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
@@ -505,6 +513,8 @@ if __name__ == '__main__':
 		new_dir + '/merged.csv', shell=True)
 
 	# Pulls protein information from GFF into proteins.csv. 
+	# $12 = protein name, $4 = beginning nucleotide, $5 = ending nucleotide.
+	# Sorts by increasing order of numbers.
 	subprocess.call('grep "ID=transcript:" ' + reference_gff + ' | awk -F\'[\t;:]\' \'{print $12 "," $4 "," $5}\' | sort -t \',\' -k2 -n > ' + 
 		new_dir + '/proteins.csv', shell=True)
 		
@@ -530,6 +540,9 @@ if __name__ == '__main__':
 			print('Analyzing variants in sample ' + sample + '...')
 
 			# Makes vcf using VarScan.
+			# Current variables:
+			# --validation 1 = outputs all compared positions even if non-variant (to get whole genome)
+			# --min-coverage 2 = minimum coverage in both samples to call variant
 			subprocess.call('java -jar ' +  VARSCAN + ' somatic ' + control_fastq + '.pileup ' + sample + '.pileup ' + sample + 
 				'.vcf --validation 1 --output-vcf 1 --min-coverage 2 2>> ' + new_dir + '/lava.log', shell=True)
 
@@ -546,6 +559,7 @@ if __name__ == '__main__':
 			if not ref_done:
 
 				# Grabs mutations that are SNVs with AF > 1% from the reference vcf into a separate file.
+				# $18 = reference allele frequency
 				if user_af=='':
 					subprocess.call('awk -F":" \'($18+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				# Filters data by user specified allele frequency.
@@ -553,7 +567,8 @@ if __name__ == '__main__':
 					subprocess.call('awk -v af=' + args.af + ' -F":" \'($18+0)>=' + args.af + '{print}\' ' + sample + '.exonic_variant_function > ' + new_dir + '/ref.txt', shell=True)
 				subprocess.call('grep "SNV" ' + new_dir + '/ref.txt > a.tmp && mv a.tmp ' + new_dir + '/ref.txt', shell = True)
 
-				# Grabs data from columns into csv: sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
+				# Grabs data from columns into csv
+				# sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
 				# nuc letter change, type of mutation, depth, 0 (because it's the reference)
 				subprocess.call('awk -v ref=' + control_fastq + ' -F \'[\t:,]\' \'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$36",0"}\' ' 
 					+ new_dir + '/ref.txt > ' + new_dir + '/ref.csv', shell=True)
@@ -581,12 +596,14 @@ if __name__ == '__main__':
 			subprocess.call('samtools flagstat ' + sample + '.bam | awk \'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}\' >> ' 
 				+ new_dir + '/reads.csv 2>> ' + new_dir + '/lava.log', shell=True)
 
-			# Grabs SNVs and stops with AF > 1%.
+			# Grabs variants with AF > 1%.
 			if user_af=='':
 				subprocess.call('awk -F":" \'($24+0)>=1{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
 			# Filters data by user specified allele frequency.
 			else:
 				subprocess.call('awk -v af=' + args.af + ' -F":" \'($24+0)>=' + args.af+ '{print}\' ' + sample + '.exonic_variant_function > ' + sample + '.txt', shell=True)
+			
+			# Grabs SNVs and stopgains/stoplosses.
 			subprocess.call('grep "SNV" ' + sample + '.txt > a.tmp ', shell=True)
 			subprocess.call('grep "stop" ' + sample + '.txt >> a.tmp', shell=True)
 			subprocess.call('mv a.tmp ' + sample + '.txt', shell=True)
@@ -594,7 +611,8 @@ if __name__ == '__main__':
 			# Gets sample metadata from metadata.csv.
 			subprocess.call('SAMPLE="$(awk -F"," -v name=' + sample + ' \'$1==name {print $2}\' ' + metadata_location + ')" ', shell=True)
 
-			# Grabs data from columns into csv: sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
+			# Grabs data from columns into csv: 
+			# sample name (printed), protein+aa change, position, af, aa change, protein, nuc residue change,
 			# nuc letter change, type of mutation, depth, sample metadata
 			subprocess.call('awk -v name=' + sample + ' -v sample=$SAMPLE -F\'[\t:,]\' \'{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}\' ' + 
 				sample + '.txt > ' + sample + '.csv', shell = True)
