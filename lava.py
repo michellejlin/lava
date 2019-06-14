@@ -414,7 +414,7 @@ if __name__ == '__main__':
 	VARSCAN = check_varscan(dir_path)
 
 	# Copies fastqs to new directory - slow but protects user data from the insanity that is about to occur.
-	subprocess.call('cp ' + control_fastq + ' ' + new_dir + '/', shell=True)
+	subprocess.call('cp -p ' + control_fastq + ' ' + new_dir + '/', shell=True)
 	control_fastq = new_dir + '/' + control_fastq
 
 	# Makes sure that we've got a way of pulling annotations, if the user gives -f -g and -q then we only use -f and -g.
@@ -426,8 +426,8 @@ if __name__ == '__main__':
 			'is available in the README.')
 		reference_fasta = args.f
 		reference_gff = args.g
-		subprocess.call('cp ' + reference_fasta + ' ' + new_dir + '/', shell=True)
-		subprocess.call('cp ' + reference_gff + ' ' + new_dir + '/', shell=True)
+		subprocess.call('cp -p ' + reference_fasta + ' ' + new_dir + '/', shell=True)
+		subprocess.call('cp -p ' + reference_gff + ' ' + new_dir + '/', shell=True)
 		reference_fasta = new_dir + '/' + reference_fasta
 		reference_gff = new_dir + '/' + reference_gff
 
