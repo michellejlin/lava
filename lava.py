@@ -1,4 +1,4 @@
-## lava Version 1.01
+## lava Version 1.02
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v1.01'
+VERSION = 'v1.02'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -119,6 +119,7 @@ def read_metadata(filepath):
 		print(sample_list[0] + ' was the first sample but could not be found in the working directory.')
 		print('Please move your samples to the directory you are running lava from, this is:')
 		subprocess.call('pwd', shell=True)
+		print('Also make sure your samples are pointing to the correct directory and include the file extension .fastq.')
 		sys.exit(1)
 	return sample_list, sample_time_list
 
@@ -259,7 +260,7 @@ def add_passage(sample, passage, the_dir):
 			if line.split(',')[4][:-1] == last:
 				if not seen_one_complex:
 					print('WARNING: Complex mutation detected (multiple nucleotide changes within the same codon)! Sample=' + line.split(',')[0] + 
-				  		' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4] + ' this may happen again but future warnings will be supressed. You can find the complete list in the output folder under complex.log.')
+				  		' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4] + ' this may happen again but future warnings will be suppressed. You can find the complete list in the output folder under complex.log.')
 					seen_one_complex = True
 				
 				complex_log.write('Sample=' + line.split(',')[0] + ' Change1=' + line.split(',')[4] + ' and Change2=' + last_line.split(',')[4])
@@ -551,8 +552,11 @@ if __name__ == '__main__':
 			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
 
+			# Removes ambiguous calls (Y, R, M, K, S, W)
+			subprocess.call('awk \'$1 ~ /^#/ {print $0;next} {if ($4 ~ /A|C|T|G/ && $5 ~ /.|A|C|T|G/) print $0}\' ' + sample + '_p.vcf > ' + sample + '_filtered.vcf', shell=True)
+
 			# Converts .vcfs to files annovar can accept (.avinput).
-			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_filtered.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
 			subprocess.call(dir_path + '/annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			# For reference sequence, grabs information (location of this information differs for reference).
@@ -650,10 +654,10 @@ if __name__ == '__main__':
 			print('LAVA has crashed due to improper formatting of gff/fasta pair. Make sure that your fasta header has the same name as the first column of the gff file. For more information look at the gff formatting guide on the README')
 			sys.exit()
 		if 'A total of' in line and 'sequences will be ignored due to lack of correct ORF annotation' in line:
-			print('Some (or all) of your feature annotations have failed to improper formatting of gff/fasta pair. Make sure that your gff file is formated as specified in the README. Also check to make sure that your gff protein locations are correct and contain valid open reading frames. If using an online reference, make sure it is correct, references that have different protein lengths than your sample will produce this error.')
+			print('Some (or all) of your feature annotations have failed to improper formatting of gff/fasta pair. Make sure that your gff file is formatted as specified in the README. Also check to make sure that your gff protein locations are correct and contain valid open reading frames. If using an online reference, make sure it is correct, references that have different protein lengths than your sample will produce this error.')
 
 		if 'Warning: skipping: invalid strand' in line:
-			print('One (or more) of the features on your gff file is improperly formatted, please check the gff guide on the readme for more help. Other coding features should still be annotated correctly')
+			print('One (or more) of the features on your gff file is improperly formatted, please check the gff guide on the readme for more help. Other coding features should still be annotated correctly.')
 	# Pipeline is done! Now on to the visualization.
 	print('Generating visualization...')
 
