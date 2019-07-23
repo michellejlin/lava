@@ -489,7 +489,7 @@ if __name__ == '__main__':
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
 			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
-			print('Opening output file genome_protein_plots.html...')
+			print('Opening output file ' + new_dir + '/' + new_dir + '_plots.html')
 #			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 # 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
 			save(column(tabs_genomes, tabs_proteins))
