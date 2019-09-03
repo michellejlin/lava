@@ -1,4 +1,4 @@
-## lava Version 1.02
+## lava Version 1.03
 ## Longitudinal Analysis of Viral Alleles 
 
 import subprocess 
@@ -16,7 +16,7 @@ import pandas as pd
 from install_check import check_picard, check_gatk, check_varscan
 
 Entrez.email = 'uwvirongs@gmail.com'
-VERSION = 'v1.02'
+VERSION = 'v1.03'
 
 # Takes a file path pointing to a fasta file and returns two lists.
 # The first list is a list of all the fasta headers and the second is a list of all the sequences
@@ -226,9 +226,28 @@ def process(ref_seq_gb, fastq, new_dir):
 	name= 'lava'
 	for x in range(0, len(gene_product_list)):
 
-		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + ';Parent=transcript:' + gene_product_list[x] + ';biotype=protein_coding\n')
-		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][0]) + '\t' + str(gene_loc_list[x][1]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + ';Parent=gene:' + gene_product_list[x] + ';biotype=protein_coding\n')
+		# Hard coded for the bad HPIV3 reference
+		gene_name = gene_product_list[x].replace("potein", "protein")
+		gene_start = str(gene_loc_list[x][0])
+		gene_end = gene_loc_list[x][1]
+		if(gene_name == "hemagglutinin-neuraminidase"):
+			gene_end = int(gene_end) - 6
+			gene_name = "HN"
+		elif(gene_name == "phosphoprotein"):
+			gene_name = "P"
+		elif(gene_name == "nucleocapsid_protein"):
+			gene_name = "NP"
+		elif(gene_name == "matrix_protein"):
+			gene_name = "M"
+		elif(gene_name == "large_protein"):
+			gene_name = "L"
+		elif(gene_name == "fusion_protein"):
+			gene_name = "F"
+		gene_end = str(gene_end)
+		if(gene_name != "C_protein" and gene_name != "D_protein"):
+			g.write(name + '\tLAVA\tgene\t' + gene_start + '\t' + gene_end + '\t.\t+\t.\tID=gene:' + gene_name + ';biotype=protein_coding\n')
+			g.write(name + '\tLAVA\tCDS\t' +  gene_start + '\t' + gene_end + '\t.\t+\t0\tID=CDS:' + gene_name + ';Parent=transcript:' + gene_name + ';biotype=protein_coding\n')
+			g.write(name + '\tLAVA\ttranscript\t' + gene_start + '\t' + gene_end + '\t.\t+\t.\tID=transcript:' + gene_name + ';Parent=gene:' + gene_name + ';biotype=protein_coding\n')
 		
 		## For ribosomal slippage, creates fake new protein to get the second set of values
 		# if len(gene_loc_list[x]) == 4:
@@ -549,14 +568,14 @@ if __name__ == '__main__':
 
 			# Cleans up vcf files to fix ploidy issues
 			subprocess.call('mv ' + sample + '.vcf.validation ' + sample + '.vcf', shell=True)
-			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)}1\' ' + 
+			subprocess.call('awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)gsub("1/1","0/1",$10)gsub("1/1","1/0",$11)}1\' ' + 
 							sample + '.vcf > ' + sample + '_p.vcf', shell=True)
 
 			# Removes ambiguous calls (Y, R, M, K, S, W)
-			subprocess.call('awk \'$1 ~ /^#/ {print $0;next} {if ($4 ~ /A|C|T|G/ && $5 ~ /.|A|C|T|G/) print $0}\' ' + sample + '_p.vcf > ' + sample + '_filtered.vcf', shell=True)
+			# subprocess.call('awk \'$1 ~ /^#/ {print $0;next} {if ($4 ~ /A|C|T|G/ && $5 ~ /.|A|C|T|G/) print $0}\' ' + sample + '_p.vcf > ' + sample + '_filtered.vcf', shell=True)
 
 			# Converts .vcfs to files annovar can accept (.avinput).
-			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_filtered.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
+			subprocess.call(dir_path + '/convert2annovar.pl -withfreq -format vcf4 -includeinfo ' + sample + '_p.vcf > ' + sample + '.avinput 2>> ' + new_dir + '/lava.log', shell=True)
 			subprocess.call(dir_path + '/annotate_variation.pl -outfile ' + sample + ' -v -buildver AT ' + sample + '.avinput ' + new_dir + '/db/ 2>> ' + new_dir + '/lava.log', shell=True)
 
 			# For reference sequence, grabs information (location of this information differs for reference).
@@ -637,7 +656,7 @@ if __name__ == '__main__':
 	## add_ribosomal_slippage(new_dir)
 
 	# Gets rid of underscores in protein names.
-	subprocess.call('awk \'{gsub("_"," "); print}\' ' + new_dir + '/proteins.csv > a.tmp && mv a.tmp ' + new_dir + '/proteins.csv', shell=True)
+	# subprocess.call('awk \'{gsub("_"," "); print}\' ' + new_dir + '/proteins.csv > a.tmp && mv a.tmp ' + new_dir + '/proteins.csv', shell=True)
 
 	# Removes intermediate files (default behavior), unless otherwise specified by -save.
 	print('Cleaning up...')
