@@ -475,7 +475,7 @@ if __name__ == '__main__':
 	subprocess.call('bwa index ' + reference_fasta + ' 2> ' + new_dir + '/lava.log', shell=True)
 	print('Done indexing.')
 	subprocess.call('samtools faidx ' + reference_fasta + ' 2>> ' + new_dir + '/lava.log', shell=True)
-	subprocess.call(GATK + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR 2>> ' + new_dir + '/lava.log', shell=True)
+	subprocess.call(GATK + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR --QUIET true 2>> ' + new_dir + '/lava.log', shell=True)
 
 	# For every sequence, aligns to consensus fasta and creates .bam and subsequent pileup files.
 	# Removes PCR duplicates if -dedup specified, and extracts genome coverage data.
@@ -651,6 +651,9 @@ if __name__ == '__main__':
 
 			# Gets rid of "delins" in merged.csv
 			subprocess.call('grep -v "delins" ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
+
+			#Gets rid of new lines in merged.csv
+			subprocess.call('awk NF ' + new_dir + '/merged.csv > a.tmp && mv a.tmp ' + new_dir + '/merged.csv', shell=True)
 
 	# Corrects for ribosomal slippage.
 	## add_ribosomal_slippage(new_dir)
