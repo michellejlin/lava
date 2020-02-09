@@ -131,7 +131,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 5. ``import: not authorized `subprocess' @ error/constitute.c/WriteImage/1028.``
 	
-	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
+	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python3 /Users/uwvirongs/Downloads/lava/lava.py"`.
 
 6. ``IOError: [Errno 2] No such file or directory: 'Example1_metadata.csv'``
 
