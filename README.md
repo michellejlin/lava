@@ -42,7 +42,7 @@ Now we have to make sure the script can be run from anywhere. Navigate to your m
 6. Type in `pwd`. This will give you the current path. Copy this path.
 7. Type in `nano ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
 8. This will open up an editor in the terminal window. Scroll down to get to the bottom of this file.
-9. Type in ``alias lava.py="python INSERTPATHHERE/lava.py"`` into the terminal, where you replace INSERTPATHHERE with the path you just copied. An example might look like this: `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
+9. Type in ``alias lava.py="python3 INSERTPATHHERE/lava.py"`` into the terminal, where you replace INSERTPATHHERE with the path you just copied. An example might look like this: `alias lava.py="python3 /Users/uwvirongs/Downloads/lava/lava.py"`.
 10. Hit Ctrl+X to quit out of the editor. Save when prompted (this may mean typing 'Y') and press Enter for any new prompts that show up.
 11. Type in `source ~/.bashrc` (or replace 'bashrc' with 'bash_profile' for Mac OSX), to refresh the file.
 
