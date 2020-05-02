@@ -64,7 +64,7 @@ def helpMessage() {
 
         --PNG           Output results as a png. Do not use with -nuc.
         
-        --DEDUP         Optional flag, will perform automatic removal of PCR
+        --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
 
         --OUT           Optional flag to name the output folder that lava will stuff
@@ -139,7 +139,10 @@ if (!params.OUTDIR){ exit 1, "Must provide output directory with --OUTDIR" }
 if (!params.CONTROL_FASTQ){ exit 1, "Must provide control FASTQ with --ControlFastq" }
 if (!params.INPUT_FOLDER){ exit 1, "Must provide input folder with --INPUT_FOLDER" }
 
-
+params.GENBANK = 'False'
+params.GFF = 'False'
+params.FASTA = 'False'
+params.DEDUPLICATE = false
 // Make sure the output directory has a trailing slash
 if (!params.OUTDIR.endsWith("/")){
     params.OUTDIR = "${params.OUTDIR}/"
@@ -154,8 +157,11 @@ METADATA_FILE = file(params.METADATA)
 
 include run_lava from './Modules.nf'
 include setup from './Modules.nf'
-
-
+include createGFF from './Modules.nf'
+PULL_ENTREZ = file("./pull_entrez.py")
+MAFFT_PREP = file("./mafft_prep.py")
+GFF_WRITE = file("./write_gff.py")
+CONTROL_FASTQ = file(params.CONTROL_FASTQ)
  input_read_ch = Channel
  .fromPath("${params.INPUT_FOLDER}*fastq")
  .collect()
@@ -163,12 +169,23 @@ include setup from './Modules.nf'
  input_read_ch.view()
 // Run the workflow
 workflow {
-
-        run_lava(
-            METADATA_FILE,
-            input_read_ch
+        createGFF ( 
+            PULL_ENTREZ,
+            params.GENBANK, 
+            CONTROL_FASTQ,
+            MAFFT_PREP,
+            GFF_WRITE
         )
+
+        // run_lava(
+        //     METADATA_FILE,
+        //     input_read_ch,
+        //     params.GENBANK,
+        //     params.GFF,
+        //     params.FASTA,
+        //     params.DEDUPLICATE
+        // )
     publish:
-        run_lava.out to: "${params.OUTDIR}"
+        createGFF.out to: "${params.OUTDIR}"
         //filter_human_single.out[1] to: "${params.OUTDIR}/logs/"
 }

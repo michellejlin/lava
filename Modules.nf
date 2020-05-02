@@ -46,6 +46,10 @@ process run_lava {
     input:
       file METADATA_FILE
       file R1
+      val(GENBANK_ACC)
+      file GFF_FILE
+      file FASTA_FILE
+      val(DEDUPLICATE)
     // Define the output files
     output:
       file "*.html"
@@ -441,13 +445,16 @@ if __name__ == '__main__':
 
 	# Makes sure that we've got a way of pulling annotations, if the user gives -f -g and -q then we only use -f and -g.
 	# If user-provided fasta and gff, copies into directory.
-	if args.f != None and args.g != None:
+	genbank_flag = "${GENBANK_ACC}"
+	gff_flag = "${GFF_FILE}"
+	if genbank_flag != False and gff_flag != False:
 		print('Using -f and -g flags to annotate control fastq, -q flag will be ignored.')
 		print('This method of reference generation assumes that your fasta and .gff file are formatted correctly.')
 		print('If you are using this method and LAVA is crashing or producing whack output verify these files. A helpful guide '
 			'is available in the README.')
-		reference_fasta = args.f
-		reference_gff = args.g
+		fasta_file_flag = "${FASTA_FILE}"
+		reference_fasta = fasta_file_flag
+		reference_gff = gff_flag
 		subprocess.call('cp -p ' + reference_fasta + ' ' + new_dir + '/', shell=True)
 		subprocess.call('cp -p ' + reference_gff + ' ' + new_dir + '/', shell=True)
 		reference_fasta = new_dir + '/' + reference_fasta
@@ -477,7 +484,7 @@ if __name__ == '__main__':
 	subprocess.call('bwa index ' + reference_fasta + ' 2> ' + new_dir + '/lava.log', shell=True)
 	print('Done indexing.')
 	subprocess.call('samtools faidx ' + reference_fasta + ' 2>> ' + new_dir + '/lava.log', shell=True)
-	subprocess.call(GATK + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR --QUIET true 2>> ' + new_dir + '/lava.log', shell=True)
+	subprocess.call('GATK' + ' CreateSequenceDictionary -R ' + reference_fasta + ' --VERBOSITY ERROR --QUIET true 2>> ' + new_dir + '/lava.log', shell=True)
 
 	# For every sequence, aligns to consensus fasta and creates .bam and subsequent pileup files.
 	# Removes PCR duplicates if -dedup specified, and extracts genome coverage data.
@@ -488,19 +495,20 @@ if __name__ == '__main__':
 		subprocess.call("bwa mem -M -R '@RG\\tID:group1\\tSM:" + sample + "\\tPL:illumina\\tLB:lib1\\tPU:unit1' -p -t 6 -L [17,17] " + reference_fasta + ' ' + sample + ' > ' + sample + '.sam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 
 		# Sorts and converts alignments from .sam to .bam.
-		subprocess.call('java -jar ' + PICARD + ' SortSam INPUT=' + sample + '.sam OUTPUT=' + sample + 
+		subprocess.call('java -jar ' + 'PICARD' + ' SortSam INPUT=' + sample + '.sam OUTPUT=' + sample + 
 			'.bam SORT_ORDER=coordinate VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 
 		# If -dedup specified, removes PCR duplicates with PICARD MarkDuplicates.
-		if args.dedup:
+		deduplicate_flag = "${DEDUPLICATE}"
+		if deduplicate_flag:
 			print('Removing PCR duplicates from sample ' + sample + '...')
 			# Tags and removes duplicates using Picard.
-			subprocess.call('java -jar ' + PICARD + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
+			subprocess.call('java -jar ' + 'PICARD' + ' MarkDuplicates INPUT=' + sample + '.bam OUTPUT=' + sample + 
 				'_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true 2>> ' + new_dir + '/lava.log',shell=True)
 			# Copies over the _dedup bam into the actual bam.
 			subprocess.call('cat ' + sample + '_dedup.bam > ' + sample + '.bam' + ' 2>> ' + new_dir + '/lava.log', shell=True)
 			print('Done removing PCR duplicates from sample ' + sample + '.')
-		subprocess.call('java -jar ' + PICARD + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
+		subprocess.call('java -jar ' + 'PICARD' + ' BuildBamIndex INPUT=' + sample + '.bam VERBOSITY=ERROR 2>> ' + new_dir + '/lava.log', shell=True)
 		
 		# Extracts genome coverage information into separate .genomecov files for each sample.
 		subprocess.call('echo sample\\tposition\\tcov > ' + sample + '.genomecov', shell=True)
@@ -511,8 +519,8 @@ if __name__ == '__main__':
 			new_dir + '/lava.log', shell=True)
 
 	# Checks for these files in both the current directory and one directory up, if not present print helpful error message. 
-	if os.path.isfile(dir_path + '/gff3ToGenePred'):
-		subprocess.call(dir_path + '/gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
+	if os.path.isfile('gff3ToGenePred'):
+		subprocess.call('./gff3ToGenePred ' + reference_gff + ' ' + new_dir + '/AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes 2>> ' + new_dir 
 			+ '/lava.log', shell=True)
 	else:
 		print('gff3ToGenePred not found - ')
@@ -695,4 +703,99 @@ if __name__ == '__main__':
 
 
 """
+}
+
+process CreateConsensus { 
+    //Retry at most 3 times
+    //errorStrategy 'retry'
+    //maxRetries 3
+    
+    // Define the Docker container used for this step
+    // TODO FILL THIS IN 
+    container "docker pull quay.io/vpeddu/lava_image:latest"
+
+    // Define the input files
+    input:
+      file METADATA_FILE
+      file R1
+      val(GENBANK_ACC)
+      file GFF_FILE
+      file FASTA_FILE
+      val(DEDUPLICATE)
+    // Define the output files
+    output:
+      file 
+    // Code to be executed inside the task
+    script:
+    """
+    #!/usr/bin/env bash
+
+    echo "Indexing reference"
+
+    bwa index ${FASTA_FILE}
+
+    echo "Finished indexing reference"
+
+    samtools faidx ${FASTA_FILE}
+
+    GATK CreateSequenceDictionary -R ${FASTA_FILE} --VERBOSITY ERROR --QUIET true
+    """
+}
+
+process createGFF { 
+    
+    container "docker pull quay.io/vpeddu/lava_image:latest"
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+    input:
+      file PULL_ENTREZ
+      val(GENBANK)
+      file CONTROL_FASTQ
+      file MAFFT_PREP
+      file GFF_WRITE
+    // Define the output files
+    output: 
+      file "lava_ref.gbk"
+      file "lava_ref.fasta"
+      file "consensus.fasta"
+      file "lava_ref.gff"
+
+    // Code to be executed inside the task
+    script:
+    """
+    #!/bin/bash
+
+    python3 ${PULL_ENTREZ} ${GENBANK}
+
+    ls 
+
+    bwa index lava_ref.fasta
+
+    bwa mem -M lava_ref.fasta ${CONTROL_FASTQ} | samtools view -Sb - > aln.bam
+
+    samtools sort aln.bam -o aln.sorted.bam 
+
+    bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | bcftools call -m -Oz -o calls.vcf.gz 
+
+    tabix calls.vcf.gz
+
+    gunzip calls.vcf.gz 
+
+    bcftools filter -i '(DP4[0]+DP4[1]) < (DP4[2]+DP4[3]) && ((DP4[2]+DP4[3]) > 0)' calls.vcf -o calls2.vcf
+
+    bgzip calls2.vcf
+
+    tabix calls2.vcf.gz 
+
+    cat lava_ref.fasta | bcftools consensus calls2.vcf.gz > consensus.fasta
+
+    # python3 ${MAFFT_PREP}
+
+    # mafft --quiet aligner.fasta > lava.ali
+
+    python3 ${GFF_WRITE}
+
+    """
 }
