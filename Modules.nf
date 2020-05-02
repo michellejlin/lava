@@ -712,7 +712,7 @@ process CreateConsensus {
     
     // Define the Docker container used for this step
     // TODO FILL THIS IN 
-    container "docker pull quay.io/vpeddu/lava_image:latest"
+    container "quay.io/vpeddu/lava_image:latest"
 
     // Define the input files
     input:
@@ -744,7 +744,7 @@ process CreateConsensus {
 
 process createGFF { 
     
-    container "docker pull quay.io/vpeddu/lava_image:latest"
+    container "quay.io/vpeddu/lava_image:latest"
 
     //errorStrategy 'retry'
     //maxRetries 3
@@ -761,15 +761,18 @@ process createGFF {
       file "lava_ref.fasta"
       file "consensus.fasta"
       file "lava_ref.gff"
-
+	  //file "*.pileup"
     // Code to be executed inside the task
     script:
     """
-    #!/bin/bash
-
+    #!/bin/sh
+    
+    #for logging
+    
+    ls -latr 
+    
+    #Entrez fetch function
     python3 ${PULL_ENTREZ} ${GENBANK}
-
-    ls 
 
     bwa index lava_ref.fasta
 
@@ -798,4 +801,38 @@ process createGFF {
     python3 ${GFF_WRITE}
 
     """
+}
+
+
+process run_pipeline { 
+    
+    container "quay.io/vpeddu/lava_image:latest"
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+    input:
+      file R1
+      file CONTROL_FASTQ
+	  file "lava_ref.gbk"
+      file "lava_ref.fasta"
+      file "consensus.fasta"
+      file "lava_ref.gff"
+	  //file "*.pileup"
+    // Define the output files
+    output: 
+
+
+    // Code to be executed inside the task
+    script:
+    """
+    #!/bin/bash
+
+    echo Analyzing variants in ${R1}
+
+	java -jar /VarScan somatic ${CONTROL_FASTQ}.pileup ${R1}.pileup ${R1}.vcf --validation 1 --output-vcf 1 --min-coverage 2
+
+
+    """
+
 }

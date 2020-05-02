@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	31/40fc62	15449	createGFF	FAILED	1	2020-05-01 18:20:10.431	3.1s	3s	-	-	-	-	-

@@ -155,18 +155,18 @@ METADATA_FILE = file(params.METADATA)
  * Import the processes used in this workflow
  */
 
-include run_lava from './Modules.nf'
+//include run_lava from './Modules.nf'
 include setup from './Modules.nf'
 include createGFF from './Modules.nf'
+include run_pipeline from './Modules.nf'
 PULL_ENTREZ = file("./pull_entrez.py")
 MAFFT_PREP = file("./mafft_prep.py")
 GFF_WRITE = file("./write_gff.py")
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
  input_read_ch = Channel
  .fromPath("${params.INPUT_FOLDER}*fastq")
- .collect()
 
- input_read_ch.view()
+ //input_read_ch.view()
 // Run the workflow
 workflow {
         createGFF ( 
@@ -175,6 +175,12 @@ workflow {
             CONTROL_FASTQ,
             MAFFT_PREP,
             GFF_WRITE
+        )
+        run_pipeline ( 
+            input_read_ch,
+            CONTROL_FASTQ,
+            createGFF.out
+
         )
 
         // run_lava(
