@@ -142,7 +142,7 @@ if (!params.INPUT_FOLDER){ exit 1, "Must provide input folder with --INPUT_FOLDE
 params.GENBANK = 'False'
 params.GFF = 'False'
 params.FASTA = 'False'
-params.DEDUPLICATE = false
+params.DEDUPLICATE = 'false' 
 // Make sure the output directory has a trailing slash
 if (!params.OUTDIR.endsWith("/")){
     params.OUTDIR = "${params.OUTDIR}/"
@@ -157,32 +157,71 @@ METADATA_FILE = file(params.METADATA)
 
 //include run_lava from './Modules.nf'
 include setup from './Modules.nf'
-include createGFF from './Modules.nf'
-include run_pipeline from './Modules.nf'
+include CreateGFF from './Modules.nf'
+include Alignment_prep from './Modules.nf'
+include Align_samples from './Modules.nf' 
+include Create_Merged_CSV from './Modules.nf'
+include Run_pipeline from './Modules.nf'
+
+
 PULL_ENTREZ = file("./pull_entrez.py")
 MAFFT_PREP = file("./mafft_prep.py")
 GFF_WRITE = file("./write_gff.py")
+INITIALIZE_MERGED_CSV = file('./initialize_merged_csv.py')
+
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
+FASTA = file(params.FASTA)
  input_read_ch = Channel
  .fromPath("${params.INPUT_FOLDER}*fastq")
+
+// input_read_ch.view()
+
+
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:false)
+
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:true)
+    .map{ row-> tuple(file(row.Sample), (row.Passage)) }
+
+input_read_ch.groupTuple().view()
 
  //input_read_ch.view()
 // Run the workflow
 workflow {
-        createGFF ( 
+        CreateGFF ( 
             PULL_ENTREZ,
             params.GENBANK, 
             CONTROL_FASTQ,
             MAFFT_PREP,
             GFF_WRITE
         )
-        run_pipeline ( 
-            input_read_ch,
-            CONTROL_FASTQ,
-            createGFF.out
-
+        
+        Alignment_prep ( 
+            CreateGFF.out[0],
+            CreateGFF.out[1],
+            CreateGFF.out[2],
+            CreateGFF.out[3]
         )
 
+        Align_samples ( 
+            input_read_ch,
+            Alignment_prep.out,
+            params.INPUT_FOLDER
+        )
+
+        Create_Merged_CSV ( 
+            Align_samples.out.collect(),
+            CreateGFF.out[3],
+            INITIALIZE_MERGED_CSV
+
+
+        )
+        Run_pipeline ( 
+            input_read_ch
+        )
         // run_lava(
         //     METADATA_FILE,
         //     input_read_ch,
@@ -192,6 +231,6 @@ workflow {
         //     params.DEDUPLICATE
         // )
     publish:
-        createGFF.out to: "${params.OUTDIR}"
+        Align_samples.out to: "${params.OUTDIR}"
         //filter_human_single.out[1] to: "${params.OUTDIR}/logs/"
 }

@@ -118,7 +118,7 @@ z.close()
 
 
 nullo, genome = read_fasta('consensus.fasta')
-subprocess.call('mafft --quiet ' + 'aligner.fasta > ' + 'lava.ali', shell=True)
+subprocess.call('/usr/local/miniconda/bin/mafft --quiet ' + 'aligner.fasta > ' + 'lava.ali', shell=True)
 ali_list, ali_genomes = read_fasta('lava.ali')
 ref_seq = ali_genomes[1]
 our_seq = ali_genomes[0]
