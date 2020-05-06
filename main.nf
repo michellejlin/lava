@@ -167,6 +167,10 @@ include Pipeline_prep from './Modules.nf'
 include Create_VCF from './Modules.nf'
 include Ref_done from './Modules.nf'
 
+PULL_ENTREZ = file("./pull_entrez.py")
+MAFFT_PREP = file("./mafft_prep.py")
+GFF_WRITE = file("./write_gff.py")
+INITIALIZE_MERGED_CSV = file('./initialize_merged_csv.py')
 
 PULL_ENTREZ = file("./pull_entrez.py")
 MAFFT_PREP = file("./mafft_prep.py")
