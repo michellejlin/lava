@@ -217,11 +217,13 @@ workflow {
         Align_samples ( 
             input_read_ch,
             Alignment_prep.out[0],
-            params.INPUT_FOLDER
+            params.INPUT_FOLDER,
+            input_read_ch.first()
+            
         )
 
         Pipeline_prep ( 
-            Align_samples.out.collect(),
+            Align_samples.out[0].collect(),
             CreateGFF.out[3],
             INITIALIZE_MERGED_CSV,
             CreateGFF.out[4],
@@ -240,7 +242,10 @@ workflow {
         Ref_done ( 
             input_read_ch.first(),
             params.AF,
-            Create_VCF.out[0]
+            Create_VCF.out[0],
+            CreateGFF.out[4],
+            Pipeline_prep.out[3],
+            Align_samples.out[1]
         )
         // run_lava(
         //     METADATA_FILE,

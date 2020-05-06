@@ -6,68 +6,8 @@
  * Define the processes used in this workflow
  */
 
-process setup{ 
-
-    //Retry at most 3 times
-    errorStrategy 'retry'
-    maxRetries 3
-    
-    // Define the Docker container used for this step
-    // TODO FILL THIS IN 
-    container "docker pull quay.io/vpeddu/lava_image:latest"
-
-    // Define the input files
-    input:
-      file R1
-    // Define the output files
-
-    script: 
-    """
-    #!/usr/bin/env bash
-
-    ls 
 
 
-    """
-}
-
-
-process CreateConsensus { 
-    //Retry at most 3 times
-    //errorStrategy 'retry'
-    //maxRetries 3
-    
-    // Define the Docker container used for this step
-    // TODO FILL THIS IN 
-    container "quay.io/vpeddu/lava_image:latest"
-
-    // Define the input files
-    input:
-      file METADATA_FILE
-      file R1
-      val(GENBANK_ACC)
-      file GFF_FILE
-      file FASTA_FILE
-      val(DEDUPLICATE)
-    // Define the output files
-    output:
-      file 
-    // Code to be executed inside the task
-    script:
-    """
-    #!/usr/bin/env bash
-
-    echo "Indexing reference"
-
-    /usr/local/miniconda/bin/bwa index ${FASTA_FILE}
-
-    echo "Finished indexing reference"
-
-    /usr/local/miniconda/bin/samtools faidx ${FASTA_FILE}
-
-    GATK CreateSequenceDictionary -R ${FASTA_FILE} --VERBOSITY ERROR --QUIET true
-    """
-}
 
 process CreateGFF { 
     
@@ -153,7 +93,7 @@ process Alignment_prep {
 	  //file "*.pileup"
     // Define the output files
     output: 
-	tuple file('lava_ref.fasta.amb'), file('lava_ref.fasta.bwt'), file('lava_ref.fasta.sa'), file('lava_ref.fasta'), file('lava_ref.fasta.ann'), file('lava_ref.fasta.pac')
+	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	file "AT_refGene.txt"
 	file "AT_refGeneMrna.fa"
 
@@ -162,17 +102,17 @@ process Alignment_prep {
     """
     #!/bin/bash
 
-    /usr/local/miniconda/bin/bwa index lava_ref.fasta
+    /usr/local/miniconda/bin/bwa index consensus.fasta
 
-	/usr/local/miniconda/bin/samtools faidx lava_ref.fasta 
+	/usr/local/miniconda/bin/samtools faidx consensus.fasta 
 
-	gatk CreateSequenceDictionary -R lava_ref.fasta  --VERBOSITY ERROR --QUIET true
+	gatk CreateSequenceDictionary -R consensus.fasta  --VERBOSITY ERROR --QUIET true
 
 
 	# Annovar db build step
 	gff3ToGenePred lava_ref.gff AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes
 
-	retrieve_seq_from_fasta.pl --format refGene --seqfile lava_ref.fasta AT_refGene.txt --out AT_refGeneMrna.fa 
+	retrieve_seq_from_fasta.pl --format refGene --seqfile consensus.fasta AT_refGene.txt --out AT_refGeneMrna.fa 
 
     """
 }
@@ -187,11 +127,15 @@ process Align_samples {
 
     input:
 	tuple file(R1), val(PASSAGE)
-	tuple file('lava_ref.fasta.amb'), file('lava_ref.fasta.bwt'), file('lava_ref.fasta.sa'), file('lava_ref.fasta'), file('lava_ref.fasta.ann'), file('lava_ref.fasta.pac')
+	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	val(INPUT)
+	tuple val(FIRST_FILE), val(PASSAGE)
 
 	output: 
 	tuple file(R1), file("*.pileup")
+	file "FIRSTFILE.bam" optional true
+
+
 
 	shell:
 	'''
@@ -200,7 +144,7 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] lava_ref.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
@@ -219,7 +163,17 @@ process Align_samples {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  !{R1}.bam >> !{R1}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f lava_ref.fasta !{R1}.bam > !{R1}.pileup
+	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta !{R1}.bam > !{R1}.pileup
+
+
+		if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
+		then 
+			echo `basename !{FIRST_FILE}` found
+			mv !{R1}.bam FIRSTFILE.bam
+
+		else 
+			echo "not first file"
+	fi
 
 
 	'''
@@ -239,13 +193,14 @@ process Pipeline_prep {
 		file "lava_ref.gff"
 		file INITIALIZE_MERGED_CSV
 		file CONTROL_FASTQ	
-		tuple file('lava_ref.fasta.amb'), file('lava_ref.fasta.bwt'), file('lava_ref.fasta.sa'), file('lava_ref.fasta'), file('lava_ref.fasta.ann'), file('lava_ref.fasta.pac')
+		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 
 
 	output: 
 		file 'merged.csv'
 		file 'proteins.csv'
 		file "${CONTROL_FASTQ}.pileup"
+		file "${CONTROL_FASTQ}.bam"
 
 	script:
 	"""
@@ -258,7 +213,7 @@ process Pipeline_prep {
 
 	# Creating pileup for control fastq here 
 
-	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] lava_ref.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
+	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=${CONTROL_FASTQ}.sam OUTPUT=${CONTROL_FASTQ}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
@@ -276,7 +231,7 @@ process Pipeline_prep {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  ${CONTROL_FASTQ}.bam >> ${CONTROL_FASTQ}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f lava_ref.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
+	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
 
 	
 
@@ -354,7 +309,9 @@ process Ref_done {
 		tuple file(FIRST_FILE), val(PASSAGE)
 		val(AF)
 		file exonic_variant_function
-
+		file CONTROL_FASTQ
+		file CONTROL_BAM
+		file FIRSTBAM
 
 
 	output: 
@@ -362,15 +319,41 @@ process Ref_done {
 	'''
 	#!/bin/bash
 
-	echo  !{FIRST_FILE}
+	echo !{FIRST_FILE}
 
 	# Michelle what the hell is with all of this awk 
 
-		awk -F":" \'($18+0)>=1{print}\' !{FIRST_FILE}.exonic_variant_function > ref.txt
-		
-		#awk -v af=!{AF} -F":" \'($18+0)>={print}\' !{FIRST_FILE}.exonic_variant_function > ref.txt
+	#TODO NO OPTION FOR ALLELE FILTERING RIGHT NOW
+	awk -F":" \'($18+0)>=1{print}\' !{FIRST_FILE}.exonic_variant_function > ref.txt
+
+	grep "SNV" ref.txt > a.tmp && mv a.tmp ref.txt 
+
+	awk -v ref=!{CONTROL_FASTQ} -F '[\t:,]' \
+	'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" \
+	to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
+
+	printf !{FIRST_FILE}"," >> reads.csv
+
+	/usr/local/miniconda/bin/samtools flagstat !{FIRSTBAM} | \
+	awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+
+	 echo sample	position	cov > !{FIRST_FILE}.genomecov
+	 /usr/local/miniconda/bin/bedtools genomecov -d -ibam !{FIRSTBAM} >> !{FIRST_FILE}.genomecov
 
 
+	 # TODO AF FLAG HERE 
+
+	 awk -F":" '($24+0)>=1{print}' !{FIRST_FILE}.exonic_variant_function > !{FIRST_FILE}.txt 
+
+	 grep "SNV" !{FIRST_FILE}.txt > a.tmp
+	 grep "stop" !{FIRST_FILE}.txt >> a.tmp
+	 mv a.tmp !{FIRST_FILE}.txt
+
+	 awk -v name=!{FIRST_FILE} -v \
+	 sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}'\
+	!{FIRST_FILE}.txt > !{FIRST_FILE}.csv
 
 	'''
 }
+
+
