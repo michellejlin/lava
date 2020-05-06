@@ -233,7 +233,8 @@ workflow {
             Pipeline_prep.out[2],
             Align_samples.out[0],
             Alignment_prep.out[1],
-            input_read_ch.first()
+            input_read_ch.first(),
+            Alignment_prep.out[2]
         )
 
         Ref_done ( 

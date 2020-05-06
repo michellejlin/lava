@@ -155,6 +155,7 @@ process Alignment_prep {
     output: 
 	tuple file('lava_ref.fasta.amb'), file('lava_ref.fasta.bwt'), file('lava_ref.fasta.sa'), file('lava_ref.fasta'), file('lava_ref.fasta.ann'), file('lava_ref.fasta.pac')
 	file "AT_refGene.txt"
+	file "AT_refGeneMrna.fa"
 
     // Code to be executed inside the task
     script:
@@ -199,7 +200,7 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	bwa mem -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] lava_ref.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] lava_ref.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
@@ -296,6 +297,7 @@ process Create_VCF {
 		tuple file(R1), file(R1_PILEUP)
 		file ATREF
 		tuple val(FIRST_FILE), val(PASSAGE)
+		file ATREF_MRNA
 
 
 	output: 
@@ -303,7 +305,7 @@ process Create_VCF {
 	shell:
 	'''
 	#!/bin/bash
-
+## 
 	echo Analyzing variants in sample !{R1}
 
 	java -jar /usr/local/bin/VarScan somatic !{CONTROL_PILEUP} !{R1_PILEUP} !{R1}.vcf --validation 1 --output-vcf 1 --min-coverage 2
@@ -312,7 +314,15 @@ process Create_VCF {
 
 	awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)gsub("1/1","0/1",$10)gsub("1/1","1/0",$11)}1\' !{R1}.vcf > !{R1}_p.vcf
 
-	convert2annovar.pl -withfreq -format vcf4 -includeinfo !{R1}_p.vcf > !{R1}.avinput 
+	file="!{R1}""_p.vcf"
+
+
+	sed 's/NC_039477.1/lava/g' !{R1}_p.vcf > test.txt 
+
+	mv test.txt !{R1}_p.vcf
+
+	#convert2annovar.pl -withfreq -format vcf4 -includeinfo !{R1}_p.vcf > !{R1}.avinput 
+	convert2annovar.pl -withfreq -format vcf4old -includeinfo !{R1}_p.vcf > !{R1}.avinput 
 
 	annotate_variation.pl -outfile !{R1} -v -buildver AT !{R1}.avinput .
 
