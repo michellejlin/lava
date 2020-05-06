@@ -26,26 +26,27 @@ RUN cd /usr/local/ && \
     ln -s /usr/local/miniconda/bin/conda /usr/local/bin/ && \
     conda init bash && \
     /bin/bash -c "source /root/.bashrc" && \
-    conda install -c bioconda bowtie2 krakenuniq kallisto gmap snap-aligner openssl=1.0 samtools bedtools bwa mafft bcftools && \
+    conda install -c bioconda bowtie2 krakenuniq kallisto gmap snap-aligner openssl=1.0 samtools bedtools bwa mafft bcftools tabix && \
     conda clean -afy
-    
 # Install Picard 
 
-RUN wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar
-ENV PATH=/picard.jar:$PATH
+RUN wget https://github.com/broadinstitute/picard/releases/download/2.18.15/picard.jar -P /usr/bin/
+# ENV PATH="/picard.jar:${PATH}"
+# ENV picard.jar /picard.jar
 
 # Install GATK
 RUN wget https://github.com/broadinstitute/gatk/releases/download/4.0.11.0/gatk-4.0.11.0.zip && unzip gatk-4.0.11.0.zip
-ENV PATH=gatk-4.0.11.0/gatk:$PATH
+ENV PATH=/gatk-4.0.11.0/:$PATH
+#ENV GATK gatk-4.0.11.0/gatk
 
 # Install VarScan 
 RUN wget --no-check-certificate https://sourceforge.net/projects/varscan/files/latest/download && mv download VarScan
-ENV PATH=/VarScan:$PATH
+RUN mv VarScan /usr/local/bin/
 
 # Install gff3ToGenePred
 RUN wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred
-RUN chmod +x /gff3ToGenePred
-ENV PATH=/gff3ToGenePred:$PATH
+RUN chmod +x gff3ToGenePred
+RUN mv gff3ToGenePred /usr/local/bin
 
 
 

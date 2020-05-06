@@ -1,0 +1,14 @@
+{
+    "INPUT_FOLDER": "s3://covid19-input-data/amin/",
+    "INPUT_SUFFIX": ".fastq.gz",
+    "ENTREZ_EMAIL": "vpeddu@uw.edu",
+    "OUTDIR": "s3://covid19-input-data/amin/out/",
+    "SNAP_INDEXES": "s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.00/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.01/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.02/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.03/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.04/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.05/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.06/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.07/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.08/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.09/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.10/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.11/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.12/,s3://clomp-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.13/",
+    "SNAP_OPTIONS": "-mrl 65 -d 9 -h 30000 -om 1 -omax 20",
+    "TRIMMOMATIC_OPTIONS": ":2:30:10 SLIDINGWINDOW:4:20",
+    "BWT_DB_LOCATION": "s3://clomp-reference-data/tool_specific_data/CLOMP/hg38/",
+    "TRIMMOMATIC_ADAPTER_PATH": "s3://clomp-reference-data/tool_specific_data/CLOMP/adapters.fa",
+    "TRIMMOMATIC_JAR_PATH": "s3://clomp-reference-data/tool_specific_data/CLOMP/trimmomatic-0.38.jar",
+    "KRAKEN_DB_PATH": "s3://clomp-reference-data/tool_specific_data/CLOMP/kraken_db/"
+
+}

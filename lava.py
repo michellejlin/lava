@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ## lava Version 1.03
 ## Longitudinal Analysis of Viral Alleles 
 

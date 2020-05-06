@@ -46,7 +46,9 @@ def helpMessage() {
                         control fastq. This option must be used with the -g flag to
                         specify the protein annotations relative to the start of this
                         fasta.
-                        
+
+        --AF            pecify an allele frequency percentage to cut off - with a minimum of 1 percent - in whole numbers. default = ' '
+
         --GFF           Specify a reference gff file with the protein annotations for
                         the reference fasta supplied with the -f flag. This option
                         must be paired with the -f flag.
@@ -64,7 +66,7 @@ def helpMessage() {
 
         --PNG           Output results as a png. Do not use with -nuc.
         
-        --DEDUP         Optional flag, will perform automatic removal of PCR
+        --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
 
         --OUT           Optional flag to name the output folder that lava will stuff
@@ -139,7 +141,11 @@ if (!params.OUTDIR){ exit 1, "Must provide output directory with --OUTDIR" }
 if (!params.CONTROL_FASTQ){ exit 1, "Must provide control FASTQ with --ControlFastq" }
 if (!params.INPUT_FOLDER){ exit 1, "Must provide input folder with --INPUT_FOLDER" }
 
-
+params.GENBANK = 'False'
+params.GFF = 'False'
+params.FASTA = 'False'
+params.DEDUPLICATE = 'false' 
+params.AF = ' '
 // Make sure the output directory has a trailing slash
 if (!params.OUTDIR.endsWith("/")){
     params.OUTDIR = "${params.OUTDIR}/"
@@ -152,23 +158,94 @@ METADATA_FILE = file(params.METADATA)
  * Import the processes used in this workflow
  */
 
-include run_lava from './Modules.nf'
+//include run_lava from './Modules.nf'
 include setup from './Modules.nf'
+include CreateGFF from './Modules.nf'
+include Alignment_prep from './Modules.nf'
+include Align_samples from './Modules.nf' 
+include Pipeline_prep from './Modules.nf'
+include Create_VCF from './Modules.nf'
+include Ref_done from './Modules.nf'
 
 
+PULL_ENTREZ = file("./pull_entrez.py")
+MAFFT_PREP = file("./mafft_prep.py")
+GFF_WRITE = file("./write_gff.py")
+INITIALIZE_MERGED_CSV = file('./initialize_merged_csv.py')
+
+CONTROL_FASTQ = file(params.CONTROL_FASTQ)
+FASTA = file(params.FASTA)
  input_read_ch = Channel
  .fromPath("${params.INPUT_FOLDER}*fastq")
- .collect()
 
- input_read_ch.view()
+// input_read_ch.view()
+
+
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:false)
+
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:true)
+    .map{ row-> tuple(file(row.Sample), (row.Passage)) }
+
+input_read_ch.groupTuple().view()
+
+ //input_read_ch.view()
 // Run the workflow
 workflow {
-
-        run_lava(
-            METADATA_FILE,
-            input_read_ch
+        CreateGFF ( 
+            PULL_ENTREZ,
+            params.GENBANK, 
+            CONTROL_FASTQ,
+            MAFFT_PREP,
+            GFF_WRITE
         )
+        
+        Alignment_prep ( 
+            CreateGFF.out[0],
+            CreateGFF.out[1],
+            CreateGFF.out[2],
+            CreateGFF.out[3]
+        )
+
+        Align_samples ( 
+            input_read_ch,
+            Alignment_prep.out[0],
+            params.INPUT_FOLDER
+        )
+
+        Pipeline_prep ( 
+            Align_samples.out.collect(),
+            CreateGFF.out[3],
+            INITIALIZE_MERGED_CSV,
+            CreateGFF.out[4],
+            Alignment_prep.out[0]
+        )
+
+        Create_VCF ( 
+            CreateGFF.out[4],
+            Pipeline_prep.out[2],
+            Align_samples.out[0],
+            Alignment_prep.out[1],
+            input_read_ch.first()
+        )
+
+        Ref_done ( 
+            input_read_ch.first(),
+            params.AF,
+            Create_VCF.out[0]
+        )
+        // run_lava(
+        //     METADATA_FILE,
+        //     input_read_ch,
+        //     params.GENBANK,
+        //     params.GFF,
+        //     params.FASTA,
+        //     params.DEDUPLICATE
+        // )
     publish:
-        run_lava.out to: "${params.OUTDIR}"
+        Align_samples.out to: "${params.OUTDIR}"
         //filter_human_single.out[1] to: "${params.OUTDIR}/logs/"
 }
