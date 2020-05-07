@@ -191,6 +191,6 @@ If you experience any difficulties doing this, or have any other questions about
 
 
 
-### test nextflow command 
+### example 2 nextflow command 
 
-`nextflow  run  main.nf --INPUT_FOLDER example/ --OUTDIR outdir/ --GENBANK NC_039477.1 --CONTROL_FASTQ example/Example2_file1.fastq --METADATA example/Example2_metadata.csv -resume -with-trace -with-docker ubuntu:18.04`
+`nextflow  run  vpeddu/lava --INPUT_FOLDER test_data/ --OUTDIR outdir/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA example/Example2_metadata.csv -resume -with-trace -with-docker ubuntu:18.04`
