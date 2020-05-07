@@ -188,3 +188,9 @@ If you don't want to use the template GFF, or want to troubleshoot any problems 
 | Must match the name of your .fasta reference sequence: both the first line, and the file name. | Anything in this column. | One of 3 things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | Beginning position of the protein. | End position of the protein. | Only contains "." | Only contains "+". | Contains a "0" for all CDS lines, and "." for all others. | Contains ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
 
 If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
+
+
+
+### test nextflow command 
+
+`nextflow  run  main.nf --INPUT_FOLDER example/ --OUTDIR outdir/ --GENBANK NC_039477.1 --CONTROL_FASTQ example/Example2_file1.fastq --METADATA example/Example2_metadata.csv -resume -with-trace -with-docker ubuntu:18.04`
