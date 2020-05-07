@@ -147,7 +147,7 @@ def process(ref_seq_gb, fastq, new_dir):
 	subprocess.call('bwa index ' + new_dir + '/lava_ref.fasta 2> ' + new_dir + '/lava.log', shell=True)
 
 	## Deleted the -v flag to try to fix the dang consensus generation 
-	# Aligns first fartq to downloaded reference fasta.
+	# Aligns first fastq to downloaded reference fasta.
 	subprocess.call('bwa mem -M ' + new_dir + '/lava_ref.fasta ' + fastq + ' > ' + new_dir + '/aln.sam 2>> ' + new_dir + '/lava.log', shell=True)
 	# Converts sam to bam.
 	subprocess.call('samtools view -S -b ' + new_dir + '/aln.sam > ' + new_dir + '/aln.bam 2>> '+ new_dir + '/lava.log', shell=True)

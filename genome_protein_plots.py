@@ -322,7 +322,7 @@ if __name__ == '__main__':
 		# Creates a graph with x-axis being genome length (based on protein csv).
 		## Took out active_scroll = "wheel_zoom" -RCS
 		genome_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name.split('/')[1], sizing_mode = 'scale_width',
+			title=sample_name.split('/')[0], sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		
 		# Plots by nucleotide letter change.
@@ -480,7 +480,8 @@ if __name__ == '__main__':
 	
 # Outputs files into html or png files as requested.
 	if(args.nuc):
-		output_file(new_dir + "/" + "nucleotide_changes.html", title=plot_title)
+		#output_file(new_dir + "/" + "nucleotide_changes.html", title=plot_title)
+		output_file("nucleotide_changes.html", title=plot_title)
 		show(tabs_genomes)
 	else:
 		if(args.png):
@@ -488,7 +489,7 @@ if __name__ == '__main__':
 			export_png(plots_genomes, filename="Genome_Plots.png")
 		else:
 			# Saves output both as standalone HTML file and as a javascript element and a script tag.
-			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
+			output_file("LAVA_plots.html", title=plot_title)
 			print('Opening output file ' + new_dir + '/' + new_dir + '_plots.html')
 #			output_file(new_dir + "/" + new_dir + "_plots.html", title=plot_title)
 # 			## subprocess.call('cp ngls_test.html ' + new_dir + '/', shell=True)
