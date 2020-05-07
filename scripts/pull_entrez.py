@@ -12,6 +12,7 @@ import os.path
 import pandas as pd
 import sys
 
+Entrez.email = 'vpeddu@uw.edu'
 record = Entrez.read(Entrez.esearch(db='nucleotide', term= sys.argv[1]))
 h2 = Entrez.efetch(db='nucleotide', id=record["IdList"][0], rettype='gb', retmode='text')
 e = open('lava_ref.gbk', 'w')
