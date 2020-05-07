@@ -129,11 +129,12 @@ process Align_samples {
 	tuple file(R1), val(PASSAGE)
 	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	val(INPUT)
-	tuple val(FIRST_FILE), val(PASSAGE)
+	tuple val(FIRST_FILE), val(NULL)
 
 	output: 
-	tuple file(R1), file("*.pileup")
+	tuple file(R1), file("*.pileup"), file("*.bam"), val(PASSAGE)
 	file "FIRSTFILE.bam" optional true
+	file "${R1}.genomecov"
 
 
 
@@ -249,19 +250,26 @@ process Create_VCF {
 	input: 
 		file CONTROL_FASTQ
 		file CONTROL_PILEUP
-		tuple file(R1), file(R1_PILEUP)
+		tuple file(R1), file(R1_PILEUP), file(BAM), val(PASSAGE)
 		file ATREF
-		tuple val(FIRST_FILE), val(PASSAGE)
+		tuple val(FIRST_FILE), val(NULL)
 		file ATREF_MRNA
 
 
 	output: 
 		file "*exonic_variant_function" optional true
+		tuple file(R1), file("*.bam"), file( "*.exonic_variant_function.samp"), val(PASSAGE)
+
 	shell:
 	'''
 	#!/bin/bash
-## 
+
+	ls -latr
+
 	echo Analyzing variants in sample !{R1}
+
+	# here for file passthrough (input -> output)
+	mv !{BAM} !{BAM}.bam 
 
 	java -jar /usr/local/bin/VarScan somatic !{CONTROL_PILEUP} !{R1_PILEUP} !{R1}.vcf --validation 1 --output-vcf 1 --min-coverage 2
 
@@ -287,11 +295,12 @@ process Create_VCF {
 	if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
 		then 
 			echo `basename !{FIRST_FILE}` found
+			touch blank.exonic_variant_function.samp
 
 		else 
 			echo "not first file"
 			echo `basename !{R1}` `basename !{FIRST_FILE}`
-			rm *exonic_variant_function
+			mv !{R1}.exonic_variant_function !{R1}.exonic_variant_function.samp
 	fi
 			
 	'''
@@ -312,9 +321,13 @@ process Ref_done {
 		file CONTROL_FASTQ
 		file CONTROL_BAM
 		file FIRSTBAM
+		file METADATA
 
 
-	output: 
+	output:
+		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file("${FIRST_FILE}.csv")
+		
+ 
 	shell:
 	'''
 	#!/bin/bash
@@ -349,11 +362,177 @@ process Ref_done {
 	 grep "stop" !{FIRST_FILE}.txt >> a.tmp
 	 mv a.tmp !{FIRST_FILE}.txt
 
-	 awk -v name=!{FIRST_FILE} -v \
-	 sample=$SAMPLE -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$49+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$46","sample}'\
-	!{FIRST_FILE}.txt > !{FIRST_FILE}.csv
+	SAMPLE="$(awk -F"," -v name=!{FIRST_FILE} '$1==name {print $2}' !{METADATA})"
+	
+	 awk -v name=!{FIRST_FILE} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$43","sample}' !{FIRST_FILE}.txt > !{FIRST_FILE}.csv
 
 	'''
 }
 
 
+process Extract_variants { 
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+
+	container "quay.io/vpeddu/lava_image:latest"
+
+	input: 
+		tuple val(FIRST_FILE), val(NULL)
+		tuple file(R1), file(BAM), file(EXONICVARIANTS), val(PASSAGE)
+		file METADATA
+	output:
+		tuple file("${R1}.csv"), val(PASSAGE), file("reads.csv"), file(R1) optional true
+		tuple file(R1), val(PASSAGE) optional true
+	shell:
+
+	'''
+	#!/bin/bash
+	echo !{R1}
+
+		if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
+		then 
+			echo `basename !{FIRST_FILE}` found
+			echo first file found ending process execution for !{R1}
+			exit 0
+
+		else 
+			echo "not first file"
+	fi
+
+	echo "continuing execution for ${R1}"
+
+	echo 'sample	position	cov' > !{R1}.genomecov 
+
+	/usr/local/miniconda/bin/bedtools genomecov -d -ibam !{BAM} >> !{R1}.genomecov
+
+	# reads.csv from all processes will be merged together at end 
+	 printf !{R1}"," > reads.csv
+
+	/usr/local/miniconda/bin/samtools flagstat !{BAM} | \
+	awk 'NR==1{printf $1","} NR==5{printf $1","} NR==5{print substr($5,2)}' >> reads.csv
+
+	awk -F":" '($24+0)>=1{print}' !{EXONICVARIANTS}> !{R1}.txt
+
+	 grep "SNV" !{R1}.txt > a.tmp
+	 grep "stop" !{R1}.txt >> a.tmp
+	 mv a.tmp !{R1}.txt
+
+	SAMPLE="$(awk -F"," -v name=!{R1} '$1==name {print $2}' !{METADATA})"
+
+	echo $SAMPLE
+	
+	 awk -v name=!{R1} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$43","sample}' !{R1}.txt > !{R1}.csv
+	'''
+}
+
+process Annotate_complex { 
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+
+	container "quay.io/vpeddu/lava_image:latest"
+
+	input: 
+		tuple file(SAMPLE_CSV), val(PASSAGE), file("reads.csv"), file(R1)
+		file ANNOTATE_COMPLEX
+	output:
+		file R1
+		file "${R1}.complex.log"
+		file "${R1}.reads.csv"
+		file SAMPLE_CSV
+		//tuple file(R1), val(PASSAGE), file("${R1}.complex.log"), file("${R1}.reads.csv"), file(SAMPLE_CSV)
+
+	script:
+
+	"""
+	#!/bin/bash
+
+	python3 ${ANNOTATE_COMPLEX} ${SAMPLE_CSV} ${PASSAGE}	
+
+	mv complex.log ${R1}.complex.log
+
+	mv reads.csv ${R1}.reads.csv
+	"""
+}
+
+process Annotate_complex_first_passage { 
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+
+	container "quay.io/vpeddu/lava_image:latest"
+
+	input: 
+		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file(FIRST_FILE_CSV)
+		file ANNOTATE_COMPLEX
+	output:
+		tuple file(FIRST_FILE), val(PASSAGE), file("*.complex.log"), file("*.reads.csv"), file(FIRST_FILE_CSV)
+	script:
+
+	"""
+	#!/bin/bash
+
+	python3 ${ANNOTATE_COMPLEX} ${FIRST_FILE_CSV} ${PASSAGE}	
+
+	mv complex.log ${FIRST_FILE}.complex.log
+	mv reads.csv ${FIRST_FILE}.reads.csv
+	
+	"""
+}
+
+process Generate_output { 
+
+    //errorStrategy 'retry'
+    //maxRetries 3
+    // Define the input files
+
+	container "quay.io/vpeddu/lava_image:latest"
+
+	input: 
+		//tuple file(R1), val(PASSAGE), file(COMPLEX_LOG), file(READS_CSV), file(SAMPLE_CSV)
+		tuple file(FIRST_R1), val(FIRST_PASSAGE), file(FIRST_COMPLEX_LOG), file(FIRST_READS_CSV), file(FIRST_SAMPLE_CSV)
+		file R1 
+		file COMPLEX_LOG
+		file READS_CSV
+		file SAMPLE_CSV
+		file MERGED_CSV
+		file PROTEINS_CSV
+		file GENOME_PROTEIN_PLOTS
+		file GENOMECOV
+
+	output:
+		file "*.html"
+		file "*.log"
+		file "merged.csv"
+		file "*.csv"
+	script:
+
+	"""
+	#!/bin/bash
+
+	ls -lah
+
+	# cat *fastq.csv >> merged.csv
+
+	cat merged.csv > final.csv 
+	cat *.fastq.csv >> final.csv 
+
+	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
+
+	awk NF final.csv > a.tmp && mv a.tmp final.csv
+
+	cat *.reads.csv > reads.csv 
+
+	cat *.log > complex.log
+	# TODO error handling @ line 669-683 of lava.py 
+
+	python3 ${GENOME_PROTEIN_PLOTS} final.csv proteins.csv reads.csv . "fml"
+	# python3 genome_protein_plots.py merged.csv proteins.csv reads.csv . "fml" 
+
+
+	"""
+} 

@@ -159,18 +159,23 @@ METADATA_FILE = file(params.METADATA)
  */
 
 //include run_lava from './Modules.nf'
-include setup from './Modules.nf'
 include CreateGFF from './Modules.nf'
 include Alignment_prep from './Modules.nf'
 include Align_samples from './Modules.nf' 
 include Pipeline_prep from './Modules.nf'
 include Create_VCF from './Modules.nf'
 include Ref_done from './Modules.nf'
+include Extract_variants from './Modules.nf'
+include Annotate_complex from './Modules.nf'
+include Annotate_complex_first_passage from './Modules.nf'
+include Generate_output from './Modules.nf'
 
 PULL_ENTREZ = file("./pull_entrez.py")
 MAFFT_PREP = file("./mafft_prep.py")
 GFF_WRITE = file("./write_gff.py")
 INITIALIZE_MERGED_CSV = file('./initialize_merged_csv.py')
+ANNOTATE_COMPLEX = file('./Annotate_complex_mutations.py')
+GENOME_PROTEIN_PLOTS = file('./genome_protein_plots.py')
 
 PULL_ENTREZ = file("./pull_entrez.py")
 MAFFT_PREP = file("./mafft_prep.py")
@@ -245,17 +250,41 @@ workflow {
             Create_VCF.out[0],
             CreateGFF.out[4],
             Pipeline_prep.out[3],
-            Align_samples.out[1]
+            Align_samples.out[1],
+            METADATA_FILE
         )
-        // run_lava(
-        //     METADATA_FILE,
-        //     input_read_ch,
-        //     params.GENBANK,
-        //     params.GFF,
-        //     params.FASTA,
-        //     params.DEDUPLICATE
-        // )
+
+        Extract_variants ( 
+            input_read_ch.first(),
+            Create_VCF.out[1],
+            METADATA_FILE
+
+        )
+
+        Annotate_complex( 
+            Extract_variants.out[0],
+            ANNOTATE_COMPLEX
+
+        )
+
+        Annotate_complex_first_passage( 
+            Ref_done.out[0],
+            ANNOTATE_COMPLEX
+        )
+
+        Generate_output( 
+            Annotate_complex_first_passage.out,
+            Annotate_complex.out[0].collect(),
+            Annotate_complex.out[1].collect(),
+            Annotate_complex.out[2].collect(),
+            Annotate_complex.out[3].collect(),
+            Pipeline_prep.out[0],
+            Pipeline_prep.out[1],
+            GENOME_PROTEIN_PLOTS,
+            Align_samples.out[2].collect()
+        )
+        
     publish:
-        Align_samples.out to: "${params.OUTDIR}"
+        Generate_output.out to: "${params.OUTDIR}"
         //filter_human_single.out[1] to: "${params.OUTDIR}/logs/"
 }
