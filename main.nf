@@ -170,16 +170,16 @@ include Annotate_complex from './Modules.nf'
 include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
-PULL_ENTREZ = file("scripts/pull_entrez.py")
-MAFFT_PREP = file("scripts/mafft_prep.py")
-GFF_WRITE = file("scripts/write_gff.py")
-INITIALIZE_MERGED_CSV = file('scripts/initialize_merged_csv.py')
-ANNOTATE_COMPLEX = file('scripts/Annotate_complex_mutations.py')
-GENOME_PROTEIN_PLOTS = file('scripts/genome_protein_plots.py')
-PULL_ENTREZ = file("scripts/pull_entrez.py")
-MAFFT_PREP = file("scripts/mafft_prep.py")
-GFF_WRITE = file("scripts/write_gff.py")
-INITIALIZE_MERGED_CSV = file('scripts/initialize_merged_csv.py')
+PULL_ENTREZ = file("./scripts/pull_entrez.py")
+MAFFT_PREP = file("./scripts/mafft_prep.py")
+GFF_WRITE = file("./scripts/write_gff.py")
+INITIALIZE_MERGED_CSV = file('./scripts/initialize_merged_csv.py')
+ANNOTATE_COMPLEX = file('./scripts/Annotate_complex_mutations.py')
+GENOME_PROTEIN_PLOTS = file('./scripts/genome_protein_plots.py')
+PULL_ENTREZ = file("./scripts/pull_entrez.py")
+MAFFT_PREP = file("./scripts/mafft_prep.py")
+GFF_WRITE = file("./scripts/write_gff.py")
+INITIALIZE_MERGED_CSV = file('./scripts/initialize_merged_csv.py')
 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
