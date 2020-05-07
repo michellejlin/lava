@@ -13,8 +13,8 @@ process CreateGFF {
     
     container "quay.io/vpeddu/lava_image:latest"
 
-    //errorStrategy 'retry'
-    //maxRetries 3
+    errorStrategy 'retry'
+    maxRetries 3
     // Define the input files
     input:
       file PULL_ENTREZ
