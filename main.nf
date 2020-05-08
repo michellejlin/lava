@@ -5,7 +5,7 @@
 ========================================================================================
  Longitudinal Analysis of Viral Alleles
  #### Homepage / Documentation
- https://github.com/vpeddu/LAVA/tree/nextflow
+https://github.com/vpeddu/lava
 ----------------------------------------------------------------------------------------
 */
 
@@ -22,7 +22,6 @@ def helpMessage() {
     An example command for running the pipeline is as follows:
 
     nextflow run FredHutch/CLOMP \\
-        --INPUT_FOLDER reads/ \\
         --PAIRED_END \\
         --HOST_FILTER_FIRST \\
         --OUTDIR output/
@@ -32,7 +31,7 @@ def helpMessage() {
                         your longitudinal analysis [REQUIRED]
 
         --METADATA       Required argument: A two column csv - the first column is the
-                        name of all the fastqs you wish to include in your analysis.
+                        path to all the fastqs you wish to include in your analysis.
                         All fastqs that you want to include need to be specified in
                         this file AND be located in the folder from which you are
                         running lava. The second column is the temporal seperation
@@ -40,23 +39,23 @@ def helpMessage() {
                         passage number, days, or whatever condition your experiment
                         happens to have. [REQUIRED]
         
-        --OUTDIR        Output directory
+        --OUTDIR        Output directory [REQUIRED]
         
         --FASTA         Specify a reference fasta with the majority consensus of the
                         control fastq. This option must be used with the -g flag to
                         specify the protein annotations relative to the start of this
-                        fasta.
-
-        --AF            pecify an allele frequency percentage to cut off - with a minimum of 1 percent - in whole numbers. default = ' '
+                        fasta. [REQUIRED IF NOT --GENBANK]
 
         --GFF           Specify a reference gff file with the protein annotations for
                         the reference fasta supplied with the -f flag. This option
-                        must be paired with the -f flag.
+                        must be paired with the -f flag. [REQUIRED IF NOT GENBANK]
 
         --GENBANK       Provide a Genbank accession number. This record will be used
                         to generate a majority consensus from the control fastq, and
                         this consensus will be annotated from the downloaded genbank
-                        record as well.
+                        record as well. [REQUIRED IF NOT --FASTA + --GFF]
+
+        --AF            pecify an allele frequency percentage to cut off - with a minimum of 1 percent - in whole numbers. default = ' '
 
         --NUC           Results are listed as nucleotide changes not amino acid
                         changes. Do not use with -png.
@@ -91,75 +90,21 @@ if (params.help){
     exit 0
 }
 
-// Set defaults
-// These values are overridden by what the user specifies (e.g. with --R1)
-/*
-params.INPUT_FOLDER = false
-params.INPUT_SUFFIX = ".fastq.gz"
-params.PAIRED_END = false
-params.OUTDIR = false
-params.SNAP_INDEXES = "s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.00/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.01/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.02/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.03/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.04/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.05/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.06/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.07/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.08/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.09/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.10/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.11/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.12/,s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/full_clomp_db/nt.13/" 
-params.SNAP_OPTIONS = "-mrl 65 -d 9 -h 30000 -om 1 -omax 20"
-params.HOST_FILTER_FIRST = false
-params.SECOND_PASS = false
-params.TRIMMOMATIC_OPTIONS = ':2:30:10 HEADCROP:10 SLIDINGWINDOW:4:20 CROP:65 MINLEN:65'
-params.BBDUK_TRIM_OPTIONS = 'ktrim=r k=27 hdist=1 edist=0 mink=4 qtrim=rl trimq=6 minlength=65 ordered=t qin=33'
-params.TRIMMOMATIC_JAR_PATH = "s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/trimmomatic-0.38.jar"
-params.TRIMMOMATIC_ADAPTER_PATH = "s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/adapters.fa"
-params.SEQUENCER = 'ILLUMINACLIP:'
-params.BWT_DB_PREFIX = "hg38"
-params.BWT_DB_LOCATION = "s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/hg38/"
-params.BWT_SECOND_PASS_OPTIONS = '-D 35 -R 5 -N 1 -L 19 -i S,1,0.50'
-params.BLAST_EVAL = 0.001
-params.BLAST_CHECK = false
-params.DEDUPE = true
-params.BLAST_CHECK_DB = false
-params.FILTER_LIST = "[12908,28384,48479]"
-params.KRAKEN_DB_PATH = "s3://fh-ctr-public-reference-data/tool_specific_data/CLOMP/kraken_db/"
-params.H_STRICT = false
-params.H_TAXID = 9606
-params.LOGIC = "strict"
-params.INCLUSION_TAXID = 2759
-params.EXCLUSION_TAXID = 9604
-params.ENTREZ_EMAIL = "uwvirongs@gmail.com"
-params.BASE_DELIMITER = "_"
-params.MIN_READ_CUTOFF = 10
-params.SAM_NO_BUILD_LIST = "[2759,77133]"
-params.ADD_HOST_FILTERED_TO_REPORT = true
-params.HOST_FILTER_TAXID = 9606
-params.WRITE_UNIQUES = true
-params.EDIT_DISTANCE_OFFSET = 6
-params.BUILD_SAMS = false
-params.SNAP_BATCHSIZE = 20
-params.TIEBREAKING_CHUNKS = 2
-*/
 params.OUTDIR= false
 
-// Check to make sure that the required parameters have been set
-//if (!params.INPUT_FOLDER){ exit 1, "Must provide folder containing input files with --INPUT_FOLDER" }
-if (!params.OUTDIR){ exit 1, "Must provide output directory with --OUTDIR" }
-if (!params.CONTROL_FASTQ){ exit 1, "Must provide control FASTQ with --ControlFastq" }
-if (!params.INPUT_FOLDER){ exit 1, "Must provide input folder with --INPUT_FOLDER" }
 
 params.GENBANK = 'False'
 params.GFF = 'False'
 params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
 params.AF = ' '
-// Make sure the output directory has a trailing slash
-if (!params.OUTDIR.endsWith("/")){
-    params.OUTDIR = "${params.OUTDIR}/"
-}
-//if (params.GENBAKN ==)
-// Identify some resource files
+
 METADATA_FILE = file(params.METADATA)
 
 /*
  * Import the processes used in this workflow
  */
 
-//include run_lava from './Modules.nf'
-//inlcude fml from './Modules.nf'
 include CreateGFF from './Modules.nf'
 include Alignment_prep from './Modules.nf'
 include Align_samples from './Modules.nf' 
@@ -175,22 +120,20 @@ include Generate_output from './Modules.nf'
 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
- input_read_ch = Channel
- .fromPath("${params.INPUT_FOLDER}*fastq")
+ //input_read_ch = Channel
 
-
-
-input_read_ch = Channel
-    .fromPath(METADATA_FILE)
-    .splitCsv(header:false)
-
-input_read_ch = Channel
-    .fromPath(METADATA_FILE)
-    .splitCsv(header:true)
-    .map{ row-> tuple(file(row.Sample), (row.Passage)) }
 
 // Error handling for input flags
-
+//if CONTROL_FASTQ not set 
+if (!params.CONTROL_FASTQ){
+    println("Must provide control FASTQ with --ControlFastq") 
+    exit(1)
+}
+//if OUTDIR not set
+if (params.OUTDIR == false) {
+    println( "Must provide an output directory with --OUTDIR") 
+    exit(1)
+}
 // If --GENBANK and --FASTA or --GFF are specified at the same time
 if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
     println("bruh --GENBANK cannot be used with --FASTA or --GFF")
@@ -200,7 +143,6 @@ if(((params.GENBANK != "False") && (params.GFF != "False"))){
     println("bruh --GENBANK cannot be used with --FASTA or --GFF")
     exit(1)
 }
-
 // If --FASTA without --GENBANK or vice versa
 if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
     println('--GFF needs to be specified with --FASTA')
@@ -210,15 +152,28 @@ if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){
     println('--FASTA needs to be specified with --GFF')
     exit(1)
 }
-
 // If no flags specified
 if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
     println('Either --GENBANK or --FASTA + --GFF are required flags')
     exit(1)
-
 }
 
-// TODO: logic to check --FASTA and --GFF are in together if no --GENBANK
+// Make sure OUTDIR ends with trailing slash
+
+if (!params.OUTDIR.endsWith("/")){
+   params.OUTDIR = "${params.OUTDIR}/"
+}
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:false)
+
+input_read_ch = Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:true)
+    .map{ row-> tuple(file(row.Sample), (row.Passage)) }
+
+
+
 // Run the workflow
 workflow {
         //fml() 
@@ -239,7 +194,6 @@ workflow {
         Align_samples ( 
             input_read_ch,
             Alignment_prep.out[0],
-            params.INPUT_FOLDER,
             input_read_ch.first()
             
         )
@@ -247,7 +201,6 @@ workflow {
         Pipeline_prep ( 
             Align_samples.out[0].collect(),
             CreateGFF.out[2],
-            //INITIALIZE_MERGED_CSV,
             CreateGFF.out[3],
             Alignment_prep.out[0]
         )
@@ -279,14 +232,11 @@ workflow {
         )
 
         Annotate_complex( 
-            Extract_variants.out[0]//,
-            //ANNOTATE_COMPLEX
-
+            Extract_variants.out[0]
         )
 
         Annotate_complex_first_passage( 
             Ref_done.out[0],
-            //ANNOTATE_COMPLEX
         )
 
         Generate_output( 
@@ -297,11 +247,9 @@ workflow {
             Annotate_complex.out[3].collect(),
             Pipeline_prep.out[0],
             Pipeline_prep.out[1],
-            //GENOME_PROTEIN_PLOTS,
             Align_samples.out[2].collect()
         )
         
     publish:
         Generate_output.out to: "${params.OUTDIR}"
-        //filter_human_single.out[1] to: "${params.OUTDIR}/logs/"
 }

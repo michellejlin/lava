@@ -11,17 +11,16 @@ process CreateGFF {
     
     container "quay.io/vpeddu/lava_image:latest"
 
-    //errorStrategy 'retry'
-    //maxRetries 3
+	// Retry on fail at most three times 
+    errorStrategy 'retry'
+    maxRetries 3
     // Define the input files
     input:
-      //file PULL_ENTREZ 
       val(GENBANK)
       file CONTROL_FASTQ
 	  file FASTA
 	  file GFF
-      //file MAFFT_PREP
-     //file GFF_WRITE
+
     // Define the output files
     output: 
       file "lava_ref.fasta"
@@ -29,7 +28,6 @@ process CreateGFF {
       file "lava_ref.gff"
 	  file "CONTROL.fastq"
 
-	  //file "*.pileup"
     // Code to be executed inside the task
     script:
     """
@@ -97,15 +95,14 @@ process Alignment_prep {
     
     container "quay.io/vpeddu/lava_image:latest"
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
+
     input:
       file "lava_ref.fasta"
       file "consensus.fasta"
       file "lava_ref.gff"
-	  //file "*.pileup"
-    // Define the output files
+
     output: 
 	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	file "AT_refGene.txt"
@@ -135,14 +132,12 @@ process Align_samples {
 
    container "quay.io/vpeddu/lava_image:latest"
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
     input:
 	tuple file(R1), val(PASSAGE)
 	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
-	val(INPUT)
 	tuple val(FIRST_FILE), val(NULL)
 
 	output: 
@@ -197,16 +192,14 @@ process Align_samples {
 
 process Pipeline_prep { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
 	input: 
 		file blank_ignore
 		file "lava_ref.gff"
-		//file INITIALIZE_MERGED_CSV
 		file CONTROL_FASTQ	
 		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 
@@ -255,9 +248,8 @@ process Pipeline_prep {
 
 process Create_VCF { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
@@ -322,9 +314,9 @@ process Create_VCF {
 
 process Ref_done { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
+
 
 	container "quay.io/vpeddu/lava_image:latest"
 
@@ -386,9 +378,8 @@ process Ref_done {
 
 process Extract_variants { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
@@ -443,21 +434,19 @@ process Extract_variants {
 
 process Annotate_complex { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
 	input: 
 		tuple file(SAMPLE_CSV), val(PASSAGE), file("reads.csv"), file(R1)
-		//file ANNOTATE_COMPLEX
+
 	output:
 		file R1
 		file "${R1}.complex.log"
 		file "${R1}.reads.csv"
 		file SAMPLE_CSV
-		//tuple file(R1), val(PASSAGE), file("${R1}.complex.log"), file("${R1}.reads.csv"), file(SAMPLE_CSV)
 
 	script:
 
@@ -474,15 +463,14 @@ process Annotate_complex {
 
 process Annotate_complex_first_passage { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
 	input: 
 		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file(FIRST_FILE_CSV)
-		//file ANNOTATE_COMPLEX
+
 	output:
 		tuple file(FIRST_FILE), val(PASSAGE), file("*.complex.log"), file("*.reads.csv"), file(FIRST_FILE_CSV)
 	script:
@@ -500,14 +488,12 @@ process Annotate_complex_first_passage {
 
 process Generate_output { 
 
-    //errorStrategy 'retry'
-    //maxRetries 3
-    // Define the input files
+    errorStrategy 'retry'
+    maxRetries 3
 
 	container "quay.io/vpeddu/lava_image:latest"
 
 	input: 
-		//tuple file(R1), val(PASSAGE), file(COMPLEX_LOG), file(READS_CSV), file(SAMPLE_CSV)
 		tuple file(FIRST_R1), val(FIRST_PASSAGE), file(FIRST_COMPLEX_LOG), file(FIRST_READS_CSV), file(FIRST_SAMPLE_CSV)
 		file R1 
 		file COMPLEX_LOG
@@ -515,7 +501,6 @@ process Generate_output {
 		file SAMPLE_CSV
 		file MERGED_CSV
 		file PROTEINS_CSV
-		//file GENOME_PROTEIN_PLOTS
 		file GENOMECOV
 
 	output:
@@ -545,7 +530,6 @@ process Generate_output {
 	# TODO error handling @ line 669-683 of lava.py 
 
 	python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
-	# python3 genome_protein_plots.py merged.csv proteins.csv reads.csv . "fml" 
 
 
 	"""
