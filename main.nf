@@ -55,7 +55,8 @@ def helpMessage() {
                         this consensus will be annotated from the downloaded genbank
                         record as well. [REQUIRED IF NOT --FASTA + --GFF]
 
-        --AF            pecify an allele frequency percentage to cut off - with a minimum of 1 percent - in whole numbers. default = ' '
+        --AF            pecify an allele frequency percentage to cut off 
+                        - with a minimum of 1 percent - in whole numbers. default = ' '
 
         --NUC           Results are listed as nucleotide changes not amino acid
                         changes. Do not use with -png.
@@ -168,7 +169,7 @@ input_read_ch = Channel
 // Run the workflow
 workflow {
         //fml() 
-
+    log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
             CONTROL_FASTQ,
@@ -244,4 +245,31 @@ workflow {
         
     publish:
         Generate_output.out to: "${params.OUTDIR}"
+}
+
+def nfcoreHeader() {
+
+    return """
+Version 2    
+                       ooO
+                     ooOOOo
+                   oOOOOOOoooo
+                 ooOOOooo  oooo
+                /vvv\\
+               /V V V\\ 
+              /V  V  V\\          
+             /         \\            oh man  look at these alleles
+            /           \\          /         /    
+          /               \\   	  o          o
+__       /                 \\     /-   o     /-
+/\\     /                     \\  /\\  -/-    /\\
+                                    /\\
+ ___      _______  __   __  _______ 
+|   |    |   _   ||  | |  ||   _   |
+|   |    |  |_|  ||  |_|  ||  |_|  |
+|   |    |       ||       ||       |
+|   |___ |       ||       ||       |
+|       ||   _   | |     | |   _   |
+|_______||__| |__|  |___|  |__| |__|
+    """.stripIndent()
 }
