@@ -189,8 +189,7 @@ input_read_ch = Channel
     .splitCsv(header:true)
     .map{ row-> tuple(file(row.Sample), (row.Passage)) }
 
-
- //input_read_ch.view()
+// TODO: logic to check --FASTA and --GFF are in together if no --GENBANK
 // Run the workflow
 workflow {
         //fml() 
