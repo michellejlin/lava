@@ -11,18 +11,19 @@ process CreateGFF {
     
     container "quay.io/vpeddu/lava_image:latest"
 
-    errorStrategy 'retry'
-    maxRetries 3
+    //errorStrategy 'retry'
+    //maxRetries 3
     // Define the input files
     input:
       //file PULL_ENTREZ 
       val(GENBANK)
       file CONTROL_FASTQ
+	  file FASTA
+	  file GFF
       //file MAFFT_PREP
      //file GFF_WRITE
     // Define the output files
     output: 
-      file "lava_ref.gbk"
       file "lava_ref.fasta"
       file "consensus.fasta"
       file "lava_ref.gff"
@@ -36,16 +37,21 @@ process CreateGFF {
     
 	set -e 
 
-	echo $PATH
-
     #for logging
     
-    ls -latr /
+	echo ${FASTA}
+
+    ls -latr 
 
     #Entrez fetch function
 
-
-	python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
+	if [[ ${FASTA} == "NO_FILE" ]]
+		then
+			python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
+		else 
+			mv ${FASTA} lava_ref.fasta
+			mv ${GFF} lava_ref.gff
+	fi
 
 
 	echo ${CONTROL_FASTQ}
@@ -74,8 +80,11 @@ process CreateGFF {
 
      #mafft --quiet aligner.fasta > lava.ali
 
+	if [[ ${FASTA} == "NO_FILE" ]]
+		then
+			python3 $workflow.projectDir/bin/write_gff.py
+	fi
 
-	  python3 $workflow.projectDir/bin/write_gff.py
 
 	 # Avoiding filename colision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
@@ -92,7 +101,6 @@ process Alignment_prep {
     //maxRetries 3
     // Define the input files
     input:
-      file "lava_ref.gbk"
       file "lava_ref.fasta"
       file "consensus.fasta"
       file "lava_ref.gff"

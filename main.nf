@@ -143,14 +143,14 @@ if (!params.INPUT_FOLDER){ exit 1, "Must provide input folder with --INPUT_FOLDE
 
 params.GENBANK = 'False'
 params.GFF = 'False'
-params.FASTA = 'False'
+params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
 params.AF = ' '
 // Make sure the output directory has a trailing slash
 if (!params.OUTDIR.endsWith("/")){
     params.OUTDIR = "${params.OUTDIR}/"
 }
-
+//if (params.GENBAKN ==)
 // Identify some resource files
 METADATA_FILE = file(params.METADATA)
 
@@ -171,23 +171,13 @@ include Annotate_complex from './Modules.nf'
 include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
-//PULL_ENTREZ = file("./bin/pull_entrez.py")
-//MAFFT_PREP = file("./bin/mafft_prep.py")
-//GFF_WRITE = file("./bin/write_gff.py")
-//INITIALIZE_MERGED_CSV = file('./bin/initialize_merged_csv.py')
-//ANNOTATE_COMPLEX = file('./bin/Annotate_complex_mutations.py')
-//GENOME_PROTEIN_PLOTS = file('./bin/genome_protein_plots.py')
-//PULL_ENTREZ = file("./bin/pull_entrez.py")
-//MAFFT_PREP = file("./bin/mafft_prep.py")
-//GFF_WRITE = file("./bin/write_gff.py")
-//INITIALIZE_MERGED_CSV = file('./bin/initialize_merged_csv.py')
+
 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
  input_read_ch = Channel
  .fromPath("${params.INPUT_FOLDER}*fastq")
 
-// input_read_ch.view()
 
 
 input_read_ch = Channel
@@ -206,18 +196,16 @@ workflow {
         //fml() 
 
         CreateGFF ( 
-            //PULL_ENTREZ,
             params.GENBANK, 
             CONTROL_FASTQ,
-            //MAFFT_PREP,
-            //GFF_WRITE
+            file(params.FASTA),
+            file(params.GFF)
         )
         
         Alignment_prep ( 
             CreateGFF.out[0],
             CreateGFF.out[1],
-            CreateGFF.out[2],
-            CreateGFF.out[3]
+            CreateGFF.out[2]
         )
 
         Align_samples ( 
@@ -230,14 +218,14 @@ workflow {
 
         Pipeline_prep ( 
             Align_samples.out[0].collect(),
-            CreateGFF.out[3],
+            CreateGFF.out[2],
             //INITIALIZE_MERGED_CSV,
-            CreateGFF.out[4],
+            CreateGFF.out[3],
             Alignment_prep.out[0]
         )
 
         Create_VCF ( 
-            CreateGFF.out[4],
+            CreateGFF.out[3],
             Pipeline_prep.out[2],
             Align_samples.out[0],
             Alignment_prep.out[1],
@@ -249,7 +237,7 @@ workflow {
             input_read_ch.first(),
             params.AF,
             Create_VCF.out[0],
-            CreateGFF.out[4],
+            CreateGFF.out[3],
             Pipeline_prep.out[3],
             Align_samples.out[1],
             METADATA_FILE
