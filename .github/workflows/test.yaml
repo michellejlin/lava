@@ -22,6 +22,6 @@ jobs:
             --FASTA test_data/Example1_ref.FASTA \
             --GFF test_data/Example1_ref.gff \
             --CONTROL_FASTQ test_data/Example1_file1.fastq \
-            --METATDATA test_data/Example1_metadata.csv \
+            --METADATA test_data/Example1_metadata.csv \
             --with-docker ubuntu:18.04
 
