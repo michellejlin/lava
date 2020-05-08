@@ -159,6 +159,7 @@ METADATA_FILE = file(params.METADATA)
  */
 
 //include run_lava from './Modules.nf'
+//inlcude fml from './Modules.nf'
 include CreateGFF from './Modules.nf'
 include Alignment_prep from './Modules.nf'
 include Align_samples from './Modules.nf' 
@@ -170,16 +171,16 @@ include Annotate_complex from './Modules.nf'
 include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
-PULL_ENTREZ = file("./scripts/pull_entrez.py")
-MAFFT_PREP = file("./scripts/mafft_prep.py")
-GFF_WRITE = file("./scripts/write_gff.py")
-INITIALIZE_MERGED_CSV = file('./scripts/initialize_merged_csv.py')
-ANNOTATE_COMPLEX = file('./scripts/Annotate_complex_mutations.py')
-GENOME_PROTEIN_PLOTS = file('./scripts/genome_protein_plots.py')
-PULL_ENTREZ = file("./scripts/pull_entrez.py")
-MAFFT_PREP = file("./scripts/mafft_prep.py")
-GFF_WRITE = file("./scripts/write_gff.py")
-INITIALIZE_MERGED_CSV = file('./scripts/initialize_merged_csv.py')
+//PULL_ENTREZ = file("./bin/pull_entrez.py")
+//MAFFT_PREP = file("./bin/mafft_prep.py")
+//GFF_WRITE = file("./bin/write_gff.py")
+//INITIALIZE_MERGED_CSV = file('./bin/initialize_merged_csv.py')
+//ANNOTATE_COMPLEX = file('./bin/Annotate_complex_mutations.py')
+//GENOME_PROTEIN_PLOTS = file('./bin/genome_protein_plots.py')
+//PULL_ENTREZ = file("./bin/pull_entrez.py")
+//MAFFT_PREP = file("./bin/mafft_prep.py")
+//GFF_WRITE = file("./bin/write_gff.py")
+//INITIALIZE_MERGED_CSV = file('./bin/initialize_merged_csv.py')
 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
@@ -202,12 +203,14 @@ input_read_ch = Channel
  //input_read_ch.view()
 // Run the workflow
 workflow {
+        //fml() 
+
         CreateGFF ( 
-            PULL_ENTREZ,
+            //PULL_ENTREZ,
             params.GENBANK, 
             CONTROL_FASTQ,
-            MAFFT_PREP,
-            GFF_WRITE
+            //MAFFT_PREP,
+            //GFF_WRITE
         )
         
         Alignment_prep ( 
@@ -228,7 +231,7 @@ workflow {
         Pipeline_prep ( 
             Align_samples.out[0].collect(),
             CreateGFF.out[3],
-            INITIALIZE_MERGED_CSV,
+            //INITIALIZE_MERGED_CSV,
             CreateGFF.out[4],
             Alignment_prep.out[0]
         )
@@ -260,14 +263,14 @@ workflow {
         )
 
         Annotate_complex( 
-            Extract_variants.out[0],
-            ANNOTATE_COMPLEX
+            Extract_variants.out[0]//,
+            //ANNOTATE_COMPLEX
 
         )
 
         Annotate_complex_first_passage( 
             Ref_done.out[0],
-            ANNOTATE_COMPLEX
+            //ANNOTATE_COMPLEX
         )
 
         Generate_output( 
@@ -278,7 +281,7 @@ workflow {
             Annotate_complex.out[3].collect(),
             Pipeline_prep.out[0],
             Pipeline_prep.out[1],
-            GENOME_PROTEIN_PLOTS,
+            //GENOME_PROTEIN_PLOTS,
             Align_samples.out[2].collect()
         )
         

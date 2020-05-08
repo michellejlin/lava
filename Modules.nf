@@ -7,8 +7,6 @@
  */
 
 
-
-
 process CreateGFF { 
     
     container "quay.io/vpeddu/lava_image:latest"
@@ -17,11 +15,11 @@ process CreateGFF {
     maxRetries 3
     // Define the input files
     input:
-      file PULL_ENTREZ
+      //file PULL_ENTREZ 
       val(GENBANK)
       file CONTROL_FASTQ
-      file MAFFT_PREP
-      file GFF_WRITE
+      //file MAFFT_PREP
+     //file GFF_WRITE
     // Define the output files
     output: 
       file "lava_ref.gbk"
@@ -36,12 +34,19 @@ process CreateGFF {
     """
     #!/bin/bash
     
+	set -e 
+
+	echo $PATH
+
     #for logging
     
-    ls -latr 
+    ls -latr /
 
     #Entrez fetch function
-    python3 ${PULL_ENTREZ} ${GENBANK}
+
+
+	python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
+
 
 	echo ${CONTROL_FASTQ}
 
@@ -65,11 +70,12 @@ process CreateGFF {
 
      cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
-     #python3 ${MAFFT_PREP}
+
 
      #mafft --quiet aligner.fasta > lava.ali
 
-     python3 ${GFF_WRITE}
+
+	  python3 $workflow.projectDir/bin/write_gff.py
 
 	 # Avoiding filename colision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
@@ -192,7 +198,7 @@ process Pipeline_prep {
 	input: 
 		file blank_ignore
 		file "lava_ref.gff"
-		file INITIALIZE_MERGED_CSV
+		//file INITIALIZE_MERGED_CSV
 		file CONTROL_FASTQ	
 		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 
@@ -209,7 +215,7 @@ process Pipeline_prep {
 
 	echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
 
-	python3 ${INITIALIZE_MERGED_CSV} 
+	python3 $workflow.projectDir/bin/initialize_merged_csv.py
 
 
 	# Creating pileup for control fastq here 
@@ -437,7 +443,7 @@ process Annotate_complex {
 
 	input: 
 		tuple file(SAMPLE_CSV), val(PASSAGE), file("reads.csv"), file(R1)
-		file ANNOTATE_COMPLEX
+		//file ANNOTATE_COMPLEX
 	output:
 		file R1
 		file "${R1}.complex.log"
@@ -450,7 +456,7 @@ process Annotate_complex {
 	"""
 	#!/bin/bash
 
-	python3 ${ANNOTATE_COMPLEX} ${SAMPLE_CSV} ${PASSAGE}	
+	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${SAMPLE_CSV} ${PASSAGE}	
 
 	mv complex.log ${R1}.complex.log
 
@@ -468,7 +474,7 @@ process Annotate_complex_first_passage {
 
 	input: 
 		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file(FIRST_FILE_CSV)
-		file ANNOTATE_COMPLEX
+		//file ANNOTATE_COMPLEX
 	output:
 		tuple file(FIRST_FILE), val(PASSAGE), file("*.complex.log"), file("*.reads.csv"), file(FIRST_FILE_CSV)
 	script:
@@ -476,7 +482,7 @@ process Annotate_complex_first_passage {
 	"""
 	#!/bin/bash
 
-	python3 ${ANNOTATE_COMPLEX} ${FIRST_FILE_CSV} ${PASSAGE}	
+	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${FIRST_FILE_CSV} ${PASSAGE}	
 
 	mv complex.log ${FIRST_FILE}.complex.log
 	mv reads.csv ${FIRST_FILE}.reads.csv
@@ -501,7 +507,7 @@ process Generate_output {
 		file SAMPLE_CSV
 		file MERGED_CSV
 		file PROTEINS_CSV
-		file GENOME_PROTEIN_PLOTS
+		//file GENOME_PROTEIN_PLOTS
 		file GENOMECOV
 
 	output:
@@ -530,7 +536,7 @@ process Generate_output {
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
 
-	python3 ${GENOME_PROTEIN_PLOTS} final.csv proteins.csv reads.csv . "fml"
+	python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
 	# python3 genome_protein_plots.py merged.csv proteins.csv reads.csv . "fml" 
 
 

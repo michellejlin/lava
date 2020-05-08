@@ -1,6 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	3e/afa780	12869	CreateGFF	COMPLETED	0	2020-05-06 22:16:18.872	11s	9.6s	18.9%	61.8 MB	407.2 MB	20.9 MB	2.5 MB
-2	16/8bc063	12906	Alignment_prep	COMPLETED	0	2020-05-06 22:16:29.934	3.8s	1.9s	196.4%	148.1 MB	2.3 GB	18.2 MB	648 KB
-3	4c/f9593f	12946	Align_samples (1)	COMPLETED	0	2020-05-06 22:16:33.863	8.3s	6s	75.5%	65.3 MB	2.3 GB	22.1 MB	2.4 MB
-4	94/66f2cf	12944	Align_samples (2)	COMPLETED	0	2020-05-06 22:16:33.854	15.5s	13.3s	97.9%	113.6 MB	2.2 GB	38.3 MB	15.1 MB
-5	8c/f840be	12943	Align_samples (3)	COMPLETED	0	2020-05-06 22:16:33.841	16.1s	14.1s	95.6%	129.9 MB	2.4 GB	41.4 MB	16.9 MB
