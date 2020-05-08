@@ -1,4 +1,4 @@
 Sample,Passage
-test_data/Example2_file1.fastq,9
-test_data/Example2_file2.fastq,46
-test_data/Example2_file3.fastq,267
+test_data/Example2_file1.fastq.gz,9
+test_data/Example2_file2.fastq.gz,46
+test_data/Example2_file3.fastq.gz,267

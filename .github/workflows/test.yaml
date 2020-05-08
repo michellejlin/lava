@@ -21,7 +21,7 @@ jobs:
             --OUTDIR test_data/example_1_output/ \
             --FASTA test_data/Example1_ref.fasta \
             --GFF test_data/Example1_ref.gff \
-            --CONTROL_FASTQ test_data/Example1_file1.fastq \
+            --CONTROL_FASTQ test_data/Example1_file1.fastq.gz \
             --METADATA test_data/Example1_metadata.csv \
             -with-docker ubuntu:18.04
 

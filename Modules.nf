@@ -15,6 +15,7 @@ process CreateGFF {
     errorStrategy 'retry'
     maxRetries 3
     // Define the input files
+	
     input:
       val(GENBANK)
       file CONTROL_FASTQ
