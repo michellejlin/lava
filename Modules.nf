@@ -58,7 +58,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
 
-    /usr/local/miniconda/bin/bwa mem -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
+    /usr/local/miniconda/bin/bwa -t !{task.cups} mem -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
@@ -159,7 +159,7 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -t !{task.cups} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
@@ -228,7 +228,7 @@ process Pipeline_prep {
 
 	# Creating pileup for control fastq here 
 
-	/usr/local/miniconda/bin/bwa mem -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
+	/usr/local/miniconda/bin/bwa mem -t !{task.cups}  -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=${CONTROL_FASTQ}.sam OUTPUT=${CONTROL_FASTQ}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 

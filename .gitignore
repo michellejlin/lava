@@ -1,4 +1,6 @@
 *.pyc
 *.log* 
-*.trace* 
+trace.* 
 work/*
+.nextflow/* 
+.vscode/*

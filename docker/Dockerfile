@@ -59,7 +59,7 @@ RUN mv gff3ToGenePred /usr/local/bin
 
 
 # INSTALL
-RUN wget https://github.com/vpeddu/lava/raw/nextflow/annovar.zip && unzip annovar.zip 
+RUN wget https://github.com/vpeddu/lava/raw/docker/annovar.zip && unzip annovar.zip 
 RUN mv annovar/*.pl /usr/local/bin/
 
 
