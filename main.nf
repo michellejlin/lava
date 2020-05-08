@@ -67,15 +67,6 @@ def helpMessage() {
         
         --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
-
-        --OUT           Optional flag to name the output folder that lava will stuff
-                        output into. If a name isn't provided folder will be named
-                        lava-date.
-
-        --SAVE          Optional argument to save intermediate alignment files (sams,
-                        bams, vcfs, ect) LAVA's default behavior is to remove these
-                        after use to save disk footprint.
-
     """.stripIndent()
 }
 
@@ -194,7 +185,8 @@ workflow {
         Align_samples ( 
             input_read_ch,
             Alignment_prep.out[0],
-            input_read_ch.first()
+            input_read_ch.first(),
+            params.DEDUPLICATE
             
         )
 

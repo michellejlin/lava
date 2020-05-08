@@ -139,6 +139,7 @@ process Align_samples {
 	tuple file(R1), val(PASSAGE)
 	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	tuple val(FIRST_FILE), val(NULL)
+	val DEDUPLICATE
 
 	output: 
 	tuple file(R1), file("*.pileup"), file("*.bam"), val(PASSAGE)
@@ -160,9 +161,9 @@ process Align_samples {
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
 	# TODO NEED TO FIX THIS PARAMETER. ITS PERMANENTLY FALSE FOR NOW 
-	if ${params.DEDUPLICATE} 
+	if ${DEDUPLICATE} 
 		then
-			echo Deduplicating ${R1}
+			echo "Deduplicating !{R1}"
 			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true
 			cat ${R1}_dedup.bam > ${R1}.bam
 	fi
