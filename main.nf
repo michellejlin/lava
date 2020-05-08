@@ -189,6 +189,35 @@ input_read_ch = Channel
     .splitCsv(header:true)
     .map{ row-> tuple(file(row.Sample), (row.Passage)) }
 
+// Error handling for input flags
+
+// If --GENBANK and --FASTA or --GFF are specified at the same time
+if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
+    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    exit(1)
+}
+if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
+    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    exit(1)
+}
+
+// If --FASTA without --GENBANK or vice versa
+if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
+    println('--GFF needs to be specified with --FASTA')
+    exit(1)
+}
+if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){ 
+    println('--FASTA needs to be specified with --GFF')
+    exit(1)
+}
+
+// If no flags specified
+if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
+    println('Either --GENBANK or --FASTA + --GFF are required flags')
+    exit(1)
+
+}
+
 // TODO: logic to check --FASTA and --GFF are in together if no --GENBANK
 // Run the workflow
 workflow {
