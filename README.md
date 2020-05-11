@@ -80,16 +80,13 @@ For additional help you can also run `lava.py -help`:
                         this consensus will be annotated from the downloaded genbank
                         record as well. [REQUIRED IF NOT --FASTA + --GFF]
 
-        * --AF          specify an allele frequency percentage to cut off 
-                        - with a minimum of 1 percent - in whole numbers. default = ' '
-
         * --NUC         Results are listed as nucleotide changes not amino acid
-                        changes. Do not use with -png.
+                        changes. Do not use with -png. Doesn't work currently
 
         * --ALLELE_FREQ Specify an allele frequency percentage to cut off - with a
                         minimum of 1 percent - in whole numbers.
 
-        * --PNG         Output results as a png. Do not use with -nuc.
+        * --PNG         Output results as a png. Do not use with -nuc. Doesn't work currently
         
         * --DEDUPLICATE Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
