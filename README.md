@@ -30,7 +30,7 @@ Example files are included in the `test_data` folder. It is HIGHLY recommended y
 
 To run LAVA you need, at a minimum:
 
-1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq.gz Example1_file2.fastq.gz`. You only need to specify the first reference FASTQ for LAVA to point at.
+1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference FASTQ for LAVA to point at.
 
 2. A fasta file representing the majority consensus of your first sample. There are two options: 
 * A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` 
@@ -46,11 +46,11 @@ To run LAVA you need to make sure you have placed all the FASTQ files you want t
 
 1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output (as seen in Example 1):
 	
-`nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.FASTQ --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
 
-`nextflow run vpeddu/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.FASTQ --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run vpeddu/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq--METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
 
 For additional help you can also run `lava.py -help`: 
 
