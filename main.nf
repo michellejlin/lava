@@ -89,7 +89,7 @@ params.GENBANK = 'False'
 params.GFF = 'False'
 params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
-params.AF = ' '
+params.ALLELE_FREQ = 'NO_VAL'
 
 METADATA_FILE = file(params.METADATA)
 
@@ -209,7 +209,7 @@ workflow {
 
         Ref_done ( 
             input_read_ch.first(),
-            params.AF,
+            params.ALLELE_FREQ,
             Create_VCF.out[0],
             CreateGFF.out[3],
             Pipeline_prep.out[3],
@@ -258,7 +258,7 @@ Version 2
                 /vvv\\
                /V V V\\ 
               /V  V  V\\          
-             /         \\            oh man  look at these alleles
+             /         \\            oh wow  look at these alleles
             /           \\          /         /    
           /               \\   	  o          o
 __       /                 \\     /-   o     /-

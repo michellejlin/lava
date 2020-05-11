@@ -161,7 +161,6 @@ process Align_samples {
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
-	# TODO NEED TO FIX THIS PARAMETER. ITS PERMANENTLY FALSE FOR NOW 
 	if ${DEDUPLICATE} 
 		then
 			echo "Deduplicating !{R1}"
@@ -227,7 +226,6 @@ process Pipeline_prep {
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=${CONTROL_FASTQ}.sam OUTPUT=${CONTROL_FASTQ}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
-	# TODO NEED TO FIX THIS PARAMETER. ITS PERMANENTLY FALSE FOR NOW 
 	if ${params.DEDUPLICATE} 
 		then
 			echo Deduplicating ${CONTROL_FASTQ}
@@ -324,7 +322,7 @@ process Ref_done {
 
 	input: 
 		tuple file(FIRST_FILE), val(PASSAGE)
-		val(AF)
+		val(ALLELE_FREQ)
 		file exonic_variant_function
 		file CONTROL_FASTQ
 		file CONTROL_BAM
@@ -341,11 +339,15 @@ process Ref_done {
 	#!/bin/bash
 
 	echo !{FIRST_FILE}
+	echo !{ALLELE_FREQ}
+	
+	if [[ "!{ALLELE_FREQ}" == "NO_VAL" ]]
+		then
+			awk -F":" '($18+0)>=1{print}' !{FIRST_FILE}.exonic_variant_function > ref.txt
 
-	# Michelle what the hell is with all of this awk 
-
-	#TODO NO OPTION FOR ALLELE FILTERING RIGHT NOW
-	awk -F":" \'($18+0)>=1{print}\' !{FIRST_FILE}.exonic_variant_function > ref.txt
+		else	
+			awk -v af=!{ALLELE_FREQ} -F":" '($18+0)>=!{ALLELE_FREQ}{print}' !{FIRST_FILE}.exonic_variant_function > ref.txt
+	fi
 
 	grep "SNV" ref.txt > a.tmp && mv a.tmp ref.txt 
 
@@ -362,9 +364,13 @@ process Ref_done {
 	 /usr/local/miniconda/bin/bedtools genomecov -d -ibam !{FIRSTBAM} >> !{FIRST_FILE}.genomecov
 
 
-	 # TODO AF FLAG HERE 
 
-	 awk -F":" '($24+0)>=1{print}' !{FIRST_FILE}.exonic_variant_function > !{FIRST_FILE}.txt 
+	if [[ "!{ALLELE_FREQ}" == "NO_VAL" ]]
+		then
+			awk -F":" '($24+0)>=1{print}' !{FIRST_FILE}.exonic_variant_function > !{FIRST_FILE}.txt 
+		else
+			awk -v af=!{ALLELE_FREQ} -F":" '($24+0)>=!{ALLELE_FREQ}{print}' !{FIRST_FILE}.exonic_variant_function > !{FIRST_FILE}.txt 
+	fi
 
 	 grep "SNV" !{FIRST_FILE}.txt > a.tmp
 	 grep "stop" !{FIRST_FILE}.txt >> a.tmp
