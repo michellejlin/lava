@@ -250,7 +250,6 @@ workflow {
 def nfcoreHeader() {
 
     return """
-Version 2    
                        ooO
                      ooOOOo
                    oOOOOOOoooo
@@ -270,6 +269,6 @@ __       /                 \\     /-   o     /-
 |   |    |       ||       ||       |
 |   |___ |       ||       ||       |
 |       ||   _   | |     | |   _   |
-|_______||__| |__|  |___|  |__| |__|
+|_______||__| |__|  |___|  |__| |__| Version 2    
     """.stripIndent()
 }
