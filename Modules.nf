@@ -265,6 +265,7 @@ process Create_VCF {
 	output: 
 		file "*exonic_variant_function" optional true
 		tuple file(R1), file("*.bam"), file( "*.exonic_variant_function.samp"), val(PASSAGE)
+		file "${R1}.vcf"
 
 	shell:
 	'''
@@ -510,12 +511,14 @@ process Generate_output {
 		file MERGED_CSV
 		file PROTEINS_CSV
 		file GENOMECOV
+		file VCF
 
 	output:
 		file "*.html"
 		file "*.log"
 		file "merged.csv"
 		file "*.csv"
+		file "vcf_files"
 	script:
 
 	"""
@@ -539,6 +542,7 @@ process Generate_output {
 
 	python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
 
-
+	mkdir vcf_files
+	mv *.vcf vcf_files
 	"""
 } 

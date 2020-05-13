@@ -240,7 +240,8 @@ workflow {
             Annotate_complex.out[3].collect(),
             Pipeline_prep.out[0],
             Pipeline_prep.out[1],
-            Align_samples.out[2].collect()
+            Align_samples.out[2].collect(),
+            Create_VCF.out[2].collect()
         )
         
     publish:
