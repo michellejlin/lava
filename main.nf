@@ -244,7 +244,7 @@ workflow {
         )
         
     publish:
-        Generate_output.out to: "${params.OUTDIR}"
+        Generate_output.out to: "${params.OUTDIR}" , mode: 'copy'
 }
 
 def nfcoreHeader() {
