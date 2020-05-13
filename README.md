@@ -44,6 +44,8 @@ NOTE: The examples provided are mainly to illustrate how to use either method - 
 
 To run LAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
 
+* If your computer doesn't have at least 4 cores and 6GB of ram, run your LAVA commands with `-profile testing`
+
 1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output (as seen in Example 1):
 	
 `nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
