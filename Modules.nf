@@ -516,7 +516,7 @@ process Generate_output {
 	output:
 		file "*.html"
 		file "*.log"
-		file "merged.csv"
+		file "final.csv"
 		file "*.csv"
 		file "vcf_files"
 	script:
@@ -532,6 +532,13 @@ process Generate_output {
 	cat *.fastq.csv >> final.csv 
 
 	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
+
+	grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
+
+
+	# Corrects for ribosomal slippage.
+
+	 python3 $workflow.projectDir/bin/ribosomal_slippage.py 
 
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
