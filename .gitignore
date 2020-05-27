@@ -4,3 +4,4 @@ trace.*
 work/*
 *.nextflow* 
 *.vscode*
+test_data/ribosomal_slippage_testing/
