@@ -11,9 +11,6 @@ import re
 import os.path
 import pandas as pd
 import sys
-
-
-
     
 # Pulls protein information from GFF into proteins.csv. 
 # $12 = protein name, $4 = beginning nucleotide, $5 = ending nucleotide.
