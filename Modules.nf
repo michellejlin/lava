@@ -538,7 +538,7 @@ process Generate_output {
 
 	# Corrects for ribosomal slippage.
 
-	 python3 $workflow.projectDir/bin/ribosomal_slippage.py 
+	# python3 $workflow.projectDir/bin/ribosomal_slippage.py 
 
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
@@ -547,7 +547,7 @@ process Generate_output {
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
 
-	python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
+	 python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files
