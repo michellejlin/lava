@@ -156,12 +156,12 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	/usr/local/miniconda/bin/bwa mem -t !{task.cups} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t !{task.cpus} -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
-	if ${DEDUPLICATE} 
+	if !{DEDUPLICATE} 
 		then
 			echo "Deduplicating !{R1}"
 			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true
