@@ -28,6 +28,7 @@ process CreateGFF {
       file "consensus.fasta"
       file "lava_ref.gff"
 	  file "CONTROL.fastq"
+	  file "ribosomal_start.txt"
 
     // Code to be executed inside the task
     script:
@@ -512,6 +513,7 @@ process Generate_output {
 		file PROTEINS_CSV
 		file GENOMECOV
 		file VCF
+		file RIBOSOMAL_LOCATION
 
 	output:
 		file "*.html"
@@ -537,8 +539,7 @@ process Generate_output {
 
 
 	# Corrects for ribosomal slippage.
-
-	# python3 $workflow.projectDir/bin/ribosomal_slippage.py 
+	python3 $workflow.projectDir/bin/ribosomal_slippage.py final.csv proteins.csv
 
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
@@ -547,7 +548,7 @@ process Generate_output {
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
 
-	 python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
+	 python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files
