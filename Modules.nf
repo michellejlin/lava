@@ -51,6 +51,9 @@ process CreateGFF {
 		else 
 			mv ${FASTA} lava_ref.fasta
 			mv ${GFF} lava_ref.gff
+
+			#Creates empty txt file
+			touch ribosomal_start.txt
 	fi
 
 
