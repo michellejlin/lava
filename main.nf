@@ -21,11 +21,8 @@ def helpMessage() {
 
     An example command for running the pipeline is as follows:
 
-    nextflow run FredHutch/CLOMP \\
-        --PAIRED_END \\
-        --HOST_FILTER_FIRST \\
+    nextflow run vpeddu/lava \\
         --OUTDIR output/
-        
   
         --CONTROL_FASTQ The fastq reads for the first sample in
                         your longitudinal analysis [REQUIRED]
@@ -241,7 +238,8 @@ workflow {
             Pipeline_prep.out[0],
             Pipeline_prep.out[1],
             Align_samples.out[2].collect(),
-            Create_VCF.out[2].collect()
+            Create_VCF.out[2].collect(),
+            CreateGFF.out[4]
         )
         
     publish:
