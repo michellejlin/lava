@@ -106,8 +106,9 @@ include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
 
+// Throws exception if CONTROL_FASTQ doesn't exist 
+CONTROL_FASTQ = file(params.CONTROL_FASTQ, checkIfExists:true)
 
-CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
@@ -125,11 +126,11 @@ if (params.OUTDIR == false) {
 }
 // If --GENBANK and --FASTA or --GFF are specified at the same time
 if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
-    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    println("--GENBANK cannot be used with --FASTA or --GFF")
     exit(1)
 }
 if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
-    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    println("--GENBANK cannot be used with --FASTA or --GFF")
     exit(1)
 }
 // If --FASTA without --GENBANK or vice versa
@@ -158,6 +159,7 @@ input_read_ch = Channel
     .splitCsv(header:true)
     .map{ row-> tuple(file(row.Sample), (row.Passage)) }
 
+// Throws exception if paths in METADATA are not valid
 Channel
     .fromPath(METADATA_FILE)
     .splitCsv(header:true)
@@ -172,6 +174,9 @@ Channel
     //.subscribe{checkIfExists(it)}
 
 //checkIfExists(test_Channel)
+
+
+
 // Run the workflow
 workflow {
         //fml() 
