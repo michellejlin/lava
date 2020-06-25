@@ -152,7 +152,6 @@ process Align_samples {
 	file "${R1}.genomecov"
 
 
-
 	shell:
 	'''
 	#!/bin/bash

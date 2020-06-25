@@ -152,17 +152,26 @@ if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "Fals
 if (!params.OUTDIR.endsWith("/")){
    params.OUTDIR = "${params.OUTDIR}/"
 }
-input_read_ch = Channel
-    .fromPath(METADATA_FILE)
-    .splitCsv(header:false)
 
 input_read_ch = Channel
     .fromPath(METADATA_FILE)
     .splitCsv(header:true)
     .map{ row-> tuple(file(row.Sample), (row.Passage)) }
 
+Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:true)
+    .map{row-> (file(row.Sample, checkIfExists:true))}.ifEmpty{error "Check metadata file"}
+    //.map{row-> (file(row.Sample).isEmpty())}
+    //.filter{ it == false}.subscribe{println it}
 
+// test_Channel = Channel
+//     .fromPath(METADATA_FILE)
+//     .splitCsv(header:true)
+//     .map{row-> (file(row.Sample)) }
+    //.subscribe{checkIfExists(it)}
 
+//checkIfExists(test_Channel)
 // Run the workflow
 workflow {
         //fml() 
