@@ -41,6 +41,9 @@ process CreateGFF {
     
 	echo ${FASTA}
 
+	# checking samtools viersion
+	/usr/local/miniconda/bin/samtools --version
+
     ls -latr 
 
     #Entrez fetch function
