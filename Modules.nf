@@ -61,7 +61,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
 
-    /usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
+    /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
