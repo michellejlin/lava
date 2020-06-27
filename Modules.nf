@@ -41,9 +41,6 @@ process CreateGFF {
     
 	echo ${FASTA}
 
-	# checking samtools viersion
-	/usr/local/miniconda/bin/samtools --version
-
     ls -latr 
 
     #Entrez fetch function
@@ -64,7 +61,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
 
-    /usr/local/miniconda/bin/bwa mem -t !{task.cpus}  -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
+    /usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
@@ -80,11 +77,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
 
-     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
-
-
-
-     #mafft --quiet aligner.fasta > lava.ali
+    cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
 	if [[ ${FASTA} == "NO_FILE" ]]
 		then
@@ -153,6 +146,7 @@ process Align_samples {
 	tuple file(R1), file("*.pileup"), file("*.bam"), val(PASSAGE)
 	file "FIRSTFILE.bam" optional true
 	file "${R1}.genomecov"
+
 
 
 	shell:
