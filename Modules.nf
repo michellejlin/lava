@@ -530,7 +530,9 @@ process Generate_output {
 	# cat *fastq.csv >> merged.csv
 
 	cat merged.csv > final.csv 
-	cat *.fastq.csv >> final.csv 
+	
+	cat *.fastq.csv >> final.csv
+	cat *.fastq.gz.csv >> final.csv
 
 	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
 
