@@ -1,0 +1,44 @@
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[M::process] read 20163 sequences (3830970 bp)...
+[M::process] 20163 single-end sequences; 0 paired-end sequences
+[M::mem_process_seqs] Processed 20163 reads in 1.773 CPU sec, 0.265 real sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /usr/local/miniconda/bin/bwa mem -t 10 -M -R @RG\tID:group1\tSM:Example1_file1.fastq\tPL:illumina\tLB:lib1\tPU:unit1 -p -t 10 -L [17,17] consensus.fasta Example1_file1.fastq
+[main] Real time: 1.723 sec; CPU: 2.015 sec
+INFO	2020-06-27 00:03:58	SortSam	
+
+********** NOTE: Picard's command line syntax is changing.
+**********
+********** For more information, please see:
+********** https://github.com/broadinstitute/picard/wiki/Command-Line-Syntax-Transition-For-Users-(Pre-Transition)
+**********
+********** The command line looks like this in the new syntax:
+**********
+**********    SortSam -INPUT Example1_file1.fastq.sam -OUTPUT Example1_file1.fastq.bam -SORT_ORDER coordinate -VERBOSITY ERROR
+**********
+
+
+00:03:59.154 INFO  NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/usr/bin/picard.jar!/com/intel/gkl/native/libgkl_compression.so
+[Sat Jun 27 00:03:59 GMT 2020] SortSam INPUT=Example1_file1.fastq.sam OUTPUT=Example1_file1.fastq.bam SORT_ORDER=coordinate VERBOSITY=ERROR    QUIET=false VALIDATION_STRINGENCY=STRICT COMPRESSION_LEVEL=5 MAX_RECORDS_IN_RAM=500000 CREATE_INDEX=false CREATE_MD5_FILE=false GA4GH_CLIENT_SECRETS=client_secrets.json USE_JDK_DEFLATER=false USE_JDK_INFLATER=false
+[Sat Jun 27 00:03:59 GMT 2020] Executing as root@5da71f82735d on Linux 4.19.76-linuxkit amd64; OpenJDK 64-Bit Server VM 1.8.0_252-8u252-b09-1~18.04-b09; Deflater: Intel; Inflater: Intel; Provider GCS is not available; Picard version: 2.18.15-SNAPSHOT
+[Sat Jun 27 00:04:01 GMT 2020] picard.sam.SortSam done. Elapsed time: 0.04 minutes.
+Runtime.totalMemory()=202899456
+INFO	2020-06-27 00:04:02	BuildBamIndex	
+
+********** NOTE: Picard's command line syntax is changing.
+**********
+********** For more information, please see:
+********** https://github.com/broadinstitute/picard/wiki/Command-Line-Syntax-Transition-For-Users-(Pre-Transition)
+**********
+********** The command line looks like this in the new syntax:
+**********
+**********    BuildBamIndex -INPUT Example1_file1.fastq.bam -VERBOSITY ERROR
+**********
+
+
+00:04:02.605 INFO  NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/usr/bin/picard.jar!/com/intel/gkl/native/libgkl_compression.so
+[Sat Jun 27 00:04:02 GMT 2020] BuildBamIndex INPUT=Example1_file1.fastq.bam VERBOSITY=ERROR    QUIET=false VALIDATION_STRINGENCY=STRICT COMPRESSION_LEVEL=5 MAX_RECORDS_IN_RAM=500000 CREATE_INDEX=false CREATE_MD5_FILE=false GA4GH_CLIENT_SECRETS=client_secrets.json USE_JDK_DEFLATER=false USE_JDK_INFLATER=false
+[Sat Jun 27 00:04:02 GMT 2020] Executing as root@5da71f82735d on Linux 4.19.76-linuxkit amd64; OpenJDK 64-Bit Server VM 1.8.0_252-8u252-b09-1~18.04-b09; Deflater: Intel; Inflater: Intel; Provider GCS is not available; Picard version: 2.18.15-SNAPSHOT
+[Sat Jun 27 00:04:03 GMT 2020] picard.sam.BuildBamIndex done. Elapsed time: 0.01 minutes.
+Runtime.totalMemory()=160956416
+[mpileup] 1 samples in 1 input files

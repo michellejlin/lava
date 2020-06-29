@@ -1,0 +1,15 @@
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /usr/local/miniconda/bin/bwa index lava_ref.fasta
+[main] Real time: 0.179 sec; CPU: 0.013 sec
+[M::bwa_idx_load_from_disk] read 0 ALT contigs
+[E::main_mem] fail to open file `Example1_file1.fastq.gz'.
+Note: none of --samples-file, --ploidy or --ploidy-file given, assuming all sites are diploid
+[mpileup] 1 samples in 1 input files
+Note: the --sample option not given, applying all records regardless of the genotype
+Warning: Sequence "Example1_ref" not in calls2.vcf.gz

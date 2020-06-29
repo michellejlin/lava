@@ -28,6 +28,7 @@ process CreateGFF {
       file "consensus.fasta"
       file "lava_ref.gff"
 	  file "CONTROL.fastq"
+	  file "ribosomal_start.txt"
 
     // Code to be executed inside the task
     script:
@@ -50,6 +51,9 @@ process CreateGFF {
 		else 
 			mv ${FASTA} lava_ref.fasta
 			mv ${GFF} lava_ref.gff
+
+			#Creates empty txt file
+			touch ribosomal_start.txt
 	fi
 
 
@@ -57,7 +61,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
 
-    /usr/local/miniconda/bin/bwa -t !{task.cups} mem -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
+    /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
@@ -73,11 +77,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
 
-     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
-
-
-
-     #mafft --quiet aligner.fasta > lava.ali
+    cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
 	if [[ ${FASTA} == "NO_FILE" ]]
 		then
@@ -156,12 +156,12 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	/usr/local/miniconda/bin/bwa mem -t !{task.cups} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
-	if ${DEDUPLICATE} 
+	if !{DEDUPLICATE} 
 		then
 			echo "Deduplicating !{R1}"
 			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true
@@ -222,7 +222,7 @@ process Pipeline_prep {
 
 	# Creating pileup for control fastq here 
 
-	/usr/local/miniconda/bin/bwa mem -t !{task.cups}  -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -t 6 -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
+	/usr/local/miniconda/bin/bwa mem -t ${task.cpus}  -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=${CONTROL_FASTQ}.sam OUTPUT=${CONTROL_FASTQ}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
@@ -512,6 +512,7 @@ process Generate_output {
 		file PROTEINS_CSV
 		file GENOMECOV
 		file VCF
+		file RIBOSOMAL_LOCATION
 
 	output:
 		file "*.html"
@@ -529,7 +530,9 @@ process Generate_output {
 	# cat *fastq.csv >> merged.csv
 
 	cat merged.csv > final.csv 
+
 	cat *.fastq.csv >> final.csv 
+	cat *.fastq.gz.csv >> final.csv
 
 	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
 
@@ -537,8 +540,7 @@ process Generate_output {
 
 
 	# Corrects for ribosomal slippage.
-
-	# python3 $workflow.projectDir/bin/ribosomal_slippage.py 
+	python3 $workflow.projectDir/bin/ribosomal_slippage.py final.csv proteins.csv
 
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
@@ -547,7 +549,7 @@ process Generate_output {
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
 
-	 python3 $workflow.projectDir/bin/genome_protein_plots.py final.csv proteins.csv reads.csv . "fml"
+	 python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files

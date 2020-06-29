@@ -1,0 +1,14 @@
+Example1_ref.fasta
+total 28
+-rw-r--r--  1 root root 1475 Jun 27 00:01 .command.sh
+-rw-r--r--  1 root root 3454 Jun 27 00:01 .command.run
+drwxr-xr-x  3 root root  102 Jun 27 00:01 ..
+lrwxr-xr-x  1 root root   67 Jun 27 00:01 Example1_ref.gff -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_ref.gff
+lrwxr-xr-x  1 root root   69 Jun 27 00:01 Example1_ref.fasta -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_ref.fasta
+lrwxr-xr-x  1 root root   74 Jun 27 00:01 Example1_file1.fastq.gz -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_file1.fastq.gz
+-rw-r--r--  1 root root    0 Jun 27 00:01 .command.err
+-rw-r--r--  1 root root    0 Jun 27 00:01 .command.begin
+drwxr-xr-x 11 root root  374 Jun 27 00:01 .
+-rw-r--r--  1 root root   19 Jun 27 00:01 .command.out
+-rw-r--r--  1 root root   19 Jun 27 00:01 .command.log
+Example1_file1.fastq.gz
