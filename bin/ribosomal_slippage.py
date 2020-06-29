@@ -29,6 +29,11 @@ temp = open('final_corrected_slippage.csv', 'w')
 temp2 = open('visualization.csv', 'w')
 
 residue_correction_number = correction_number / 3
+
+# For some reason, nucleotide counting is off but residue number is correct.
+# For now, adding back protein start is vaguely correct.
+correction_number = correction_number + int(slippage_cd_start)
+
 correction_number = int(correction_number)
 residue_correction_number = int(residue_correction_number)
 
