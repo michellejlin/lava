@@ -156,7 +156,7 @@ process Align_samples {
 	echo aligning "!{R1}"
 
 
-	/usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
 
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
@@ -530,8 +530,9 @@ process Generate_output {
 	# cat *fastq.csv >> merged.csv
 
 	cat merged.csv > final.csv 
-
-	cat *.fastq.csv >> final.csv 
+	
+	#Takes fastq.gz and fastq
+	cat *.fastq.csv >> final.csv
 	cat *.fastq.gz.csv >> final.csv
 
 	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 

@@ -21,11 +21,8 @@ def helpMessage() {
 
     An example command for running the pipeline is as follows:
 
-    nextflow run FredHutch/CLOMP \\
-        --PAIRED_END \\
-        --HOST_FILTER_FIRST \\
+    nextflow run vpeddu/lava \\
         --OUTDIR output/
-        
   
         --CONTROL_FASTQ The fastq reads for the first sample in
                         your longitudinal analysis [REQUIRED]
@@ -109,8 +106,9 @@ include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
 
+// Throws exception if CONTROL_FASTQ doesn't exist 
+CONTROL_FASTQ = file(params.CONTROL_FASTQ, checkIfExists:true)
 
-CONTROL_FASTQ = file(params.CONTROL_FASTQ)
 FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
@@ -128,11 +126,11 @@ if (params.OUTDIR == false) {
 }
 // If --GENBANK and --FASTA or --GFF are specified at the same time
 if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
-    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    println("--GENBANK cannot be used with --FASTA or --GFF")
     exit(1)
 }
 if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
-    println("bruh --GENBANK cannot be used with --FASTA or --GFF")
+    println("--GENBANK cannot be used with --FASTA or --GFF")
     exit(1)
 }
 // If --FASTA without --GENBANK or vice versa
@@ -155,14 +153,27 @@ if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "Fals
 if (!params.OUTDIR.endsWith("/")){
    params.OUTDIR = "${params.OUTDIR}/"
 }
-input_read_ch = Channel
-    .fromPath(METADATA_FILE)
-    .splitCsv(header:false)
 
 input_read_ch = Channel
     .fromPath(METADATA_FILE)
     .splitCsv(header:true)
     .map{ row-> tuple(file(row.Sample), (row.Passage)) }
+
+// Throws exception if paths in METADATA are not valid
+Channel
+    .fromPath(METADATA_FILE)
+    .splitCsv(header:true)
+    .map{row-> (file(row.Sample, checkIfExists:true))}.ifEmpty{error "Check metadata file"}
+    //.map{row-> (file(row.Sample).isEmpty())}
+    //.filter{ it == false}.subscribe{println it}
+
+// test_Channel = Channel
+//     .fromPath(METADATA_FILE)
+//     .splitCsv(header:true)
+//     .map{row-> (file(row.Sample)) }
+    //.subscribe{checkIfExists(it)}
+
+//checkIfExists(test_Channel)
 
 
 
@@ -241,7 +252,8 @@ workflow {
             Pipeline_prep.out[0],
             Pipeline_prep.out[1],
             Align_samples.out[2].collect(),
-            Create_VCF.out[2].collect()
+            Create_VCF.out[2].collect(),
+            CreateGFF.out[4]
         )
         
     publish:

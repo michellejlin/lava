@@ -15,12 +15,14 @@ from bokeh.transform import jitter, factor_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
+from math import pi
 import subprocess
 
 # Uses info from protein.csv to shade every other protein in light green, and annotate with protein names.
 def protein_annotation(first):
 	protein_locs = []
-	protein_names = []	
+	protein_names = []
+	protein_lengths = []
 
 	# Shades in every other protein region. Provides warning if proteins overlap.
 	for i in range(0, proteins.shape[0]):
@@ -39,6 +41,7 @@ def protein_annotation(first):
 		if(i%2==0):
 			genome_plot.add_layout(BoxAnnotation(left=x1, right=x2, fill_alpha=0.1, fill_color='green'))
 		protein_locs.append((x1+x2)/2)
+		protein_lengths.append(x2-x1)
 		protein_names.append(proteins.iloc[i,0])
 
 	# Adds protein labels as tick marks.
@@ -54,7 +57,7 @@ def protein_annotation(first):
 		else:
 			protein_locs2.append(float(str_protein_loc))	
 	genome_plot.xaxis.major_label_overrides = dict(zip(protein_locs2, protein_names))
-	return protein_names
+	return protein_names,protein_lengths
 
 	
 # Creates the legend and configures some of the toolbar stuff.
@@ -287,8 +290,8 @@ if __name__ == '__main__':
 	plot_title = args.ptitle.split('/')[-1]
 
 	TOOLTIPS = [
-		("Amino Acid Change", "@Change"),
-		("Nucleotide Change", "@NucleotideChange"),
+		("Amino Acid Change", "@AminoCorrect"),
+		("Nucleotide Change", "@NucCorrect"),
 		("Allele Frequency", "@AF"+"%"),
 		("Depth", "@Depth"),
 	]
@@ -344,8 +347,12 @@ if __name__ == '__main__':
 		genome_plot.add_tools(HoverTool(tooltips=TOOLTIPS))
 		genome_plot.xgrid.grid_line_alpha = 0
 		configurePlot(genome_plot)
-		protein_names = protein_annotation(FIRST)
+
+		protein_names,protein_lengths = protein_annotation(FIRST)
 		FIRST = False
+
+		if((min(protein_lengths) < (0.05*sum(protein_lengths))) and len(max(protein_names, key = len)) >= 10):
+			genome_plot.xaxis.major_label_orientation = pi/4
 		genome_plot.xaxis.axis_label = "Protein"
 
 		# Creates button that allows reset of plot to original state.
