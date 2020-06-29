@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/Users/uwvirongs/Documents/Michelle/lava/bin/ribosomal_slippage.py", line 40, in <module>
-    next(f)
-StopIteration

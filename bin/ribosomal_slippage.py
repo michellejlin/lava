@@ -13,6 +13,7 @@ import pandas as pd
 import sys
 
 correction_number = 0
+residue_correction_number = 0
 # -1 for coronavirus, HIV
 slippage_number = -1
 
@@ -23,16 +24,16 @@ for line in open("proteins.csv"):
     if '_ribosomal_slippage' in line:
         slip_site = line.split(',')[1]
         correction_number = int(slip_site) - int(slippage_cd_start) - slippage_number
+        residue_correction_number = correction_number / 3
+
+        # For some reason, nucleotide counting is off but residue number is correct.
+        # For now, adding back protein start is vaguely correct.
+        correction_number = correction_number + int(slippage_cd_start)
+
 
 # Writes corrected lines in new file.
 temp = open('final_corrected_slippage.csv', 'w')
 temp2 = open('visualization.csv', 'w')
-
-residue_correction_number = correction_number / 3
-
-# For some reason, nucleotide counting is off but residue number is correct.
-# For now, adding back protein start is vaguely correct.
-correction_number = correction_number + int(slippage_cd_start)
 
 correction_number = int(correction_number)
 residue_correction_number = int(residue_correction_number)
