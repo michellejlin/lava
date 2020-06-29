@@ -531,6 +531,7 @@ process Generate_output {
 
 	cat merged.csv > final.csv 
 	
+	#Takes fastq.gz and fastq
 	cat *.fastq.csv >> final.csv
 	cat *.fastq.gz.csv >> final.csv
 
