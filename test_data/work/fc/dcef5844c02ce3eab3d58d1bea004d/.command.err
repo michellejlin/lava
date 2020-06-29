@@ -1,0 +1,17 @@
+[bwa_index] Pack FASTA... 0.00 sec
+[bwa_index] Construct BWT for the packed sequence...
+[bwa_index] 0.00 seconds elapse.
+[bwa_index] Update BWT... 0.00 sec
+[bwa_index] Pack forward-only FASTA... 0.00 sec
+[bwa_index] Construct SA from BWT and Occ... 0.00 sec
+[main] Version: 0.7.17-r1188
+[main] CMD: /usr/local/miniconda/bin/bwa index consensus.fasta
+[main] Real time: 0.070 sec; CPU: 0.013 sec
+Using GATK jar /gatk-4.0.11.0/gatk-package-4.0.11.0-local.jar
+Running:
+    java -Dsamjdk.use_async_io_read_samtools=false -Dsamjdk.use_async_io_write_samtools=true -Dsamjdk.use_async_io_write_tribble=false -Dsamjdk.compression_level=2 -jar /gatk-4.0.11.0/gatk-package-4.0.11.0-local.jar CreateSequenceDictionary -R consensus.fasta --VERBOSITY ERROR --QUIET true
+INFO	2020-06-27 00:03:54	CreateSequenceDictionary	Output dictionary will be written in consensus.dict
+00:03:54.437 INFO  NativeLibraryLoader - Loading libgkl_compression.so from jar:file:/gatk-4.0.11.0/gatk-package-4.0.11.0-local.jar!/com/intel/gkl/native/libgkl_compression.so
+NOTICE: Reading region file AT_refGene.txt ... Done with 6 regions from 1 chromosomes
+NOTICE: Finished reading 1 sequences from consensus.fasta
+NOTICE: Finished writting FASTA for 6 genomic regions to AT_refGeneMrna.fa

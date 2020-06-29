@@ -1,0 +1,42 @@
+total 40
+lrwxr-xr-x  1 root root  103 Jun 27 00:05 FIRSTFILE.bam -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/bd/896b805204a8625bc494bca48abf85/FIRSTFILE.bam
+lrwxr-xr-x  1 root root  117 Jun 27 00:05 Example1_file1.fastq.pileup -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/bd/896b805204a8625bc494bca48abf85/Example1_file1.fastq.pileup
+lrwxr-xr-x  1 root root   71 Jun 27 00:05 Example1_file1.fastq -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_file1.fastq
+lrwxr-xr-x  1 root root  110 Jun 27 00:05 CONTROL.fastq.pileup -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/23/56ccf88c2979202de4aacd412bd78d/CONTROL.fastq.pileup
+lrwxr-xr-x  1 root root   71 Jun 27 00:05 CONTROL.fastq -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_file1.fastq
+lrwxr-xr-x  1 root root  107 Jun 27 00:05 AT_refGeneMrna.fa -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/fc/dcef5844c02ce3eab3d58d1bea004d/AT_refGeneMrna.fa
+lrwxr-xr-x  1 root root  104 Jun 27 00:05 AT_refGene.txt -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/fc/dcef5844c02ce3eab3d58d1bea004d/AT_refGene.txt
+-rw-r--r--  1 root root 1588 Jun 27 00:05 .command.sh
+-rw-r--r--  1 root root 4158 Jun 27 00:05 .command.run
+-rw-r--r--  1 root root    0 Jun 27 00:05 .command.out
+-rw-r--r--  1 root root    0 Jun 27 00:05 .command.log
+-rw-r--r--  1 root root    0 Jun 27 00:05 .command.err
+-rw-r--r--  1 root root    0 Jun 27 00:05 .command.begin
+drwxr-xr-x  3 root root  102 Jun 27 00:05 ..
+drwxr-xr-x 15 root root  510 Jun 27 00:05 .
+Analyzing variants in sample Example1_file1.fastq
+total 72K
+drwxr-xr-x 23 root root  782 Jun 27 00:05 .
+drwxr-xr-x  3 root root  102 Jun 27 00:05 ..
+-rw-r--r--  1 root root    0 Jun 27 00:05 .command.begin
+-rw-r--r--  1 root root 2.1K Jun 27 00:05 .command.err
+-rw-r--r--  1 root root 3.7K Jun 27 00:05 .command.log
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 .command.out
+-rw-r--r--  1 root root 4.1K Jun 27 00:05 .command.run
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 .command.sh
+lrwxr-xr-x  1 root root  104 Jun 27 00:05 AT_refGene.txt -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/fc/dcef5844c02ce3eab3d58d1bea004d/AT_refGene.txt
+lrwxr-xr-x  1 root root  107 Jun 27 00:05 AT_refGeneMrna.fa -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/fc/dcef5844c02ce3eab3d58d1bea004d/AT_refGeneMrna.fa
+lrwxr-xr-x  1 root root   71 Jun 27 00:05 CONTROL.fastq -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_file1.fastq
+lrwxr-xr-x  1 root root  110 Jun 27 00:05 CONTROL.fastq.pileup -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/23/56ccf88c2979202de4aacd412bd78d/CONTROL.fastq.pileup
+lrwxr-xr-x  1 root root   71 Jun 27 00:05 Example1_file1.fastq -> /Users/uwvirongs/Documents/Michelle/lava/test_data/Example1_file1.fastq
+-rw-r--r--  1 root root    0 Jun 27 00:05 Example1_file1.fastq.avinput
+-rw-r--r--  1 root root    0 Jun 27 00:05 Example1_file1.fastq.exonic_variant_function
+-rw-r--r--  1 root root  725 Jun 27 00:05 Example1_file1.fastq.log
+lrwxr-xr-x  1 root root  117 Jun 27 00:05 Example1_file1.fastq.pileup -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/bd/896b805204a8625bc494bca48abf85/Example1_file1.fastq.pileup
+-rw-r--r--  1 root root    0 Jun 27 00:05 Example1_file1.fastq.variant_function
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 Example1_file1.fastq.vcf
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 Example1_file1.fastq.vcf.indel
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 Example1_file1.fastq.vcf.snp
+-rw-r--r--  1 root root 1.6K Jun 27 00:05 Example1_file1.fastq_p.vcf
+lrwxr-xr-x  1 root root  103 Jun 27 00:05 FIRSTFILE.bam.bam -> /Users/uwvirongs/Documents/Michelle/lava/test_data/work/bd/896b805204a8625bc494bca48abf85/FIRSTFILE.bam
+Example1_file1.fastq found

@@ -1,0 +1,6 @@
+transcript:L	Example1_ref	+	8590	15292	8590	15292	1	8590,	15292,	0	gene:L	cmpl	cmpl	0,
+transcript:HN	Example1_ref	+	6750	8469	6750	8469	1	6750,	8469,	0	gene:HN	cmpl	cmpl	0,
+transcript:F	Example1_ref	+	5016	6636	5016	6636	1	5016,	6636,	0	gene:F	cmpl	cmpl	0,
+transcript:M	Example1_ref	+	3697	4759	3697	4759	1	3697,	4759,	0	gene:M	cmpl	cmpl	0,
+transcript:P	Example1_ref	+	1728	3540	1728	3540	1	1728,	3540,	0	gene:P	cmpl	cmpl	0,
+transcript:N	Example1_ref	+	55	1603	55	1603	1	55,	1603,	0	gene:N	cmpl	cmpl	0,

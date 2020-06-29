@@ -1,0 +1,27 @@
+name: LAVA
+
+on: [push, pull_request]  
+
+jobs:
+
+  complete_workflow:
+    runs-on: ubuntu-latest
+    env:
+      NXF_ANSI_LOG: 0
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+      - name:  Run LAVA
+        run: |
+            nextflow run main.nf \
+            -profile testing \
+            --OUTDIR test_data/example_1_output/ \
+            --FASTA test_data/Example1_ref.fasta \
+            --GFF test_data/Example1_ref.gff \
+            --CONTROL_FASTQ test_data/Example1_file1.fastq \
+            --METADATA test_data/Example1_metadata.csv \
+            -with-docker ubuntu:18.04
+

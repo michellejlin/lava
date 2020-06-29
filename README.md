@@ -1,5 +1,8 @@
 # LAVA: Longitudinal Analysis of Viral Alleles
-LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes a reference fasta (normally representing the first sample in your longitudinal analysis), fastq files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser. LAVA will only work on Mac and Linux machines.
+
+![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
+
+LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes a reference fasta (normally representing the first sample in your longitudinal analysis), FASTQ files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser.
 
 # Table of Contents
 1. [Installation](#Installation)
@@ -12,39 +15,10 @@ LAVA analyzes and visualizes minor allele variants in longitudinal sequence data
 ## Installation
 **Before you get started**
 
-Although we have a script that will do the bulk of the installation for you - this script requires a few things. 
+LAVA is written in [`Nextflow`](https://www.nextflow.io/) and uses `Docker` containers in the interest of ease of use and reproducibility. The only dependecies are `Nextflow` and `Docker`: 
 
-1. Mac or Linux operating system. 
-2. An Internet connection. 
-3. Python 3 - This should come installed by default on most Mac and Linux operating systems. However if for some reason it isn't you can [download Python](https://www.python.org/). If you have both Python 2.7 and Python 3, LAVA will automatically choose to use Python 3.
-4. If you are on a Mac operating system you need to have brew installed. Instructions for downloading and installing brew can be found at https://brew.sh/.
-5. You also need a java runtime environment if not already installed on your computer. This can be installed with brew (for Mac) with `brew cask install java` and with apt-get (for Linux) via  `sudo apt-get install openjdk-8-jdk`. Both of these commands can be run simply by opening a terminal window and typing them in. For the Linux installation, make sure the package index is updated first by `sudo apt-get update`.
-
-**Installation Instructions**
-
-To make installation easier (there are a lot of dependencies!), we've provided a short script to install most of these for you. 
-
-1. Ensure you have the requirements listed in the 'Before you get started' section.
-2. Download the LAVA repository. If you have git installed on the command line you can open up a terminal window and type `git clone https://github.com/michellejlin/lava.git`. Or if you're not comfortable doing that you can click the green button that says Clone or download and click on download zip. Then unzip the folder to wherever you want on your computer. 
-
-3. Open up a terminal window and change directories to the main LAVA folder. If you downloaded the zip file to your downloads folder this would look something like: `cd /Users/username/Downloads/lava-master/` 
-
-4. [Download ANNOVAR](http://www.openbioinformatics.org/annovar/annovar_download_form.php). This program requires registration with a .edu email, or request for access. Once you've recieved access to the annovar download, download and unzip it. Then copy and paste all the files with extension .pl inside the ANNOVAR folder into your main LAVA folder. (There is no need to copy example or humandb.)
-
-5. Run the install script by typing into the terminal window `python3 install.py -i -c`. The install script will work for a while and install anything you don't already have on your computer. When installation is complete you'll see this message: `All dependencies working properly! Time to do some longitudinal analysis of viral alleles! :DDDDDD.` This means LAVA should work properly!
-The dependencies that LAVA currently use are:
-	* Python modules: biopython, numpy, pandas, bokeh
-	* Picard, GATK, VarScan, Annovar
-	* bedtools, samtools, bwa, mafft, bcftools
-
-Now we have to make sure the script can be run from anywhere. Navigate to your main LAVA folder (same as step #3).
-
-6. Type in `pwd`. This will give you the current path. Copy this path.
-7. Type in `nano ~/.bashrc`. For MAC OSX users, replace 'bashrc' with 'bash_profile', keeping the rest of the punctuation.
-8. This will open up an editor in the terminal window. Scroll down to get to the bottom of this file.
-9. Type in ``alias lava.py="python INSERTPATHHERE/lava.py"`` into the terminal, where you replace INSERTPATHHERE with the path you just copied. An example might look like this: `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
-10. Hit Ctrl+X to quit out of the editor. Save when prompted (this may mean typing 'Y') and press Enter for any new prompts that show up.
-11. Type in `source ~/.bashrc` (or replace 'bashrc' with 'bash_profile' for Mac OSX), to refresh the file.
+1. If you are on OSX, install `Nextflow` via `Homebrew` by running `brew install nextflow`. If you are on linux/windows, find instructions on install `Nextflow` [here](https://www.nextflow.io/docs/latest/getstarted.html). 
+2. You should be able to install `Docker` from [here](https://docs.docker.com/get-docker/)
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
@@ -52,66 +26,79 @@ That's it! Now you're ready to do some longitudinal analysis of minor alleles!
 
 **Mandatory Files**
 
-Example files are included in the 'example' folder. It is HIGHLY recommended you examine each of the example files before performing your own analysis.
+Example files are included in the `test_data` folder. It is HIGHLY recommended you examine each of the example files before performing your own analysis.
 
 To run LAVA you need, at a minimum:
 
-1. fastq files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference fastq for LAVA to point at.
+1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference FASTQ for LAVA to point at.
 
-2. A fasta file representing the majority consensus of your first sample. There are two options: 1) A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` OR 2) a Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `NC_039477.1` (This is the Genbank reference for Example 2, included in the example folder.) 
+2. A fasta file representing the majority consensus of your first sample. There are two options: 
+* A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` 
+* A Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `NC_039477.1` (This is the Genbank reference for Example 2, included in the example folder.) 
 
-NOTE: The examples provided are mainly to illustrate how to use either method - fasta and gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC1201, and Example1_file2 is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being Example2_file1, Example2_file2, and Example2_file3, respectively. I have drastically reduced the number of reads in the fastq files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
+NOTE: The examples provided are mainly to illustrate how to use either method - fasta and gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC1201, and Example1_file2 is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being Example2_file1, Example2_file2, and Example2_file3, respectively. I have drastically reduced the number of reads in the FASTQ files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
 
-3. A metadata.csv file that must contain two columns: Sample and Passage. Then each of the names of every fastq file you want to analyse in the sample column and the passage number or day that the sample on that row was collected. Take a look at the example metadata file to see the formatting. `Example1_metadata.csv` 
-
-
-Once you've got all the required files above collected make a new folder and place all the files into this folder. (This has obviously already been done for the example files). 
-
-NOTE: The metadata file MUST be in the folder LAVA is executed from, because LAVA takes the sample names from the metadata file to search for the .fastqs. This means the metadata file can be in the folder and contain sample names like "Sample1.fastq, Sample2.fastq" or the sample names can be paths to the different fastq files.
-
-We strongly recommend running the examples to see how it works. To do this, navigate to the example folder inside your downloaded LAVA folder. For example, this may look like: `cd /User/uwvirongs/Downloads/LAVA/example/`.
-
-To run Example 1:
-
-	lava.py -f Example1_ref.fasta -g Example1_ref.gff Example1_file1.fastq Example1_metadata.csv -o Example1_output
-
-To run Example 2:
-
-	lava.py -q NC_039477.1 Example2_file1.fastq Example2_metadata.csv -o Example2_output
-
+3. A metadata.csv file that must contain two column headers: Sample and Passage. Sample values must be the full path to the FASTQ for the sample. Passage must contain the passage number or day the sample was collected. Take a look at the example metadata file to see the formatting. `Example1_metadata.csv` 
 
 ## Usage
 
-To run LAVA you need to make sure you have placed all the fastq files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
+To run LAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
+
+* If your computer doesn't have at least 4 cores and 6GB of ram, run your LAVA commands with `-profile testing`
 
 1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output (as seen in Example 1):
 	
-	`lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -o output`
+`nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
 
-	`lava.py -q GENBANK_ACCESSION_NUMBER example-P0.fastq metadata.csv`
+`nextflow run vpeddu/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
 
-Other optional arguments include:
+For additional help you can also run `lava.py -help`: 
 
-Examining nucleotide changes by type (A -> C, etc.) with the -nuc argument:
+      * --CONTROL_FASTQ The fastq reads for the first sample in
+                        your longitudinal analysis [REQUIRED]
 
-	lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -nuc -o output
+      *  --METADATA     A two column csv - the first column is the path to all the 
+	  					fastqs you wish to include in your analysis.
+                    	The second column is the temporal seperation
+                        between the samples. This is unitless so you can input
+                        passage number, days, or whatever condition your experiment
+                        happens to have. [REQUIRED]
+        
+       * --OUTDIR        Output directory [REQUIRED]
+        
+	   * --FASTA        Specify a reference fasta with the majority consensus of the
+                        control fastq. This option must be used with the -g flag to
+                        specify the protein annotations relative to the start of this
+                        fasta. [REQUIRED IF NOT --GENBANK]
 
-Removing PCR dupicates from reads with the -dedup argument:
+        * --GFF         Specify a reference gff file with the protein annotations for
+                        the reference fasta supplied with the -f flag. This option
+                        must be paired with the -f flag. [REQUIRED IF NOT GENBANK]
 
-	lava.py -f example_reference.fasta -g example_reference.gff example-P0.fastq metadata.csv -dedup -o output
+        * --GENBANK     Provide a Genbank accession number. This record will be used
+                        to generate a majority consensus from the control fastq, and
+                        this consensus will be annotated from the downloaded genbank
+                        record as well. [REQUIRED IF NOT --FASTA + --GFF]
 
-For additional help you can also run `lava.py -help`.
+        * --NUC         Results are listed as nucleotide changes not amino acid
+                        changes. Do not use with -png. Doesn't work currently
+
+        * --ALLELE_FREQ Specify an allele frequency percentage to cut off - with a
+                        minimum of 1 percent - in whole numbers.
+
+        * --PNG         Output results as a png. Do not use with -nuc. Doesn't work currently
+        
+        * --DEDUPLICATE Optional flag, will perform automatic removal of PCR
+                        duplicates via DeDup.
 
 ## Output Files
 
-Output files will be placed into the same folder you placed all your input in. An interactive graph will be automatically opened on your default browser. This graph is saved as genome_protein_plots.html and sharing is as easy as sending this html file over email (no other files are required once genome_protein_plots.html has been generated).
+Output files will be placed the folder specified by `--OUTDIR`. An interactive graph will be automatically opened on your default browser. This graph is saved as `LAVA_plots.html`. Sharing the output is as easy as sending this html file over email.
 
 Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
-
-You can also examine the alignments and read mapping of each of your fastq files be picking the appropriate .bam file. (i.e. if you wanted to see how example1.fastq mapped you can pull example1.bam and examine it yourself.) These files are automatically deleted by defualt, but to save them run lava with the `-save` option.
-
+## TODO gotta update below
 ## Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
 
@@ -135,7 +122,7 @@ You can also examine the alignments and read mapping of each of your fastq files
 
 6. ``IOError: [Errno 2] No such file or directory: 'Example1_metadata.csv'``
 
-	Make sure your terminal is based in the directory with your metadata file and fastq files! You can type `pwd` to check where your terminal is located. 
+	Make sure your terminal is based in the directory with your metadata file and FASTQ files! You can type `pwd` to check where your terminal is located. 
 	
 7. ``WARNING: Unable to retrieve regions at Example1_ref due to lack of sequence information. WARNING: Cannot identify sequence for transcript:L (starting from Example1_ref:8590). WARNING: Cannot identify sequence for gene:L (starting from Example1_ref:8590)``
 
@@ -188,3 +175,4 @@ If you don't want to use the template GFF, or want to troubleshoot any problems 
 | Must match the name of your .fasta reference sequence: both the first line, and the file name. | Anything in this column. | One of 3 things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | Beginning position of the protein. | End position of the protein. | Only contains "." | Only contains "+". | Contains a "0" for all CDS lines, and "." for all others. | Contains ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
 
 If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
+
