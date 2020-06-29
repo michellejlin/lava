@@ -532,8 +532,12 @@ process Generate_output {
 	cat merged.csv > final.csv 
 	
 	#Takes fastq.gz and fastq
-	cat *.fastq.csv >> final.csv
-	cat *.fastq.gz.csv >> final.csv
+	if [ ${R1}: -3 == ".gz" ]
+	then
+		cat *.fastq.gz.csv >> final.csv
+	else
+		cat *.fastq.csv >> final.csv
+	fi
 
 	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
 
@@ -549,8 +553,7 @@ process Generate_output {
 
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
-
-	 python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
+	python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files

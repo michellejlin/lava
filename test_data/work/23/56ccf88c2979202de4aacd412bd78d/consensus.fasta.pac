@@ -1,1 +1,0 @@
-/Users/uwvirongs/Documents/Michelle/lava/test_data/work/fc/dcef5844c02ce3eab3d58d1bea004d/consensus.fasta.pac
