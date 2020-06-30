@@ -11,7 +11,7 @@ import re
 import os.path
 import pandas as pd
 import sys
-import math
+from math import pi
 
 correction_number = 0
 residue_correction_number = 0
