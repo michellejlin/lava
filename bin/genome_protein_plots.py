@@ -15,7 +15,7 @@ from bokeh.transform import jitter, factor_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
 from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
-from math import pi
+import math
 import subprocess
 import os
 
