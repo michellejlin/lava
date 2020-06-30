@@ -253,7 +253,8 @@ workflow {
             Pipeline_prep.out[1],
             Align_samples.out[2].collect(),
             Create_VCF.out[2].collect(),
-            CreateGFF.out[4]
+            CreateGFF.out[4],
+            CreateGFF.out[5]
         )
         
     publish:

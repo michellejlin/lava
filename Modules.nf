@@ -29,6 +29,7 @@ process CreateGFF {
       file "lava_ref.gff"
 	  file "CONTROL.fastq"
 	  file "ribosomal_start.txt"
+	  file "mat_peptides.txt"
 
     // Code to be executed inside the task
     script:
@@ -54,6 +55,7 @@ process CreateGFF {
 
 			#Creates empty txt file
 			touch ribosomal_start.txt
+			touch mat_peptides.txt
 	fi
 
 
@@ -85,7 +87,7 @@ process CreateGFF {
 	fi
 
 
-	 # Avoiding filename colision during run_pipeline process 
+	 # Avoiding filename collision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
 
     """
@@ -513,6 +515,7 @@ process Generate_output {
 		file GENOMECOV
 		file VCF
 		file RIBOSOMAL_LOCATION
+		file MAT_PEPTIDE_LOCATIONS
 
 	output:
 		file "*.html"
@@ -532,7 +535,7 @@ process Generate_output {
 	cat merged.csv > final.csv 
 	
 	#Takes fastq.gz and fastq
-	if [ ${R1}: -3 == ".gz" ]
+	if [[ \$${FIRST_SAMPLE_CSV} =~ \\.gz.csv\$ ]]
 	then
 		cat *.fastq.gz.csv >> final.csv
 	else
@@ -543,10 +546,16 @@ process Generate_output {
 
 	grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
 
+	# Sorts by beginning of mat peptide
+	sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
+	# Adds mature peptide differences from protein start.
+	python3 $workflow.projectDir/bin/mat_peptide_addition.py
+	rm mat_peptides.txt
 
 	# Corrects for ribosomal slippage.
 	python3 $workflow.projectDir/bin/ribosomal_slippage.py final.csv proteins.csv
 
+	
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
 	cat *.reads.csv > reads.csv 

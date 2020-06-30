@@ -9,7 +9,7 @@ from bokeh.io import export_png, save
 from bokeh.resources import CDN
 from bokeh.embed import components, file_html, autoload_static
 from bokeh.plotting import figure, show, output_file
-from bokeh.models import ColumnDataSource, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
+from bokeh.models import ColumnDataSource, Arrow, VeeHead, Jitter, BoxAnnotation, DataRange1d, HoverTool, CategoricalTicker, Slider, CustomJS, Label, WheelZoomTool, ResetTool, Button, TextInput
 from bokeh.models.tickers import FixedTicker
 from bokeh.transform import jitter, factor_cmap
 from bokeh.models.widgets import Panel, Tabs, Paragraph, Div, CheckboxGroup
@@ -17,6 +17,7 @@ from bokeh.layouts import column, layout, widgetbox, row
 from palette import color_palette
 from math import pi
 import subprocess
+import os
 
 # Uses info from protein.csv to shade every other protein in light green, and annotate with protein names.
 def protein_annotation(first):
@@ -43,6 +44,18 @@ def protein_annotation(first):
 		protein_locs.append((x1+x2)/2)
 		protein_lengths.append(x2-x1)
 		protein_names.append(proteins.iloc[i,0])
+
+	if(os.stat("mat_peptides_additions.txt").st_size!=0):
+		# Makes arrows for mature peptides.
+		for i in range(0, mat_peptides_list.shape[0]):
+			x1 = mat_peptides_list.iloc[i,1]
+			if(i==mat_peptides_list.shape[0]-1):
+				x2 = mat_peptides_list.iloc[i,2]
+			else:
+				x2 = mat_peptides_list.iloc[(i+1),1]
+			genome_plot.add_layout(Arrow(end = VeeHead(size=20, fill_color = "cadetblue", fill_alpha = 0.3, line_alpha = 0), 
+				line_color = "cadetblue", line_width = 20, x_start = x1, x_end = x2,
+				y_start = 5, y_end = 5, line_alpha = 0.3))
 
 	# Adds protein labels as tick marks.
 	genome_plot.xaxis.ticker = protein_locs
@@ -267,10 +280,14 @@ if __name__ == '__main__':
 	pdb_num = args.pdb 
 	new_dir = args.dir
 
-	# Reads data from lava output.
+	# Reads data from LAVA output.
 	merged = pd.read_csv(args.merged,index_col=False)
 	proteins = pd.read_csv(args.proteins,index_col=False,header=None)
 	reads = pd.read_csv(args.reads, index_col=False, names = ["Sample", "Total", "Mapped", "Percentage"])
+
+	# Reads in mature peptides locations
+	if(os.stat("mat_peptides_additions.txt").st_size!=0):
+		mat_peptides_list = pd.read_csv("mat_peptides_additions.txt",index_col=False,header=None)
 
 	source = ColumnDataSource(merged)
 	list_tabs = []
@@ -294,6 +311,7 @@ if __name__ == '__main__':
 		("Nucleotide Change", "@NucCorrect"),
 		("Allele Frequency", "@AF"+"%"),
 		("Depth", "@Depth"),
+		("Mature Peptide Change", "@MatPeptide")
 	]
 	FIRST = True
 	
