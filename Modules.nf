@@ -67,7 +67,7 @@ process CreateGFF {
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
-    /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
+    /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
 
     /usr/local/miniconda/bin/tabix calls.vcf.gz
 
@@ -176,7 +176,7 @@ process Align_samples {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  !{R1}.bam >> !{R1}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta !{R1}.bam > !{R1}.pileup
+	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta !{R1}.bam > !{R1}.pileup
 
 
 		if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
@@ -241,7 +241,7 @@ process Pipeline_prep {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  ${CONTROL_FASTQ}.bam >> ${CONTROL_FASTQ}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
+	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
 
 	
 
