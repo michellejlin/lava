@@ -67,7 +67,7 @@ process CreateGFF {
 
 	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
 
-    /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
+    /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
 
     /usr/local/miniconda/bin/tabix calls.vcf.gz
 
