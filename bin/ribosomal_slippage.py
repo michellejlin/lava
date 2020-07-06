@@ -48,7 +48,6 @@ with open("final.csv") as f:
     header = f.readline()
     ribosomal_corrected.write(header.rstrip() + ",MatPeptide" + '\n')
     visualization.write(header.rstrip() + ",NucCorrect,AminoCorrect,MatPeptide" + '\n')
-    next(f)
 
     for row in f:
         line = row.rstrip()
