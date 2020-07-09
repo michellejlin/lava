@@ -183,9 +183,9 @@ workflow {
     log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
-            CONTROL_FASTQ
+            CONTROL_FASTQ,
             //file(params.FASTA),
-            //file(params.GFF)
+            file(params.GFF)
         )
         
         Alignment_prep ( 
