@@ -125,23 +125,23 @@ if (params.OUTDIR == false) {
     exit(1)
 }
 // If --GENBANK and --FASTA or --GFF are specified at the same time
-if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
-    println("--GENBANK cannot be used with --FASTA or --GFF")
-    exit(1)
-}
-if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
-    println("--GENBANK cannot be used with --FASTA or --GFF")
-    exit(1)
-}
-// If --FASTA without --GENBANK or vice versa
-if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
-    println('--GFF needs to be specified with --FASTA')
-    exit(1)
-}
-if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){ 
-    println('--FASTA needs to be specified with --GFF')
-    exit(1)
-}
+// if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
+//     println("--GENBANK cannot be used with --FASTA or --GFF")
+//     exit(1)
+// }
+// if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
+//     println("--GENBANK cannot be used with --FASTA or --GFF")
+//     exit(1)
+// }
+// // If --FASTA without --GENBANK or vice versa
+// if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
+//     println('--GFF needs to be specified with --FASTA')
+//     exit(1)
+// }
+// if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){ 
+//     println('--FASTA needs to be specified with --GFF')
+//     exit(1)
+// }
 // If no flags specified
 if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
     println('Either --GENBANK or --FASTA + --GFF are required flags')
