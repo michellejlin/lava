@@ -13,12 +13,14 @@ process CreateGFF {
 
 	// Retry on fail at most three times 
     errorStrategy 'retry'
-    maxRetries 3
+    maxRetries 1
     // Define the input files
 	
     input:
       val(GENBANK)
       file CONTROL_FASTQ
+	  file PULL_ENTREZ
+	  file WRITE_GFF
 	  //file FASTA
 	  //file GFF
 
@@ -41,7 +43,7 @@ process CreateGFF {
     #for logging
     
 
-	python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
+	python3 ${PULL_ENTREZ} ${GENBANK}
 
 
 
@@ -68,7 +70,7 @@ process CreateGFF {
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
 
-	python3 $workflow.projectDir/bin/write_gff.py
+	python3 ${WRITE_GFF}
 
 
 	 # Avoiding filename collision during run_pipeline process 

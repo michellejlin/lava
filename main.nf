@@ -108,7 +108,8 @@ include Generate_output from './Modules.nf'
 
 // Throws exception if CONTROL_FASTQ doesn't exist 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ, checkIfExists:true)
-
+PULL_ENTERZ = file("$workflow.projectDir/bin/pull_entrez.py")
+WRITE_GFF = file("$workflow.projectDir/bin/write_gff.py")
 //FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
@@ -183,7 +184,9 @@ workflow {
     log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
-            CONTROL_FASTQ
+            CONTROL_FASTQ,
+            PULL_ENTERZ,
+            WRITE_GFF
             //file(params.FASTA),
             //file(params.GFF)
         )
