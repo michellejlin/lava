@@ -83,8 +83,8 @@ params.OUTDIR= false
 
 
 params.GENBANK = 'False'
-params.GFF = 'False'
-params.FASTA = 'NO_FILE'
+//params.GFF = 'False'
+//params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
 params.ALLELE_FREQ = 'NO_VAL'
 
@@ -183,9 +183,9 @@ workflow {
     log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
-            CONTROL_FASTQ,
-            file(params.FASTA),
-            file(params.GFF)
+            CONTROL_FASTQ
+            //file(params.FASTA),
+            //file(params.GFF)
         )
         
         Alignment_prep ( 

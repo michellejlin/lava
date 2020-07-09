@@ -19,8 +19,8 @@ process CreateGFF {
     input:
       val(GENBANK)
       file CONTROL_FASTQ
-	  file FASTA
-	  file GFF
+	  //file FASTA
+	  //file GFF
 
     // Define the output files
     output: 
@@ -40,23 +40,9 @@ process CreateGFF {
 
     #for logging
     
-	echo ${FASTA}
 
-    ls -latr 
+	python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
 
-    #Entrez fetch function
-
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
-		else 
-			mv ${FASTA} lava_ref.fasta
-			mv ${GFF} lava_ref.gff
-
-			#Creates empty txt file
-			touch ribosomal_start.txt
-			touch mat_peptides.txt
-	fi
 
 
 	echo ${CONTROL_FASTQ}
@@ -81,10 +67,8 @@ process CreateGFF {
 
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			python3 $workflow.projectDir/bin/write_gff.py
-	fi
+
+	python3 $workflow.projectDir/bin/write_gff.py
 
 
 	 # Avoiding filename collision during run_pipeline process 
