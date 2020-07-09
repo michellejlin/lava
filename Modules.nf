@@ -467,6 +467,7 @@ process Annotate_complex_first_passage {
 
 	input: 
 		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file(FIRST_FILE_CSV)
+		file ANNOTATE_COMPLEX_MUTATIONS
 
 	output:
 		tuple file(FIRST_FILE), val(PASSAGE), file("*.complex.log"), file("*.reads.csv"), file(FIRST_FILE_CSV)
