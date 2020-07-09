@@ -184,7 +184,7 @@ workflow {
         CreateGFF ( 
             params.GENBANK, 
             CONTROL_FASTQ,
-            //file(params.FASTA),
+            file(params.FASTA),
             file(params.GFF)
         )
         
