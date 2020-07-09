@@ -19,8 +19,8 @@ process CreateGFF {
     input:
       val(GENBANK)
       file CONTROL_FASTQ
-	  file FASTA
-	  file GFF
+	 // file FASTA
+	 // file GFF
 
     // Define the output files
     output: 

@@ -109,7 +109,7 @@ include Generate_output from './Modules.nf'
 // Throws exception if CONTROL_FASTQ doesn't exist 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ, checkIfExists:true)
 
-FASTA = file(params.FASTA)
+//FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
 
@@ -183,9 +183,9 @@ workflow {
     log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
-            CONTROL_FASTQ,
-            file(params.FASTA),
-            file(params.GFF)
+            CONTROL_FASTQ
+            //file(params.FASTA),
+            //file(params.GFF)
         )
         
         Alignment_prep ( 
