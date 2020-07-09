@@ -53,7 +53,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
-	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
+	/usr/local/miniconda/bin/samtools sort -@ ${task.cpus} aln.bam -o aln.sorted.bam 
 
     /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
 
@@ -191,7 +191,7 @@ process Pipeline_prep {
 		file "lava_ref.gff"
 		file CONTROL_FASTQ	
 		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
-
+		file INITIALIZE_MERGED_CSV
 
 	output: 
 		file 'merged.csv'
@@ -205,7 +205,7 @@ process Pipeline_prep {
 
 	echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
 
-	python3 $workflow.projectDir/bin/initialize_merged_csv.py
+	python3 ${INITIALIZE_MERGED_CSV}
 
 
 	# Creating pileup for control fastq here 
@@ -438,7 +438,7 @@ process Annotate_complex {
 
 	input: 
 		tuple file(SAMPLE_CSV), val(PASSAGE), file("reads.csv"), file(R1)
-
+		file ANNOTATE_COMPLEX_MUTATIONS
 	output:
 		file R1
 		file "${R1}.complex.log"
@@ -450,7 +450,7 @@ process Annotate_complex {
 	"""
 	#!/bin/bash
 
-	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${SAMPLE_CSV} ${PASSAGE}	
+	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${SAMPLE_CSV} ${PASSAGE}	
 
 	mv complex.log ${R1}.complex.log
 
@@ -475,7 +475,7 @@ process Annotate_complex_first_passage {
 	"""
 	#!/bin/bash
 
-	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${FIRST_FILE_CSV} ${PASSAGE}	
+	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${FIRST_FILE_CSV} ${PASSAGE}	
 
 	mv complex.log ${FIRST_FILE}.complex.log
 	mv reads.csv ${FIRST_FILE}.reads.csv
@@ -502,6 +502,9 @@ process Generate_output {
 		file VCF
 		file RIBOSOMAL_LOCATION
 		file MAT_PEPTIDE_LOCATIONS
+		file MAT_PEPTIDE_ADDITION
+		file RIBOSOMAL_SLIPPAGE
+		file GENOME_PROTEIN_PLOTS
 
 	output:
 		file "*.html"
@@ -535,11 +538,11 @@ process Generate_output {
 	# Sorts by beginning of mat peptide
 	sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
 	# Adds mature peptide differences from protein start.
-	python3 $workflow.projectDir/bin/mat_peptide_addition.py
+	python3 ${MAT_PEPTIDE_ADDITION}
 	rm mat_peptides.txt
 
 	# Corrects for ribosomal slippage.
-	python3 $workflow.projectDir/bin/ribosomal_slippage.py final.csv proteins.csv
+	python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
 
 	
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
@@ -548,7 +551,7 @@ process Generate_output {
 
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
-	python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
+	python3 ${GENOME_PROTEIN_PLOTS} visualization.csv proteins.csv reads.csv . "Plot"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files
