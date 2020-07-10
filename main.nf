@@ -117,6 +117,7 @@ ANNOTATE_COMPLEX_MUTATIONS = file("$workflow.projectDir/bin/Annotate_complex_mut
 MAT_PEPTIDE_ADDITION = file("$workflow.projectDir/bin/mat_peptide_addition.py")
 RIBOSOMAL_SLIPPAGE = file("$workflow.projectDir/bin/ribosomal_slippage.py")
 GENOME_PROTEIN_PLOTS = file("$workflow.projectDir/bin/genome_protein_plots.py")
+PALETTE = file("$workflow.projectDir/bin/palette.py")
 
 //FASTA = file(params.FASTA)
  //input_read_ch = Channel
@@ -271,7 +272,8 @@ workflow {
             CreateGFF.out[5],
             MAT_PEPTIDE_ADDITION,
             RIBOSOMAL_SLIPPAGE,
-            GENOME_PROTEIN_PLOTS
+            GENOME_PROTEIN_PLOTS,
+            PALETTE
         )
         
     publish:

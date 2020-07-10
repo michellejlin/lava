@@ -506,6 +506,7 @@ process Generate_output {
 		file MAT_PEPTIDE_ADDITION
 		file RIBOSOMAL_SLIPPAGE
 		file GENOME_PROTEIN_PLOTS
+		file PALETTE
 
 	output:
 		file "*.html"
@@ -521,6 +522,8 @@ process Generate_output {
 	ls -lah
 
 	# cat *fastq.csv >> merged.csv
+
+	head ${PALETTE}
 
 	cat merged.csv > final.csv 
 	
