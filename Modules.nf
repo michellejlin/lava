@@ -567,6 +567,6 @@ process Generate_output {
 	
 	mkdir all_files
 	
-	cp * all_files
+	cp -r * all_files
 	"""
 } 
