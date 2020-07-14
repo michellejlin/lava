@@ -514,6 +514,7 @@ process Generate_output {
 		file "final.csv"
 		file "*.csv"
 		file "vcf_files"
+		file "genomecov"
 	script:
 
 	"""
@@ -559,5 +560,8 @@ process Generate_output {
 
 	mkdir vcf_files
 	mv *.vcf vcf_files
+	
+	mkdir genomecov
+	mv *.genomecov genomecov
 	"""
 } 
