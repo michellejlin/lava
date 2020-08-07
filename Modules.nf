@@ -530,7 +530,8 @@ process Generate_output {
 	cat merged.csv > final.csv 
 	
 	#Takes fastq.gz and fastq
-	if [[ \$${FIRST_SAMPLE_CSV} =~ \\.gz.csv\$ ]]
+	# if [[ gzip -t \$${R1} ]]
+	if ls *.gz &>/dev/null
 	then
 		cat *.fastq.gz.csv >> final.csv
 	else
