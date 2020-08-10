@@ -13,14 +13,16 @@ process CreateGFF {
 
 	// Retry on fail at most three times 
     errorStrategy 'retry'
-    maxRetries 3
+    maxRetries 1
     // Define the input files
 	
     input:
       val(GENBANK)
       file CONTROL_FASTQ
-	  file FASTA
-	  file GFF
+	  file PULL_ENTREZ
+	  file WRITE_GFF
+	  //file FASTA
+	  //file GFF
 
     // Define the output files
     output: 
@@ -29,6 +31,7 @@ process CreateGFF {
       file "lava_ref.gff"
 	  file "CONTROL.fastq"
 	  file "ribosomal_start.txt"
+	  file "mat_peptides.txt"
 
     // Code to be executed inside the task
     script:
@@ -39,22 +42,9 @@ process CreateGFF {
 
     #for logging
     
-	echo ${FASTA}
 
-    ls -latr 
+	python3 ${PULL_ENTREZ} ${GENBANK}
 
-    #Entrez fetch function
-
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			python3 $workflow.projectDir/bin/pull_entrez.py ${GENBANK}
-		else 
-			mv ${FASTA} lava_ref.fasta
-			mv ${GFF} lava_ref.gff
-
-			#Creates empty txt file
-			touch ribosomal_start.txt
-	fi
 
 
 	echo ${CONTROL_FASTQ}
@@ -63,7 +53,7 @@ process CreateGFF {
 
     /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
-	/usr/local/miniconda/bin/samtools sort aln.bam -o aln.sorted.bam 
+	/usr/local/miniconda/bin/samtools sort -@ ${task.cpus} aln.bam -o aln.sorted.bam 
 
     /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
 
@@ -79,13 +69,11 @@ process CreateGFF {
 
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			python3 $workflow.projectDir/bin/write_gff.py
-	fi
+
+	python3 ${WRITE_GFF}
 
 
-	 # Avoiding filename colision during run_pipeline process 
+	 # Avoiding filename collision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
 
     """
@@ -174,7 +162,7 @@ process Align_samples {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  !{R1}.bam >> !{R1}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta !{R1}.bam > !{R1}.pileup
+	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta !{R1}.bam > !{R1}.pileup
 
 
 		if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
@@ -203,7 +191,7 @@ process Pipeline_prep {
 		file "lava_ref.gff"
 		file CONTROL_FASTQ	
 		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
-
+		file INITIALIZE_MERGED_CSV
 
 	output: 
 		file 'merged.csv'
@@ -217,7 +205,7 @@ process Pipeline_prep {
 
 	echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
 
-	python3 $workflow.projectDir/bin/initialize_merged_csv.py
+	python3 ${INITIALIZE_MERGED_CSV}
 
 
 	# Creating pileup for control fastq here 
@@ -239,7 +227,7 @@ process Pipeline_prep {
 	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  ${CONTROL_FASTQ}.bam >> ${CONTROL_FASTQ}.genomecov
 
-	/usr/local/miniconda/bin/samtools mpileup -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
+	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
 
 	
 
@@ -450,7 +438,7 @@ process Annotate_complex {
 
 	input: 
 		tuple file(SAMPLE_CSV), val(PASSAGE), file("reads.csv"), file(R1)
-
+		file ANNOTATE_COMPLEX_MUTATIONS
 	output:
 		file R1
 		file "${R1}.complex.log"
@@ -462,7 +450,7 @@ process Annotate_complex {
 	"""
 	#!/bin/bash
 
-	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${SAMPLE_CSV} ${PASSAGE}	
+	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${SAMPLE_CSV} ${PASSAGE}	
 
 	mv complex.log ${R1}.complex.log
 
@@ -479,6 +467,7 @@ process Annotate_complex_first_passage {
 
 	input: 
 		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file(FIRST_FILE_CSV)
+		file ANNOTATE_COMPLEX_MUTATIONS
 
 	output:
 		tuple file(FIRST_FILE), val(PASSAGE), file("*.complex.log"), file("*.reads.csv"), file(FIRST_FILE_CSV)
@@ -487,7 +476,7 @@ process Annotate_complex_first_passage {
 	"""
 	#!/bin/bash
 
-	python3 $workflow.projectDir/bin/Annotate_complex_mutations.py ${FIRST_FILE_CSV} ${PASSAGE}	
+	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${FIRST_FILE_CSV} ${PASSAGE}	
 
 	mv complex.log ${FIRST_FILE}.complex.log
 	mv reads.csv ${FIRST_FILE}.reads.csv
@@ -513,6 +502,11 @@ process Generate_output {
 		file GENOMECOV
 		file VCF
 		file RIBOSOMAL_LOCATION
+		file MAT_PEPTIDE_LOCATIONS
+		file MAT_PEPTIDE_ADDITION
+		file RIBOSOMAL_SLIPPAGE
+		file GENOME_PROTEIN_PLOTS
+		file PALETTE
 
 	output:
 		file "*.html"
@@ -520,6 +514,8 @@ process Generate_output {
 		file "final.csv"
 		file "*.csv"
 		file "vcf_files"
+		file "genomecov"
+		file "all_files"
 	script:
 
 	"""
@@ -529,10 +525,13 @@ process Generate_output {
 
 	# cat *fastq.csv >> merged.csv
 
+	head ${PALETTE}
+
 	cat merged.csv > final.csv 
 	
 	#Takes fastq.gz and fastq
-	if [ ${R1}: -3 == ".gz" ]
+	# if [[ gzip -t \$${R1} ]]
+	if ls *.gz &>/dev/null
 	then
 		cat *.fastq.gz.csv >> final.csv
 	else
@@ -543,19 +542,32 @@ process Generate_output {
 
 	grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
 
+	# Sorts by beginning of mat peptide
+	sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
+	# Adds mature peptide differences from protein start.
+	python3 ${MAT_PEPTIDE_ADDITION}
+	rm mat_peptides.txt
 
 	# Corrects for ribosomal slippage.
-	python3 $workflow.projectDir/bin/ribosomal_slippage.py final.csv proteins.csv
+	python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
 
+	
 	awk NF final.csv > a.tmp && mv a.tmp final.csv
 
 	cat *.reads.csv > reads.csv 
 
 	cat *.log > complex.log
 	# TODO error handling @ line 669-683 of lava.py 
-	python3 $workflow.projectDir/bin/genome_protein_plots.py visualization.csv proteins.csv reads.csv . "Plot"
+	python3 ${GENOME_PROTEIN_PLOTS} visualization.csv proteins.csv reads.csv . "Plot"
 
 	mkdir vcf_files
 	mv *.vcf vcf_files
+	
+	mkdir genomecov
+	mv *.genomecov genomecov
+	
+	mkdir all_files
+	
+	cp -r *.txt all_files
 	"""
 } 

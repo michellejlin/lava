@@ -2,7 +2,7 @@
 
 ![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
 
-LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes a reference fasta (normally representing the first sample in your longitudinal analysis), FASTQ files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser.
+LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes FASTQ files (for every sample in your analysis), a metadata sheet (providing info on what day or passage each sample was collected), and a reference genome either by accession number or your own FASTA and GFF. Output will be displayed as an interactive graph in your web browser, and a table of all mutations of all samples.
 
 # Table of Contents
 1. [Installation](#Installation)
@@ -15,10 +15,10 @@ LAVA analyzes and visualizes minor allele variants in longitudinal sequence data
 ## Installation
 **Before you get started**
 
-LAVA is written in [`Nextflow`](https://www.nextflow.io/) and uses `Docker` containers in the interest of ease of use and reproducibility. The only dependecies are `Nextflow` and `Docker`: 
+LAVA is written in [`Nextflow`](https://www.nextflow.io/) and uses `Docker` containers in the interest of ease of use and reproducibility. The only dependencies are `Nextflow` and `Docker`: 
 
-1. If you are on OSX, install `Nextflow` via `Homebrew` by running `brew install nextflow`. If you are on linux/windows, find instructions on install `Nextflow` [here](https://www.nextflow.io/docs/latest/getstarted.html). 
-2. You should be able to install `Docker` from [here](https://docs.docker.com/get-docker/)
+1. If you are on OSX, install `Nextflow` via `Homebrew` by running `brew install nextflow`. If you are on Linux/Windows, find instructions on install `Nextflow` [here](https://www.nextflow.io/docs/latest/getstarted.html). 
+2. `Docker` can be installed from [here](https://docs.docker.com/get-docker/).
 
 That's it! Now you're ready to do some longitudinal analysis of minor alleles! 
 
@@ -30,15 +30,15 @@ Example files are included in the `test_data` folder. It is HIGHLY recommended y
 
 To run LAVA you need, at a minimum:
 
-1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (trimmomatic, etc.). You need at least two samples to perform a meaningful longitudinal analysis. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference FASTQ for LAVA to point at.
+1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (e.g. with trimmomatic). You need at least two samples to perform a meaningful longitudinal analysis, e.g. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference FASTQ for LAVA to point at.
 
 2. A fasta file representing the majority consensus of your first sample. There are two options: 
-* A reference fasta and a .gff file with protein annotation for the above reference fasta. `Example1_ref.fasta Example1_ref.gff` 
-* A Genbank accession number pointing to a sample that contains annotations that you would like transferred to your reference fasta `NC_039477.1` (This is the Genbank reference for Example 2, included in the example folder.) 
+* A reference fasta and a .gff file with protein annotation for the above reference fasta, e.g. `Example1_ref.fasta Example1_ref.gff`.
+* A Genbank accession number pointing to a genome that contains annotations that you would like transferred to your reference fasta, e.g. `NC_039477.1`. (This is the Genbank reference for Example 2, included in the example folder.) In this case, the majority consensus fasta will be automatically generated for you.
 
-NOTE: The examples provided are mainly to illustrate how to use either method - fasta and gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and gff file and Example 2 uses `-q MF795094.1` to pull the reference from GenBank. The examples provided is real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). Example1_file1 is sample SC1201, and Example1_file2 is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being Example2_file1, Example2_file2, and Example2_file3, respectively. I have drastically reduced the number of reads in the FASTQ files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
+NOTE: The examples provided are mainly to illustrate how to use either method - fasta and .gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and .gff file and Example 2 uses `--GENBANK MF795094.1` to pull the reference from GenBank. The examples provided are real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). `Example1_file1.fastq` is sample SC1201, and `Example1_file2.fastq` is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being `Example2_file1.fastq`, `Example2_file2.fastq`, and `Example2_file3.fastq`, respectively. I have drastically reduced the number of reads in the FASTQ files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
 
-3. A metadata.csv file that must contain two column headers: Sample and Passage. Sample values must be the full path to the FASTQ for the sample. Passage must contain the passage number or day the sample was collected. Take a look at the example metadata file to see the formatting. `Example1_metadata.csv` 
+3. A metadata.csv file that must contain two column headers: Sample and Passage. Sample values must be the full path to the FASTQ for the sample. Passage must contain passage number, day the sample was collected, or any other numerical categorical variable. Take a look at the example metadata file `Example1_metadata.csv` to see the formatting.
 
 ## Usage
 
@@ -46,7 +46,7 @@ To run LAVA you need to make sure you have placed all the FASTQ files you want t
 
 * If your computer doesn't have at least 4 cores and 6GB of ram, run your LAVA commands with `-profile testing`
 
-1. With a reference fasta and a reference gff, with the optional -o argument placing output into a folder named output (as seen in Example 1):
+1. With a reference fasta and a reference gff (as seen in Example 1):
 	
 `nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
@@ -97,8 +97,8 @@ For additional help you can also run `lava.py -help`:
 
 Output files will be placed the folder specified by `--OUTDIR`. An interactive graph will be automatically opened on your default browser. This graph is saved as `LAVA_plots.html`. Sharing the output is as easy as sending this html file over email.
 
-Additionally you can examine the data more in depth via the merged.csv file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
-## TODO gotta update below
+Additionally you can examine the data more in depth via the `final.csv` file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
+
 ## Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
 

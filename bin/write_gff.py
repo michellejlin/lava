@@ -87,10 +87,14 @@ g.write(">lava\n")
 g.write(genome_ref[0])
 g.close()
 
-
 gene_loc_list = []
 gene_product_list = []
 allow_one = False
+
+mat_peptide_loc_list = []
+mat_peptide_product_list = []
+mat_peptide_current_loc = []
+allow_one_mat = False
 
 # Pulls CDS annotations from downloaded genbank file 
 for line in open('lava_ref.gbk'):
@@ -103,6 +107,19 @@ for line in open('lava_ref.gbk'):
 		px = px.replace(' ', '_')
 		gene_product_list.append(px)
 
+	# Pulls mature peptide annotations (for coronavirus: long polyproteins)
+	if 'mat_peptide' in line and '..' in line:
+		mat_peptide_current_loc = re.findall(r'\d+', line)
+		allow_one_mat = True
+	if '/product="' in line and allow_one_mat:
+		allow_one_mat = False
+		px = line.split('=')[1][1:-2]
+		px = px.replace(' ', '_')
+		# mature peptides can repeat in genbank files, don't want that
+		if px not in mat_peptide_product_list:
+			mat_peptide_product_list.append(px)
+			mat_peptide_loc_list.append(mat_peptide_current_loc)
+	
 # Writes a new file for MAFFT input 
 z = open('aligner.fasta', 'w')
 fe = open('consensus.fasta')
@@ -130,6 +147,33 @@ our_seq_num_array, ref_seq_num_array = build_num_arrays(our_seq, ref_seq)
 for entry in range(0, len(gene_loc_list)):
 	for y in range(0, len(gene_loc_list[entry])):
 		gene_loc_list[entry][y] = adjust(int(gene_loc_list[entry][y]), our_seq_num_array, ref_seq_num_array, genome)   
+
+# Adjusts for mature peptides too.
+for entry in range(0, len(mat_peptide_loc_list)):
+	for y in range(0, len(mat_peptide_loc_list[entry])):
+		mat_peptide_loc_list[entry][y] = adjust(int(mat_peptide_loc_list[entry][y]), our_seq_num_array, ref_seq_num_array, genome)   
+
+# Writes mature peptide names and locations to new file.
+mat_peptide_list = open('mat_peptides.txt', 'w')
+for x in range(0, len(mat_peptide_product_list)):
+	# some peptides have ribosomal slippage too, 
+	# grab the last two locations (after slippage join)
+	if len(mat_peptide_loc_list[x]) == 4:
+		peptide_start = str(mat_peptide_loc_list[x][2])
+		peptide_end = str(mat_peptide_loc_list[x][3])
+		before_slip = int(mat_peptide_loc_list[x][1])-int(mat_peptide_loc_list[x][0])
+		before_slip = int(before_slip)
+		# append the length of the protein before ribosomal slippage to name of mat_peptide,
+		# to be parsed later by ribosomal_slippage.py
+		mat_peptide_list.write(mat_peptide_product_list[x] + "_rib_" + str(before_slip) + 
+		"," + peptide_start + "," + peptide_end + "\n")
+
+	# otherwise, just grab the locations of the mat peptide
+	else:
+		peptide_start = str(mat_peptide_loc_list[x][0])
+		peptide_end = str(mat_peptide_loc_list[x][1])
+		mat_peptide_list.write(mat_peptide_product_list[x] + "," + peptide_start + "," + peptide_end + "\n")
+mat_peptide_list.close()
 
 # Writes a new .gff file for annovar to use later 
 print("Writing GFF file...")
