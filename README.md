@@ -1,3 +1,5 @@
+# For the latest version of LAVA, please see the [Greninger lab repo](https://github.com/greninger-lab/lava) for both the longitudinal (master branch) and unlongitudinal versions of LAVA.
+
 # LAVA: Longitudinal Analysis of Viral Alleles
 LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes a reference fasta (normally representing the first sample in your longitudinal analysis), fastq files (for every sample in your analysis), and a metadata sheet (providing information on what day or passage each sample was collected). Output will be displayed as an interactive graph in your web browser. LAVA will only work on Mac and Linux machines.
 
