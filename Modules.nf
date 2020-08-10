@@ -517,7 +517,7 @@ process Generate_output {
 		file "genomecov"
 		file "all_files"
 	script:
-	if (params.CATEGORICAL = 'false') {
+	if (params.CATEGORICAL == 'false') {
 		"""
 		#!/bin/bash
 
