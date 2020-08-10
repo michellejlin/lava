@@ -517,57 +517,114 @@ process Generate_output {
 		file "genomecov"
 		file "all_files"
 	script:
+	if (params.CATEGORICAL = 'false') {
+		"""
+		#!/bin/bash
 
-	"""
-	#!/bin/bash
+		ls -lah
 
-	ls -lah
+		# cat *fastq.csv >> merged.csv
 
-	# cat *fastq.csv >> merged.csv
+		head ${PALETTE}
 
-	head ${PALETTE}
+		cat merged.csv > final.csv 
 
-	cat merged.csv > final.csv 
+		#Takes fastq.gz and fastq
+		# if [[ gzip -t \$${R1} ]]
+		if ls *.gz &>/dev/null
+		then
+			cat *.fastq.gz.csv >> final.csv
+		else
+			cat *.fastq.csv >> final.csv
+		fi
+
+		grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
+
+		grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
+
+		# Sorts by beginning of mat peptide
+		sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
+		# Adds mature peptide differences from protein start.
+		python3 ${MAT_PEPTIDE_ADDITION}
+		rm mat_peptides.txt
+
+		# Corrects for ribosomal slippage.
+		python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
+
+
+		awk NF final.csv > a.tmp && mv a.tmp final.csv
+
+		cat *.reads.csv > reads.csv 
+
+		cat *.log > complex.log
+		# TODO error handling @ line 669-683 of lava.py 
+		python3 ${GENOME_PROTEIN_PLOTS} visualization.csv proteins.csv reads.csv . "Plot"
+
+		mkdir vcf_files
+		mv *.vcf vcf_files
+
+		mkdir genomecov
+		mv *.genomecov genomecov
+
+		mkdir all_files
+
+		cp -r *.txt all_files
+		"""
+	} else {
+		"""
+		#!/bin/bash
+
+		ls -lah
+
+		# cat *fastq.csv >> merged.csv
+
+		head ${PALETTE}
+
+		cat merged.csv > final.csv 
+
+		#Takes fastq.gz and fastq
+		# if [[ gzip -t \$${R1} ]]
+		if ls *.gz &>/dev/null
+		then
+			cat *.fastq.gz.csv >> final.csv
+		else
+			cat *.fastq.csv >> final.csv
+		fi
+
+		grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
+
+		grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
+
+		# Sorts by beginning of mat peptide
+		sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
+		# Adds mature peptide differences from protein start.
+		python3 ${MAT_PEPTIDE_ADDITION}
+		rm mat_peptides.txt
+
+		# Corrects for ribosomal slippage.
+		python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
+
+
+		awk NF final.csv > a.tmp && mv a.tmp final.csv
+
+		cat *.reads.csv > reads.csv 
+
+		cat *.log > complex.log
+		# TODO error handling @ line 669-683 of lava.py 
+		python3 ${GENOME_PROTEIN_PLOTS} visualization.csv proteins.csv reads.csv . "Plot" -categorical
+
+		mkdir vcf_files
+		mv *.vcf vcf_files
+
+		mkdir genomecov
+		mv *.genomecov genomecov
+
+		mkdir all_files
+
+		cp -r *.txt all_files
+		"""
+	}
+
+
 	
-	#Takes fastq.gz and fastq
-	# if [[ gzip -t \$${R1} ]]
-	if ls *.gz &>/dev/null
-	then
-		cat *.fastq.gz.csv >> final.csv
-	else
-		cat *.fastq.csv >> final.csv
-	fi
-
-	grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
-
-	grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
-
-	# Sorts by beginning of mat peptide
-	sort -k2 -t, -n mat_peptides.txt > a.tmp && mv a.tmp mat_peptides.txt
-	# Adds mature peptide differences from protein start.
-	python3 ${MAT_PEPTIDE_ADDITION}
-	rm mat_peptides.txt
-
-	# Corrects for ribosomal slippage.
-	python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
-
-	
-	awk NF final.csv > a.tmp && mv a.tmp final.csv
-
-	cat *.reads.csv > reads.csv 
-
-	cat *.log > complex.log
-	# TODO error handling @ line 669-683 of lava.py 
-	python3 ${GENOME_PROTEIN_PLOTS} visualization.csv proteins.csv reads.csv . "Plot"
-
-	mkdir vcf_files
-	mv *.vcf vcf_files
-	
-	mkdir genomecov
-	mv *.genomecov genomecov
-	
-	mkdir all_files
-	
-	cp -r *.txt all_files
-	"""
 } 
