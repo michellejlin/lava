@@ -65,6 +65,8 @@ def helpMessage() {
         
         --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
+                        
+        --CATEGORICAL   Optional flag, will consider "Passage" as categorical variable.
     """.stripIndent()
 }
 
@@ -86,6 +88,7 @@ params.GENBANK = 'False'
 //params.GFF = 'False'
 //params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
+params.CATEGORICAL = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
 
 METADATA_FILE = file(params.METADATA)
