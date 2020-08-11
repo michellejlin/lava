@@ -301,6 +301,7 @@ if __name__ == '__main__':
 	unique_samples = np.sort(merged.Sample.unique())
 	if not args.categorical:
 		num_Passages = merged['Passage'].max()
+	unique_passages = merged.Passage.unique()
 	protein_names = []
 
 	user_af = -123
@@ -330,8 +331,8 @@ if __name__ == '__main__':
 
 		# Creates both tabs and different plots for each sample.
 		name_from_passage = name.split('/')[-1]
-		name_from_passage = tab_name.split('.fastq.gz')[0]
-		name_from_passage = tab_name.split('.fastq')[0]
+		name_from_passage = name_from_passage.split('.fastq.gz')[0]
+		name_from_passage = name_from_passage.split('.fastq')[0]
 
 		if args.categorical:
 			name_from_passage = merged.loc[merged['Sample']==sample_name].iloc[0]
@@ -466,11 +467,13 @@ if __name__ == '__main__':
 				x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
 		## x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
-		# Calculates amount of jitter based on scale of x-axis passages.
-		jitter_amount = num_Passages * 0.05
+		
+
 
 		# Increases jitter to increase visibility when using -png.
 		if not args.categorical:
+			# Calculates amount of jitter based on scale of x-axis passages.
+			jitter_amount = num_Passages * 0.05
 			circle = protein_plot.circle(x=jitter('Passage',width=jitter_amount), y='AF', size=15, alpha=0.7, hover_alpha = 1,
 				fill_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()), 
 				hover_color=factor_cmap('Change', palette=color_palette, factors=merged.Change.unique()),

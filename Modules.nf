@@ -403,7 +403,7 @@ process Extract_variants {
 			echo "not first file"
 	fi
 
-	echo "continuing execution for ${R1}"
+	echo "continuing execution for !{R1}"
 
 	echo 'sample	position	cov' > !{R1}.genomecov 
 
