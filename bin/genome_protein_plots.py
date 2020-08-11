@@ -172,8 +172,8 @@ def sliderCallback(ref_source, source, slider, slider_af, syngroup, muts):
 				}
 			}
 		}
-        depth_sample.change.emit();
-    """)
+		depth_sample.change.emit();
+	""")
 
 # Second slider callback so that manual depth input overrides the slider.
 def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose, muts):
@@ -256,8 +256,8 @@ def sliderCallback2(ref_source, source, slider, slider_af, syngroup, ose, muts):
 					}
 				}
 			}
-            depth_sample.change.emit();
-        """)
+			depth_sample.change.emit();
+		""")
 
 	
 if __name__ == '__main__':
@@ -423,7 +423,7 @@ if __name__ == '__main__':
 		
 		# Plots layout of all components.
 		genome_plot = layout(row([genome_plot, column([Div(text="""""", width=300, height=220),cov_graph,ose, slider, slider_af, syngroup, widgetbox(div),reset_button])]))
-    	
+		
 		# Creates both tabs and different plots for each sample.
 		tab = Panel(child=genome_plot, title=name_from_passage)
 		list_tabs.append(tab)
@@ -459,12 +459,12 @@ if __name__ == '__main__':
 		if args.categorical:
 			protein_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 				title=protein_name, sizing_mode = 'stretch_both',
-	 			x_range=unique_samples_cut)
- 		else:
+				x_range=unique_samples_cut)
+		else:
 			protein_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
 				title=protein_name, sizing_mode = 'stretch_both',
-	 			x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
- 		## x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
+				x_range=DataRange1d(bounds=(0,num_Passages), range_padding=0.5))
+		## x_range=DataRange1d(bounds=(-1,5), start=-1, end=5))
 		
 		# Calculates amount of jitter based on scale of x-axis passages.
 		jitter_amount = num_Passages * 0.05
