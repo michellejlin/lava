@@ -48,11 +48,11 @@ To run LAVA you need to make sure you have placed all the FASTQ files you want t
 
 1. With a reference fasta and a reference gff (as seen in Example 1):
 	
-`nextflow run vpeddu/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run greninger-lab/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
 2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
 
-`nextflow run vpeddu/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run greninger-lab/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
 
 For additional help you can also run `lava.py -help`: 
 
@@ -92,6 +92,7 @@ For additional help you can also run `lava.py -help`:
         
         * --DEDUPLICATE Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
+	* --CATEGORICAL	Optional flag, will specify that column under "Passage" in metadata file will be read as categorical variables.
 
 ## Output Files
 
