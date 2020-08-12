@@ -25,13 +25,11 @@ slippage_cd_start = open("ribosomal_start.txt").read()
 for line in open("proteins.csv"):
     if '_ribosomal_slippage' in line:
         slip_site = line.split(',')[1]
-        correction_number = int(slip_site) - int(slippage_cd_start) - slippage_number
-        # Round up if decimal, which should only be if ribosomal slippage happens?
-        residue_correction_number = math.ceil(correction_number / 3)
+        residue_correction_number = int(slip_site) - int(slippage_cd_start) - slippage_number
 
         # For some reason, nucleotide counting is off but residue number is correct.
         # For now, adding back protein start is vaguely correct.
-        correction_number = correction_number + int(slippage_cd_start)
+        correction_number = int(slip_site) - 1
 
 
 # Ribosomal_corrected has corrected ribosomal slippage annotations.
@@ -77,9 +75,10 @@ with open("final.csv") as f:
             # Check to see if mutation falls within this mature peptide
             if position >= mat_start and position <= mat_end:
                 # Subtracts the difference between mature peptide and start of protein
-                mat_nuc_num = nuc_num - mat_correction
-                mat_aa_correction = int(mat_correction/3)
-                mat_aa_num = amino_num - mat_aa_correction
+                mat_nuc_num = position - mat_start + 1
+                if (mat_name == "RNA-dependent_RNA_polymerase_rib_26"):
+                    mat_nuc_num = mat_nuc_num + 27
+                mat_aa_num = math.ceil(mat_nuc_num/3)
 
                 # Grabs correct nucleotide annotation.
                 if 'del' in nuc:
@@ -105,7 +104,10 @@ with open("final.csv") as f:
                 new_line = line.replace(nuc, nuc_replacement)
                 visualization_line = new_line + "," + nuc_replacement
 
-            amino_replacement = amino[0] + str(amino_num + residue_correction_number) + amino[-1]
+            # Round up if decimal, which should only be if ribosomal slippage happens?
+            amino_replacement = int(nuc_num) + residue_correction_number
+            amino_replacement = math.ceil(amino_replacement / 3)
+            amino_replacement = amino[0] + str(amino_replacement) + amino[-1]
             new_line = new_line.replace(amino, amino_replacement)
 
             visualization_line = visualization_line.replace(amino, amino_replacement)
