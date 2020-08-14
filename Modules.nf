@@ -1,20 +1,11 @@
-/*
- * Define the parameters used in the processes below
- */
-
-/*
- * Define the processes used in this workflow
- */
-
-
+// Uses accession number specified by --GENBANK to create our own GFF (lava_ref.gff) for a consensus fasta
+// generated from the alignment of "Passage 0" sample to reference fasta.
 process CreateGFF { 
-    
     container "quay.io/vpeddu/lava_image:latest"
 
 	// Retry on fail at most three times 
     errorStrategy 'retry'
     maxRetries 1
-    // Define the input files
 	
     input:
       val(GENBANK)
@@ -24,7 +15,6 @@ process CreateGFF {
 	  //file FASTA
 	  //file GFF
 
-    // Define the output files
     output: 
       file "lava_ref.fasta"
       file "consensus.fasta"
@@ -33,55 +23,41 @@ process CreateGFF {
 	  file "ribosomal_start.txt"
 	  file "mat_peptides.txt"
 
-    // Code to be executed inside the task
     script:
     """
     #!/bin/bash
     
 	set -e 
-
-    #for logging
+	echo ${CONTROL_FASTQ}
     
-
+	# Pulls reference fasta and GenBank file using accession number specified by --GENBANK.
 	python3 ${PULL_ENTREZ} ${GENBANK}
 
-
-
-	echo ${CONTROL_FASTQ}
-
+	# Indexes and aligns "Sample 0" fastq to reference fasta
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
-
     /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
 
+	# Generates new consensus fasta from aligned "Sample 0" and reference fasta.
 	/usr/local/miniconda/bin/samtools sort -@ ${task.cpus} aln.bam -o aln.sorted.bam 
-
     /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
-
     /usr/local/miniconda/bin/tabix calls.vcf.gz
-
     gunzip calls.vcf.gz 
-
     /usr/local/miniconda/bin/bcftools filter -i '(DP4[0]+DP4[1]) < (DP4[2]+DP4[3]) && ((DP4[2]+DP4[3]) > 0)' calls.vcf -o calls2.vcf
-
     /usr/local/miniconda/bin/bgzip calls2.vcf
-
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
-
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
 
-
+	# Creates a GFF (lava_ref.gff) for our consensus fasta per CDS annotations from our reference GenBank file.
 	python3 ${WRITE_GFF}
-
 
 	 # Avoiding filename collision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
-
     """
 }
 
-
+// Prep for downstream steps.
+// Indexes and prepares consensus fasta, and generates prerequisite files for Annovar.
 process Alignment_prep { 
-    
     container "quay.io/vpeddu/lava_image:latest"
 
     errorStrategy 'retry'
@@ -97,28 +73,26 @@ process Alignment_prep {
 	file "AT_refGene.txt"
 	file "AT_refGeneMrna.fa"
 
-    // Code to be executed inside the task
     script:
     """
     #!/bin/bash
 
+	# Indexes and prepares consensus fasta for downstream steps
     /usr/local/miniconda/bin/bwa index consensus.fasta
-
 	/usr/local/miniconda/bin/samtools faidx consensus.fasta 
-
 	gatk CreateSequenceDictionary -R consensus.fasta  --VERBOSITY ERROR --QUIET true
 
-
-	# Annovar db build step
+	# Preparatory steps for Annovar downstream
+	# Creates Annovar database from our consensus fasta and generated GFF
 	gff3ToGenePred lava_ref.gff AT_refGene.txt -warnAndContinue -useName -allowMinimalGenes
-
 	retrieve_seq_from_fasta.pl --format refGene --seqfile consensus.fasta AT_refGene.txt --out AT_refGeneMrna.fa 
 
     """
 }
 
+// Aligns all samples to consensus fasta and removes duplicates if --DEDUPLICATE specified.
+// Also generates genomecov files and pileups.
 process Align_samples { 
-
    container "quay.io/vpeddu/lava_image:latest"
 
     errorStrategy 'retry'
@@ -135,20 +109,19 @@ process Align_samples {
 	file "FIRSTFILE.bam" optional true
 	file "${R1}.genomecov"
 
-
-
 	shell:
 	'''
 	#!/bin/bash
 
-	echo aligning "!{R1}"
+	echo Aligning" !{R1}"
 
-
+	# Align each sample to consensus fasta.
 	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 
-
+	# Sorts SAM.
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
+	# Removes duplicates (e.g. from library construction using PCR) if --DEDUPLICATE flag specified.
 	if !{DEDUPLICATE} 
 		then
 			echo "Deduplicating !{R1}"
@@ -156,15 +129,15 @@ process Align_samples {
 			cat ${R1}_dedup.bam > ${R1}.bam
 	fi
 
-	java -jar /usr/bin/picard.jar BuildBamIndex INPUT=!{R1}.bam VERBOSITY=ERROR
-
-	echo sample\tposition\tcov > !{R1}.genomecov
-	
+	# Creates genomecov file from BAM so we can generate coverage graphs later.
+	echo sample\tposition\tcov > !{R1}.genomecov	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  !{R1}.bam >> !{R1}.genomecov
 
+	java -jar /usr/bin/picard.jar BuildBamIndex INPUT=!{R1}.bam VERBOSITY=ERROR
+	# Generates pileup that VCF can be called off of later.
 	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta !{R1}.bam > !{R1}.pileup
 
-
+	# Renames first file to avoid file name collision.
 		if [[ "`basename !{FIRST_FILE}`" == "`basename !{R1}`" ]]
 		then 
 			echo `basename !{FIRST_FILE}` found
@@ -174,11 +147,11 @@ process Align_samples {
 			echo "not first file"
 	fi
 
-
 	'''
-
 }
 
+// Initializes proteins.csv - list of protein names and locations - from our generated GFF.
+// Also does same thing as Align_samples for our "Sample 0" file.
 process Pipeline_prep { 
 
     errorStrategy 'retry'
@@ -191,7 +164,7 @@ process Pipeline_prep {
 		file "lava_ref.gff"
 		file CONTROL_FASTQ	
 		tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
-		file INITIALIZE_MERGED_CSV
+		file INITIALIZE_PROTEINS_CSV
 
 	output: 
 		file 'merged.csv'
@@ -203,17 +176,17 @@ process Pipeline_prep {
 	"""
 	#!/bin/bash
 
+	# Creates header for final csv.
 	echo "Sample,Amino Acid Change,Position,AF,Change,Protein,NucleotideChange,LetterChange,Syn,Depth,Passage" > merged.csv
 
-	python3 ${INITIALIZE_MERGED_CSV}
+	# Creates list of protein names and locations (proteins.csv) based on GFF annotations.
+	python3 ${INITIALIZE_PROTEINS_CSV}
 
-
-	# Creating pileup for control fastq here 
-
+	# Aligns and generates genomecov and pileup for "Sample 0" fastq.
 	/usr/local/miniconda/bin/bwa mem -t ${task.cpus}  -M -R \'@RG\\tID:group1\\tSM:${CONTROL_FASTQ}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta ${CONTROL_FASTQ} > ${CONTROL_FASTQ}.sam
-
 	java -jar /usr/bin/picard.jar SortSam INPUT=${CONTROL_FASTQ}.sam OUTPUT=${CONTROL_FASTQ}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
 
+	# Removes duplicates if specified.
 	if ${params.DEDUPLICATE} 
 		then
 			echo Deduplicating ${CONTROL_FASTQ}
@@ -223,19 +196,17 @@ process Pipeline_prep {
 
 	java -jar /usr/bin/picard.jar BuildBamIndex INPUT=${CONTROL_FASTQ}.bam VERBOSITY=ERROR
 
+	# Creates genome coverage file for "Sample 0" fastq.
 	echo sample\tposition\tcov > ${CONTROL_FASTQ}.genomecov
-	
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam  ${CONTROL_FASTQ}.bam >> ${CONTROL_FASTQ}.genomecov
 
+	# Creates pileup for "Sample 0" fastq.
 	/usr/local/miniconda/bin/samtools mpileup --max-depth 500000 -f consensus.fasta ${CONTROL_FASTQ}.bam > ${CONTROL_FASTQ}.pileup
-
-	
-
 	"""
 }
 
+// Generates VCF for all the samples and converts to .avinput for Annovar.
 process Create_VCF { 
-
     errorStrategy 'retry'
     maxRetries 3
 
@@ -260,30 +231,23 @@ process Create_VCF {
 	#!/bin/bash
 
 	ls -latr
-
 	echo Analyzing variants in sample !{R1}
 
 	# here for file passthrough (input -> output)
 	mv !{BAM} !{BAM}.bam 
 
+	# Generates VCF outputting all bases with a min coverage of 2.
 	java -jar /usr/local/bin/VarScan somatic !{CONTROL_PILEUP} !{R1_PILEUP} !{R1}.vcf --validation 1 --output-vcf 1 --min-coverage 2
-
 	mv !{R1}.vcf.validation !{R1}.vcf
 
+	# Fixes ploidy issues.
 	awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)gsub("1/1","0/1",$10)gsub("1/1","1/0",$11)}1\' !{R1}.vcf > !{R1}_p.vcf
 
+	# Converts VCF to .avinput for Annovar.
 	file="!{R1}""_p.vcf"
-
-
-	sed 's/NC_039477.1/lava/g' !{R1}_p.vcf > test.txt 
-
-	mv test.txt !{R1}_p.vcf
-
 	#convert2annovar.pl -withfreq -format vcf4 -includeinfo !{R1}_p.vcf > !{R1}.avinput 
 	convert2annovar.pl -withfreq -format vcf4old -includeinfo !{R1}_p.vcf > !{R1}.avinput 
-
 	annotate_variation.pl -outfile !{R1} -v -buildver AT !{R1}.avinput .
-
 
 	ls -lah 
 	
@@ -301,11 +265,10 @@ process Create_VCF {
 	'''
 }
 
+// Extract variants for "Passage 0" sample.
 process Ref_done { 
-
     errorStrategy 'retry'
     maxRetries 3
-
 
 	container "quay.io/vpeddu/lava_image:latest"
 
@@ -322,7 +285,7 @@ process Ref_done {
 	output:
 		tuple file("reads.csv"), val(PASSAGE), file(FIRST_FILE), file("${FIRST_FILE}.csv")
 		
- 
+
 	shell:
 	'''
 	#!/bin/bash
@@ -330,6 +293,7 @@ process Ref_done {
 	echo !{FIRST_FILE}
 	echo !{ALLELE_FREQ}
 	
+	# Filters by specified allele frequency; otherwise, outputs all variants with greater than 1% AF.
 	if [[ "!{ALLELE_FREQ}" == "NO_VAL" ]]
 		then
 			awk -F":" '($18+0)>=1{print}' !{FIRST_FILE}.exonic_variant_function > ref.txt
@@ -338,8 +302,10 @@ process Ref_done {
 			awk -v af=!{ALLELE_FREQ} -F":" '($18+0)>=!{ALLELE_FREQ}{print}' !{FIRST_FILE}.exonic_variant_function > ref.txt
 	fi
 
+	# Filters by only single nucleotide mutations.
 	grep "SNV" ref.txt > a.tmp && mv a.tmp ref.txt 
 
+	# Grabs columns matching our final header.
 	awk -v ref=!{CONTROL_FASTQ} -F '[\t:,]' \
 	'{print ref,","$6" "substr($9,3)","$12","$39+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" \
 	to "substr($8,length($8))","$2","$36",0"}' ref.txt > ref.csv
@@ -351,8 +317,6 @@ process Ref_done {
 
 	 echo sample	position	cov > !{FIRST_FILE}.genomecov
 	 /usr/local/miniconda/bin/bedtools genomecov -d -ibam !{FIRSTBAM} >> !{FIRST_FILE}.genomecov
-
-
 
 	if [[ "!{ALLELE_FREQ}" == "NO_VAL" ]]
 		then
@@ -372,9 +336,8 @@ process Ref_done {
 	'''
 }
 
-
+// Extract variants for all other samples.
 process Extract_variants { 
-
     errorStrategy 'retry'
     maxRetries 3
 
@@ -405,8 +368,8 @@ process Extract_variants {
 
 	echo "continuing execution for !{R1}"
 
+	# Creates genomecov files for genome coverage graphs later.
 	echo 'sample	position	cov' > !{R1}.genomecov 
-
 	/usr/local/miniconda/bin/bedtools genomecov -d -ibam !{BAM} >> !{R1}.genomecov
 
 	# reads.csv from all processes will be merged together at end 

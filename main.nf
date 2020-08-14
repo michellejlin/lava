@@ -5,7 +5,7 @@
 ========================================================================================
  Longitudinal Analysis of Viral Alleles
  #### Homepage / Documentation
-https://github.com/vpeddu/lava
+https://github.com/greninger-lab/lava
 ----------------------------------------------------------------------------------------
 */
 
@@ -21,20 +21,18 @@ def helpMessage() {
 
     An example command for running the pipeline is as follows:
 
-    nextflow run vpeddu/lava \\
-        --OUTDIR output/
-  
+    nextflow run greninger-lab/lava \\
         --CONTROL_FASTQ The fastq reads for the first sample in
                         your longitudinal analysis [REQUIRED]
 
-        --METADATA       Required argument: A two column csv - the first column is the
+        --METADATA      Required argument: A two column csv - the first column is the
                         path to all the fastqs you wish to include in your analysis.
                         All fastqs that you want to include need to be specified in
                         this file AND be located in the folder from which you are
                         running lava. The second column is the temporal seperation
                         between the samples. This is unitless so you can input
                         passage number, days, or whatever condition your experiment
-                        happens to have. [REQUIRED]
+                        happens to have. By default, this column should have numbers unless run with --CATEGORICAL. [REQUIRED]
         
         --OUTDIR        Output directory [REQUIRED]
         
@@ -52,7 +50,7 @@ def helpMessage() {
                         this consensus will be annotated from the downloaded genbank
                         record as well. [REQUIRED IF NOT --FASTA + --GFF]
 
-        --AF            pecify an allele frequency percentage to cut off 
+        --AF            Specify an allele frequency percentage to cut off 
                         - with a minimum of 1 percent - in whole numbers. default = ' '
 
         --NUC           Results are listed as nucleotide changes not amino acid
@@ -66,13 +64,18 @@ def helpMessage() {
         --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
                         
-        --CATEGORICAL   Optional flag, will consider "Passage" as categorical variable.
+        --CATEGORICAL   Optional flag, will consider "Passage" as categorical variable. 
+                        Make sure there are no spaces in this name.
     """.stripIndent()
 }
 
-/*
- * SET UP CONFIGURATION VARIABLES
- */
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+/*                                                    */
+/*          SET UP CONFIGURATION VARIABLES            */
+/*                                                    */
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 // Show help message
 params.help = false
@@ -82,8 +85,6 @@ if (params.help){
 }
 
 params.OUTDIR= false
-
-
 params.GENBANK = 'False'
 //params.GFF = 'False'
 //params.FASTA = 'NO_FILE'
@@ -108,14 +109,13 @@ include Annotate_complex from './Modules.nf'
 include Annotate_complex_first_passage from './Modules.nf'
 include Generate_output from './Modules.nf'
 
-
 // Throws exception if CONTROL_FASTQ doesn't exist 
 CONTROL_FASTQ = file(params.CONTROL_FASTQ, checkIfExists:true)
 
 // Staging python scripts
-PULL_ENTERZ = file("$workflow.projectDir/bin/pull_entrez.py")
+PULL_ENTREZ = file("$workflow.projectDir/bin/pull_entrez.py")
 WRITE_GFF = file("$workflow.projectDir/bin/write_gff.py")
-INITIALIZE_MERGED_CSV = file("$workflow.projectDir/bin/initialize_merged_csv.py")
+INITIALIZE_PROTEINS_CSV = file("$workflow.projectDir/bin/initialize_proteins_csv.py")
 ANNOTATE_COMPLEX_MUTATIONS = file("$workflow.projectDir/bin/Annotate_complex_mutations.py")
 MAT_PEPTIDE_ADDITION = file("$workflow.projectDir/bin/mat_peptide_addition.py")
 RIBOSOMAL_SLIPPAGE = file("$workflow.projectDir/bin/ribosomal_slippage.py")
@@ -180,24 +180,21 @@ Channel
     //.map{row-> (file(row.Sample).isEmpty())}
     //.filter{ it == false}.subscribe{println it}
 
-// test_Channel = Channel
-//     .fromPath(METADATA_FILE)
-//     .splitCsv(header:true)
-//     .map{row-> (file(row.Sample)) }
-    //.subscribe{checkIfExists(it)}
 
-//checkIfExists(test_Channel)
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+/*                                                    */
+/*                 RUN THE WORKFLOW                   */
+/*                                                    */
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-
-
-// Run the workflow
 workflow {
-        //fml() 
     log.info nfcoreHeader()
         CreateGFF ( 
             params.GENBANK, 
             CONTROL_FASTQ,
-            PULL_ENTERZ,
+            PULL_ENTREZ,
             WRITE_GFF
             //file(params.FASTA),
             //file(params.GFF)
@@ -222,7 +219,7 @@ workflow {
             CreateGFF.out[2],
             CreateGFF.out[3],
             Alignment_prep.out[0],
-            INITIALIZE_MERGED_CSV
+            INITIALIZE_PROTEINS_CSV
         )
 
         Create_VCF ( 

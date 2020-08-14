@@ -1,3 +1,7 @@
+# Creates a GFF (lava_ref.gff) for our consensus fasta with adjusted numbers according to reference,
+# using CDS annotations from our reference GenBank file.
+# Also grabs ribosomal slippage information and mature peptide information if applicable.
+
 import subprocess 
 import argparse
 from Bio.Seq import Seq
@@ -12,6 +16,7 @@ import os.path
 import pandas as pd
 import sys
 
+# Reads in a fasta and returns fasta name, fasta sequence with Ts instead of Us.
 def read_fasta(fasta_file_loc):
 	strain_list = []
 	genome_list = []
@@ -32,6 +37,9 @@ def read_fasta(fasta_file_loc):
 	# Replaces Us with Ts (causes problems downstream).
 	genome_list.append(dna_string.replace('U', 'T'))
 	return strain_list, genome_list
+
+# Takes our consensus fasta and a reference fasta. 
+# Builds arrays for both so we can adjust numberings downstream.
 def build_num_arrays(our_seq, ref_seq):
 	ref_count = 0
 	our_count = 0
@@ -53,6 +61,9 @@ def build_num_arrays(our_seq, ref_seq):
 			our_num_array.append(-1)
 
 	return our_num_array, ref_num_array
+
+# Takes number arrays and adjusts genome position in our consensus fasta
+# to match corresponding position in reference fasta.
 def adjust(given_num, our_num_array, ref_num_array, genome):
 	
 	# Handles gene lengths that go off the end of the genome
@@ -81,8 +92,10 @@ def adjust(given_num, our_num_array, ref_num_array, genome):
 	else:
 		return str(len(genome))    
 
+# Reads in consensus fasta.
 ignore, genome_ref = read_fasta('consensus.fasta')
 g = open('consensus.fasta', 'w')
+# Replaces consensus fasta header (pulled from GenBank) with >lava and writes the fasta sequence (with Ts instead of Us).
 g.write(">lava\n")
 g.write(genome_ref[0])
 g.close()
@@ -96,18 +109,22 @@ mat_peptide_product_list = []
 mat_peptide_current_loc = []
 allow_one_mat = False
 
-# Pulls CDS annotations from downloaded genbank file 
+# Pulls CDS annotations from downloaded GenBank file.
 for line in open('lava_ref.gbk'):
+	# Grabs locations of proteins from CDS annotations.
 	if 'CDS' in line and '..' in line:
 		gene_loc_list.append(re.findall(r'\d+', line))
 		allow_one = True
+	# Grabs protein names from CDS annotations.
 	if '/product="' in line and allow_one:
 		allow_one = False
+		# Example product annotation: /product="ORF1ab polyprotein"
+		# Grabs name of gene in between quotes and replaces spaces with underscores to prevent issues downstream.
 		px = line.split('=')[1][1:-2]
 		px = px.replace(' ', '_')
 		gene_product_list.append(px)
 
-	# Pulls mature peptide annotations (for coronavirus: long polyproteins)
+	# Pulls mature peptide annotations (for coronavirus: long polyproteins).
 	if 'mat_peptide' in line and '..' in line:
 		mat_peptide_current_loc = re.findall(r'\d+', line)
 		allow_one_mat = True
@@ -115,7 +132,7 @@ for line in open('lava_ref.gbk'):
 		allow_one_mat = False
 		px = line.split('=')[1][1:-2]
 		px = px.replace(' ', '_')
-		# mature peptides can repeat in genbank files, don't want that
+		# Mature peptides can repeat in GenBank files, don't want that, so limit to one.
 		if px not in mat_peptide_product_list:
 			mat_peptide_product_list.append(px)
 			mat_peptide_loc_list.append(mat_peptide_current_loc)
@@ -133,15 +150,13 @@ for line in ge:
 ge.close()
 z.close()
 
-
+# Aligns our conensus fasta to the reference fasta with MAFFT.
 nullo, genome = read_fasta('consensus.fasta')
 subprocess.call('/usr/local/miniconda/bin/mafft --quiet ' + 'aligner.fasta > ' + 'lava.ali', shell=True)
 ali_list, ali_genomes = read_fasta('lava.ali')
 ref_seq = ali_genomes[1]
 our_seq = ali_genomes[0]
 our_seq_num_array, ref_seq_num_array = build_num_arrays(our_seq, ref_seq)
-
-
 
 # Goes through every annotation and adjusts the coordinates from the reference to the consensus sequence
 for entry in range(0, len(gene_loc_list)):
@@ -156,19 +171,19 @@ for entry in range(0, len(mat_peptide_loc_list)):
 # Writes mature peptide names and locations to new file.
 mat_peptide_list = open('mat_peptides.txt', 'w')
 for x in range(0, len(mat_peptide_product_list)):
-	# some peptides have ribosomal slippage too, 
+	# Some peptides have ribosomal slippage too, 
 	# grab the last two locations (after slippage join)
 	if len(mat_peptide_loc_list[x]) == 4:
 		peptide_start = str(mat_peptide_loc_list[x][2])
 		peptide_end = str(mat_peptide_loc_list[x][3])
 		before_slip = int(mat_peptide_loc_list[x][1])-int(mat_peptide_loc_list[x][0])
 		before_slip = int(before_slip)
-		# append the length of the protein before ribosomal slippage to name of mat_peptide,
+		# Append the length of the protein before ribosomal slippage to name of mat_peptide,
 		# to be parsed later by ribosomal_slippage.py
 		mat_peptide_list.write(mat_peptide_product_list[x] + "_rib_" + str(before_slip) + 
 		"," + peptide_start + "," + peptide_end + "\n")
 
-	# otherwise, just grab the locations of the mat peptide
+	# Otherwise, just grab the locations of the mat peptide
 	else:
 		peptide_start = str(mat_peptide_loc_list[x][0])
 		peptide_end = str(mat_peptide_loc_list[x][1])
@@ -203,7 +218,6 @@ for x in range(0, len(gene_product_list)):
 		gene_name = "F"
 	gene_end = str(gene_end)
 
-
 	## For ribosomal slippage, creates fake new protein to get the second set of values
 	if len(gene_loc_list[x]) == 4:
 		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
@@ -217,7 +231,6 @@ for x in range(0, len(gene_product_list)):
 		g.write(name + '\tLAVA\tCDS\t' +  gene_start + '\t' + gene_end + '\t.\t+\t0\tID=CDS:' + gene_name + ';Parent=transcript:' + gene_name + ';biotype=protein_coding\n')
 		g.write(name + '\tLAVA\ttranscript\t' + gene_start + '\t' + gene_end + '\t.\t+\t.\tID=transcript:' + gene_name + ';Parent=gene:' + gene_name + ';biotype=protein_coding\n')
 
+# Writes where the the protein containing the ribosomal slippage starts in separate file, to be parsed later.
 slip_start_file = open('ribosomal_start.txt', 'w')
 slip_start_file.write(slip_start)
-
-# Returns the filepaths for the new fasta and .gff file as strings 

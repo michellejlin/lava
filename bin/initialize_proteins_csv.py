@@ -1,3 +1,5 @@
+# Creates list of protein names and locations (proteins.csv) based on GFF annotations.
+
 import subprocess 
 import argparse
 from Bio.Seq import Seq
@@ -24,9 +26,3 @@ col = list(df.Protein)
 for i in col:
     if col.count(i) > 1:
         sys.exit("ERROR: Duplicate protein names found. Use custom GFF file without duplicates.")
-
-
-# For all samples, extracts minor allele variants and detects amino acid changes.
-# Extracts relevant information from each sample to merged.csv: amino acid change, protein, residue number,
-# nucleotide letter change, type of mutation, depth, and metadata information.
-ref_done = False
