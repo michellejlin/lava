@@ -1,3 +1,5 @@
+# Checks for complex mutations and prints a warning message.
+
 import subprocess 
 import argparse
 from Bio.Seq import Seq
@@ -27,7 +29,7 @@ for line in open(sys.argv[1]):
     # Make sure we only read lines that contain data 
     if ',' in line:
         # Detects complex mutations by seeing if the amino acid residue is the same as the last one we read.
-        # This assumes that merged.csv is in sorted order, which we guaruntee that it is.
+        # This assumes that merged.csv is in sorted order, which we guarantee that it is.
         # Prints a warning message if complex mutation is detected.
         if line.split(',')[4][:-1] == last:
             if not seen_one_complex:

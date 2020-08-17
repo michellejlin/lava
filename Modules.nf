@@ -392,8 +392,9 @@ process Extract_variants {
 	'''
 }
 
+// Checks for multi-nucleotide mutations and prints out warning message.
+// Currently LAVA does not handle complex mutations and instead annotates it as such for manual review.
 process Annotate_complex { 
-
     errorStrategy 'retry'
     maxRetries 3
 
@@ -409,20 +410,20 @@ process Annotate_complex {
 		file SAMPLE_CSV
 
 	script:
-
 	"""
 	#!/bin/bash
 
+	# Checks for complex mutations and prints a warning message.
 	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${SAMPLE_CSV} ${PASSAGE}	
 
+	# Renaming files to avoid file collision
 	mv complex.log ${R1}.complex.log
-
 	mv reads.csv ${R1}.reads.csv
 	"""
 }
 
+// Checks for multi-nucleotide mutations in first file and prints out warning message.
 process Annotate_complex_first_passage { 
-
     errorStrategy 'retry'
     maxRetries 3
 
@@ -439,16 +440,14 @@ process Annotate_complex_first_passage {
 	"""
 	#!/bin/bash
 
+	# Checks for complex mutations and prints a warning message.
 	python3 ${ANNOTATE_COMPLEX_MUTATIONS} ${FIRST_FILE_CSV} ${PASSAGE}	
-
 	mv complex.log ${FIRST_FILE}.complex.log
 	mv reads.csv ${FIRST_FILE}.reads.csv
-	
 	"""
 }
 
 process Generate_output { 
-
     errorStrategy 'retry'
     maxRetries 3
 
@@ -480,6 +479,8 @@ process Generate_output {
 		file "genomecov"
 		file "all_files"
 	script:
+
+	// Assumes that "Passage" info given in metadata file is a numerical value.
 	if (params.CATEGORICAL == 'false') {
 		"""
 		#!/bin/bash
@@ -487,12 +488,9 @@ process Generate_output {
 		ls -lah
 
 		# cat *fastq.csv >> merged.csv
-
-		head ${PALETTE}
-
 		cat merged.csv > final.csv 
 
-		#Takes fastq.gz and fastq
+		# Takes fastq.gz and fastq
 		# if [[ gzip -t \$${R1} ]]
 		if ls *.gz &>/dev/null
 		then
@@ -501,8 +499,8 @@ process Generate_output {
 			cat *.fastq.csv >> final.csv
 		fi
 
+		# Gets rid of non-SNPs
 		grep -v "transcript" final.csv > a.tmp && mv a.tmp final.csv 
-
 		grep -v "delins" final.csv > a.tmp && mv a.tmp final.csv 
 
 		# Sorts by beginning of mat peptide
@@ -513,7 +511,6 @@ process Generate_output {
 
 		# Corrects for ribosomal slippage.
 		python3 ${RIBOSOMAL_SLIPPAGE} final.csv proteins.csv
-
 
 		awk NF final.csv > a.tmp && mv a.tmp final.csv
 
@@ -533,7 +530,10 @@ process Generate_output {
 
 		cp -r *.txt all_files
 		"""
-	} else {
+	} 
+	// Interprets "Passage" info given in metadata file as categorical, and will rename samples in visualization 
+	// based on that categorical value.
+	else {
 		"""
 		#!/bin/bash
 
@@ -587,7 +587,4 @@ process Generate_output {
 		cp -r *.txt all_files
 		"""
 	}
-
-
-	
 } 
