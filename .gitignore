@@ -1,1 +1,10 @@
 *.pyc
+*.log* 
+trace.* 
+work/*
+*.nextflow* 
+*.vscode*
+test_data/ribosomal_slippage_testing/
+*.html
+test_data/work/*
+.DS_Store
