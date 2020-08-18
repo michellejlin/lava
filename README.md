@@ -1,3 +1,5 @@
+## To make sure you have the latest version of LAVA, please see the [Greninger lab repo](https://github.com/greninger-lab/lava) for both the longitudinal (master branch) and unlongitudinal versions of LAVA.
+
 # LAVA: Longitudinal Analysis of Viral Alleles
 
 ![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
@@ -119,7 +121,7 @@ Additionally you can examine the data more in depth via the `final.csv` file whi
 
 5. ``import: not authorized `subprocess' @ error/constitute.c/WriteImage/1028.``
 	
-	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python /Users/uwvirongs/Downloads/lava/lava.py"`.
+	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python3 /Users/uwvirongs/Downloads/lava/lava.py"`.
 
 6. ``IOError: [Errno 2] No such file or directory: 'Example1_metadata.csv'``
 
