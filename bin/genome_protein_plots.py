@@ -337,6 +337,7 @@ if __name__ == '__main__':
 		if args.categorical:
 			name_from_passage = merged.loc[merged['Sample']==sample_name].iloc[0]
 			name_from_passage = name_from_passage['Passage']
+			name_from_passage = name_from_passage.replace('_',' ')
 		
 		# Plot per base coverage for each sample as a subplot to the side.
 		coverage = pd.read_csv(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0, sep='\t')
