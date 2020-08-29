@@ -356,7 +356,7 @@ if __name__ == '__main__':
 		# Creates a graph with x-axis being genome length (based on protein csv).
 		## Took out active_scroll = "wheel_zoom" -RCS
 		genome_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name.split('/')[0], sizing_mode = 'scale_width',
+			title=name_from_passage, sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		
 		# Plots by nucleotide letter change.
