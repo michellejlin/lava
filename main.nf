@@ -86,8 +86,8 @@ if (params.help){
 
 params.OUTDIR= false
 params.GENBANK = 'False'
-//params.GFF = 'False'
-//params.FASTA = 'NO_FILE'
+params.GFF = 'False'
+params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
 params.CATEGORICAL = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
@@ -122,7 +122,7 @@ RIBOSOMAL_SLIPPAGE = file("$workflow.projectDir/bin/ribosomal_slippage.py")
 GENOME_PROTEIN_PLOTS = file("$workflow.projectDir/bin/genome_protein_plots.py")
 PALETTE = file("$workflow.projectDir/bin/palette.py")
 
-//FASTA = file(params.FASTA)
+FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
 
@@ -137,24 +137,24 @@ if (params.OUTDIR == false) {
     println( "Must provide an output directory with --OUTDIR") 
     exit(1)
 }
-// If --GENBANK and --FASTA or --GFF are specified at the same time
-// if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
-//     println("--GENBANK cannot be used with --FASTA or --GFF")
-//     exit(1)
-// }
-// if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
-//     println("--GENBANK cannot be used with --FASTA or --GFF")
-//     exit(1)
-// }
-// // If --FASTA without --GENBANK or vice versa
-// if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
-//     println('--GFF needs to be specified with --FASTA')
-//     exit(1)
-// }
-// if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){ 
-//     println('--FASTA needs to be specified with --GFF')
-//     exit(1)
-// }
+//If --GENBANK and --FASTA or --GFF are specified at the same time
+if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
+    println("--GENBANK cannot be used with --FASTA or --GFF")
+    exit(1)
+}
+if(((params.GENBANK != "False") && (params.GFF != "False"))){ 
+    println("--GENBANK cannot be used with --FASTA or --GFF")
+    exit(1)
+}
+// If --FASTA without --GENBANK or vice versa
+if( (params.FASTA != "NO_FILE") && params.GFF == 'False'){ 
+    println('--GFF needs to be specified with --FASTA')
+    exit(1)
+}
+if( (params.GFF != "False") && params.FASTA == 'NO_FILE'){ 
+    println('--FASTA needs to be specified with --GFF')
+    exit(1)
+}
 // If no flags specified
 if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
     println('Either --GENBANK or --FASTA + --GFF are required flags')
@@ -195,9 +195,9 @@ workflow {
             params.GENBANK, 
             CONTROL_FASTQ,
             PULL_ENTREZ,
-            WRITE_GFF
-            //file(params.FASTA),
-            //file(params.GFF)
+            WRITE_GFF,
+            file(params.FASTA),
+            file(params.GFF)
         )
         
         Alignment_prep ( 
