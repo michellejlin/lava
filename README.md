@@ -1,5 +1,3 @@
-## To make sure you have the latest version of LAVA, please see the [Greninger lab repo](https://github.com/greninger-lab/lava) for both the longitudinal (master branch) and unlongitudinal versions of LAVA.
-
 # LAVA: Longitudinal Analysis of Viral Alleles
 
 ![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
