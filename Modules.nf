@@ -12,8 +12,6 @@ process CreateGFF {
       file CONTROL_FASTQ
 	  file PULL_ENTREZ
 	  file WRITE_GFF
-	  // file FASTA
-	  // file GFF
 
     output: 
       file "lava_ref.fasta"
@@ -30,18 +28,6 @@ process CreateGFF {
 	set -e 
 	echo ${CONTROL_FASTQ}
 
-	# if [[ ${FASTA} == "NO_FILE" ]]
-	# 	then
-	# 		# Pulls reference fasta and GenBank file using accession number specified by --GENBANK.
-	# 		python3 ${PULL_ENTREZ} ${GENBANK}
-	# 	else 
-	#		mv ${FASTA} lava_ref.fasta
-	# 		mv ${GFF} lava_ref.gff
-	#		#Creates empty txt file
-	#		touch ribosomal_start.txt
-	#		touch mat_peptides.txt
-	# fi
-
 	# Indexes and aligns "Sample 0" fastq to reference fasta
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
     /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
@@ -55,12 +41,6 @@ process CreateGFF {
     /usr/local/miniconda/bin/bgzip calls2.vcf
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
-
-	# if [[ ${FASTA} == "NO_FILE" ]]
-	# 	then
-	# 		# Creates a GFF (lava_ref.gff) for our consensus fasta per CDS annotations from our reference GenBank file.
-	# 		python3 ${WRITE_GFF}
-	# fi
 
 	 # Avoiding filename collision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
