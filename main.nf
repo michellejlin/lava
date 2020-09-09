@@ -16,15 +16,11 @@ nextflow.preview.dsl=2
 def helpMessage() {
     log.info"""
     LAVA: Longitudinal Analysis of Viral Alleles
-
     Usage:
-
     An example command for running the pipeline is as follows:
-
     nextflow run greninger-lab/lava \\
         --CONTROL_FASTQ The fastq reads for the first sample in
                         your longitudinal analysis [REQUIRED]
-
         --METADATA      Required argument: A two column csv - the first column is the
                         path to all the fastqs you wish to include in your analysis.
                         All fastqs that you want to include need to be specified in
@@ -40,25 +36,19 @@ def helpMessage() {
                         control fastq. This option must be used with the -g flag to
                         specify the protein annotations relative to the start of this
                         fasta. [REQUIRED IF NOT --GENBANK]
-
         --GFF           Specify a reference gff file with the protein annotations for
                         the reference fasta supplied with the -f flag. This option
                         must be paired with the -f flag. [REQUIRED IF NOT GENBANK]
-
         --GENBANK       Provide a Genbank accession number. This record will be used
                         to generate a majority consensus from the control fastq, and
                         this consensus will be annotated from the downloaded genbank
                         record as well. [REQUIRED IF NOT --FASTA + --GFF]
-
         --AF            Specify an allele frequency percentage to cut off 
                         - with a minimum of 1 percent - in whole numbers. default = ' '
-
         --NUC           Results are listed as nucleotide changes not amino acid
                         changes. Do not use with -png.
-
         --ALLELE_FREQ   Specify an allele frequency percentage to cut off - with a
                         minimum of 1 percent - in whole numbers.
-
         --PNG           Output results as a png. Do not use with -nuc.
         
         --DEDUPLICATE   Optional flag, will perform automatic removal of PCR
@@ -122,7 +112,7 @@ RIBOSOMAL_SLIPPAGE = file("$workflow.projectDir/bin/ribosomal_slippage.py")
 GENOME_PROTEIN_PLOTS = file("$workflow.projectDir/bin/genome_protein_plots.py")
 PALETTE = file("$workflow.projectDir/bin/palette.py")
 
-// FASTA = file(params.FASTA)
+//FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
 
@@ -137,7 +127,7 @@ if (params.OUTDIR == false) {
     println( "Must provide an output directory with --OUTDIR") 
     exit(1)
 }
-// //If --GENBANK and --FASTA or --GFF are specified at the same time
+// If --GENBANK and --FASTA or --GFF are specified at the same time
 // if(((params.GENBANK != "False") && (params.FASTA != "NO_FILE"))){ 
 //     println("--GENBANK cannot be used with --FASTA or --GFF")
 //     exit(1)
@@ -155,11 +145,11 @@ if (params.OUTDIR == false) {
 //     println('--FASTA needs to be specified with --GFF')
 //     exit(1)
 // }
-// // If no flags specified
-// if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
-//     println('Either --GENBANK or --FASTA + --GFF are required flags')
-//     exit(1)
-// }
+// If no flags specified
+if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
+    println('Either --GENBANK or --FASTA + --GFF are required flags')
+    exit(1)
+}
 
 // Make sure OUTDIR ends with trailing slash
 
@@ -195,9 +185,9 @@ workflow {
             params.GENBANK, 
             CONTROL_FASTQ,
             PULL_ENTREZ,
-            WRITE_GFF,
-            // file(params.FASTA),
-            // file(params.GFF)
+            WRITE_GFF
+            //file(params.FASTA),
+            //file(params.GFF)
         )
         
         Alignment_prep ( 
