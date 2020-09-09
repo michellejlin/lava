@@ -86,8 +86,8 @@ if (params.help){
 
 params.OUTDIR= false
 params.GENBANK = 'False'
-params.GFF = 'False'
-params.FASTA = 'NO_FILE'
+//params.GFF = 'False'
+//params.FASTA = 'NO_FILE'
 params.DEDUPLICATE = 'false' 
 params.CATEGORICAL = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
@@ -122,7 +122,7 @@ RIBOSOMAL_SLIPPAGE = file("$workflow.projectDir/bin/ribosomal_slippage.py")
 GENOME_PROTEIN_PLOTS = file("$workflow.projectDir/bin/genome_protein_plots.py")
 PALETTE = file("$workflow.projectDir/bin/palette.py")
 
-FASTA = file(params.FASTA)
+// FASTA = file(params.FASTA)
  //input_read_ch = Channel
 
 
@@ -196,8 +196,8 @@ workflow {
             CONTROL_FASTQ,
             PULL_ENTREZ,
             WRITE_GFF,
-            file(params.FASTA),
-            file(params.GFF)
+            // file(params.FASTA),
+            // file(params.GFF)
         )
         
         Alignment_prep ( 
