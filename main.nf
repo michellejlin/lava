@@ -185,7 +185,7 @@ workflow {
             params.GENBANK, 
             CONTROL_FASTQ,
             PULL_ENTREZ,
-            WRITE_GFF
+            WRITE_GFF,
             file(params.FASTA),
             file(params.GFF)
         )
