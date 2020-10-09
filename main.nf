@@ -76,8 +76,8 @@ if (params.help){
 
 params.OUTDIR= false
 params.GENBANK = 'False'
-//params.GFF = 'False'
-//params.FASTA = 'NO_FILE'
+params.GFF = 'False'
+params.FASTA = 'False'
 params.DEDUPLICATE = 'false' 
 params.CATEGORICAL = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
@@ -186,8 +186,8 @@ workflow {
             CONTROL_FASTQ,
             PULL_ENTREZ,
             WRITE_GFF
-            //file(params.FASTA),
-            //file(params.GFF)
+            file(params.FASTA),
+            file(params.GFF)
         )
         
         Alignment_prep ( 
