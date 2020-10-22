@@ -77,10 +77,10 @@ if (params.help){
 params.OUTDIR= false
 params.GENBANK = 'False'
 params.GFF = 'False'
-params.FASTA = 'False'
-params.DEDUPLICATE = 'false' 
-params.CATEGORICAL = 'false'
+params.FASTA = 'NO_FILE'
+params.DEDUPLICATE = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
+params.CATEGORICAL = 'false'
 
 METADATA_FILE = file(params.METADATA)
 

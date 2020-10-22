@@ -30,7 +30,7 @@ process CreateGFF {
 	set -e 
 	echo ${CONTROL_FASTQ}
     
-	if [[ ${FASTA} == "False" ]]
+	if [[ ${FASTA} == "NO_FILE" ]]
 		then
 			# Pulls reference fasta and GenBank file using accession number specified by --GENBANK.
 			python3 ${PULL_ENTREZ} ${GENBANK}
@@ -53,7 +53,7 @@ process CreateGFF {
     /usr/local/miniconda/bin/bgzip calls2.vcf
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
-	if [[ ${FASTA} == "False" ]]
+	if [[ ${FASTA} == "NO_FILE" ]]
 		then
 			# Creates a GFF (lava_ref.gff) for our consensus fasta per CDS annotations from our reference GenBank file.
 			python3 ${WRITE_GFF}
@@ -442,6 +442,7 @@ process Generate_output {
 	if (params.CATEGORICAL == 'false') {
 		"""
 		#!/bin/bash
+		
 		ls -lah
 		# cat *fastq.csv >> merged.csv
 		cat merged.csv > final.csv 
