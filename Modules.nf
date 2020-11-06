@@ -35,11 +35,14 @@ process CreateGFF {
 			# Pulls reference fasta and GenBank file using accession number specified by --GENBANK.
 			python3 ${PULL_ENTREZ} ${GENBANK}
 		else 
+			grep -v "mature_peptide" ${GFF} > lava_ref.gff
+			grep "mature_peptide" ${GFF} | sed "s/,mature_peptide//g" > mat_peptides.txt
 			mv ${FASTA} lava_ref.fasta
-			mv ${GFF} lava_ref.gff
+			#mv ${GFF} lava_ref.gff
 			#Creates empty txt file
 			touch ribosomal_start.txt
-			touch mat_peptides.txt
+			#touch mat_peptides.txt
+			cp lava_ref.fasta consensus.fasta
 	fi
 	# Indexes and aligns "Sample 0" fastq to reference fasta
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
