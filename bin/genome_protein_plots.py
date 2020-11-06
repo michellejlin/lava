@@ -49,10 +49,7 @@ def protein_annotation(first):
 		# Makes arrows for mature peptides.
 		for i in range(0, mat_peptides_list.shape[0]):
 			x1 = mat_peptides_list.iloc[i,1]
-			if(i==mat_peptides_list.shape[0]-1):
-				x2 = mat_peptides_list.iloc[i,2]
-			else:
-				x2 = mat_peptides_list.iloc[(i+1),1]
+			x2 = mat_peptides_list.iloc[i,2]
 			genome_plot.add_layout(Arrow(end = VeeHead(size=20, fill_color = "cadetblue", fill_alpha = 0.3, line_alpha = 0), 
 				line_color = "cadetblue", line_width = 20, x_start = x1, x_end = x2,
 				y_start = 5, y_end = 5, line_alpha = 0.3))

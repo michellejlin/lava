@@ -1,5 +1,54 @@
 // Uses accession number specified by --GENBANK to create our own GFF (lava_ref.gff) for a consensus fasta
 // generated from the alignment of "Passage 0" sample to reference fasta.
+process CreateGFF_Genbank { 
+    container "quay.io/vpeddu/lava_image:latest"
+
+	// Retry on fail at most three times 
+    errorStrategy 'retry'
+    maxRetries 1
+	
+    input:
+      val(GENBANK)
+      file CONTROL_FASTQ
+	  file PULL_ENTREZ
+	  file WRITE_GFF
+
+    output: 
+      file "lava_ref.fasta"
+      file "consensus.fasta"
+      file "lava_ref.gff"
+	  file "CONTROL.fastq"
+	  file "ribosomal_start.txt"
+	  file "mat_peptides.txt"
+
+    script:
+    """
+    #!/bin/bash
+    
+	set -e 
+	echo ${CONTROL_FASTQ}
+    
+	python3 ${PULL_ENTREZ} ${GENBANK}
+	# Indexes and aligns "Sample 0" fastq to reference fasta
+    /usr/local/miniconda/bin/bwa index lava_ref.fasta
+    /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
+	# Generates new consensus fasta from aligned "Sample 0" and reference fasta.
+	/usr/local/miniconda/bin/samtools sort -@ ${task.cpus} aln.bam -o aln.sorted.bam 
+    /usr/local/miniconda/bin/bcftools mpileup --max-depth 500000 -P 1.1e-100 -Ou -f lava_ref.fasta aln.sorted.bam | /usr/local/miniconda/bin/bcftools call -m -Oz -o calls.vcf.gz 
+    /usr/local/miniconda/bin/tabix calls.vcf.gz
+    gunzip calls.vcf.gz 
+    /usr/local/miniconda/bin/bcftools filter -i '(DP4[0]+DP4[1]) < (DP4[2]+DP4[3]) && ((DP4[2]+DP4[3]) > 0)' calls.vcf -o calls2.vcf
+    /usr/local/miniconda/bin/bgzip calls2.vcf
+    /usr/local/miniconda/bin/tabix calls2.vcf.gz 
+    cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
+	python3 ${WRITE_GFF}
+	 # Avoiding filename collision during run_pipeline process 
+	 mv ${CONTROL_FASTQ} CONTROL.fastq
+    """
+}
+
+// Uses accession number specified by --GENBANK to create our own GFF (lava_ref.gff) for a consensus fasta
+// generated from the alignment of "Passage 0" sample to reference fasta.
 process CreateGFF { 
     container "quay.io/vpeddu/lava_image:latest"
 
@@ -30,20 +79,14 @@ process CreateGFF {
 	set -e 
 	echo ${CONTROL_FASTQ}
     
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			# Pulls reference fasta and GenBank file using accession number specified by --GENBANK.
-			python3 ${PULL_ENTREZ} ${GENBANK}
-		else 
-			grep -v "mature_peptide" ${GFF} > lava_ref.gff
-			grep "mature_peptide" ${GFF} | sed "s/,mature_peptide//g" > mat_peptides.txt
-			mv ${FASTA} lava_ref.fasta
-			#mv ${GFF} lava_ref.gff
-			#Creates empty txt file
-			touch ribosomal_start.txt
-			#touch mat_peptides.txt
-			cp lava_ref.fasta consensus.fasta
-	fi
+	grep -v "mature_peptide" ${GFF} > lava_ref.gff
+	grep "mature_peptide" ${GFF} | sed "s/,mature_peptide//g" > mat_peptides.txt
+	mv ${FASTA} lava_ref.fasta
+	#mv ${GFF} lava_ref.gff
+	#Creates empty txt file
+	touch ribosomal_start.txt
+	#touch mat_peptides.txt
+	cp lava_ref.fasta consensus.fasta
 	# Indexes and aligns "Sample 0" fastq to reference fasta
     /usr/local/miniconda/bin/bwa index lava_ref.fasta
     /usr/local/miniconda/bin/bwa mem -t ${task.cpus} -M lava_ref.fasta ${CONTROL_FASTQ} | /usr/local/miniconda/bin/samtools view -Sb - > aln.bam
@@ -56,11 +99,6 @@ process CreateGFF {
     /usr/local/miniconda/bin/bgzip calls2.vcf
     /usr/local/miniconda/bin/tabix calls2.vcf.gz 
     cat lava_ref.fasta | /usr/local/miniconda/bin/bcftools consensus calls2.vcf.gz > consensus.fasta
-	if [[ ${FASTA} == "NO_FILE" ]]
-		then
-			# Creates a GFF (lava_ref.gff) for our consensus fasta per CDS annotations from our reference GenBank file.
-			python3 ${WRITE_GFF}
-	fi
 	 # Avoiding filename collision during run_pipeline process 
 	 mv ${CONTROL_FASTQ} CONTROL.fastq
     """
@@ -78,11 +116,20 @@ process Alignment_prep {
       file "lava_ref.fasta"
       file "consensus.fasta"
       file "lava_ref.gff"
+	  file "CONTROL.fastq"
+	  file "ribosomal_start.txt"
+	  file "mat_peptides.txt"
 
     output: 
 	tuple file('consensus.fasta.amb'), file('consensus.fasta.bwt'), file('consensus.fasta.sa'), file('consensus.fasta'), file('consensus.fasta.ann'), file('consensus.fasta.pac')
 	file "AT_refGene.txt"
 	file "AT_refGeneMrna.fa"
+	file "lava_ref.fasta"
+    file "consensus.fasta"
+    file "lava_ref.gff"
+	file "CONTROL.fastq"
+	file "ribosomal_start.txt"
+	file "mat_peptides.txt"
 
     script:
     """
@@ -212,7 +259,6 @@ process Create_VCF {
 		tuple val(FIRST_FILE), val(NULL)
 		file ATREF_MRNA
 
-
 	output: 
 		file "*exonic_variant_function" optional true
 		tuple file(R1), file("*.bam"), file( "*.exonic_variant_function.samp"), val(PASSAGE)
@@ -221,6 +267,7 @@ process Create_VCF {
 	shell:
 	'''
 	#!/bin/bash
+	echo "First file is "!{FIRST_FILE}
 	ls -latr
 	echo Analyzing variants in sample !{R1}
 	# here for file passthrough (input -> output)

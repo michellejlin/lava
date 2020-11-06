@@ -77,7 +77,7 @@ if (params.help){
 params.OUTDIR= false
 params.GENBANK = 'False'
 params.GFF = 'False'
-params.FASTA = 'NO_FILE'
+params.FASTA = 'false'
 params.DEDUPLICATE = 'false'
 params.ALLELE_FREQ = 'NO_VAL'
 params.CATEGORICAL = 'false'
@@ -88,6 +88,7 @@ METADATA_FILE = file(params.METADATA)
  * Import the processes used in this workflow
  */
 
+include CreateGFF_Genbank from './Modules.nf'
 include CreateGFF from './Modules.nf'
 include Alignment_prep from './Modules.nf'
 include Align_samples from './Modules.nf' 
@@ -146,7 +147,7 @@ if (params.OUTDIR == false) {
 //     exit(1)
 // }
 // If no flags specified
-if(params.GFF == "False" && params.FASTA == 'NO_FILE' && params.GENBANK == "False"){ 
+if(params.GFF == "False" && params.FASTA == 'false' && params.GENBANK == "False"){ 
     println('Either --GENBANK or --FASTA + --GFF are required flags')
     exit(1)
 }
@@ -181,20 +182,42 @@ Channel
 
 workflow {
     log.info nfcoreHeader()
-        CreateGFF ( 
-            params.GENBANK, 
-            CONTROL_FASTQ,
-            PULL_ENTREZ,
-            WRITE_GFF,
-            file(params.FASTA),
-            file(params.GFF)
-        )
-        
-        Alignment_prep ( 
-            CreateGFF.out[0],
-            CreateGFF.out[1],
-            CreateGFF.out[2]
-        )
+        if(params.FASTA == 'false') {
+            CreateGFF_Genbank ( 
+                params.GENBANK, 
+                CONTROL_FASTQ,
+                PULL_ENTREZ,
+                WRITE_GFF
+            )
+            Alignment_prep ( 
+                CreateGFF_Genbank.out[0],
+                CreateGFF_Genbank.out[1],
+                CreateGFF_Genbank.out[2],
+                CreateGFF_Genbank.out[3],
+                CreateGFF_Genbank.out[4],
+                CreateGFF_Genbank.out[5]
+            )
+
+        }
+        else {
+            CreateGFF ( 
+                params.GENBANK, 
+                CONTROL_FASTQ,
+                PULL_ENTREZ,
+                WRITE_GFF,
+                file(params.FASTA),
+                file(params.GFF)
+            )
+
+            Alignment_prep ( 
+                CreateGFF.out[0],
+                CreateGFF.out[1],
+                CreateGFF.out[2],
+                CreateGFF.out[3],
+                CreateGFF.out[4],
+                CreateGFF.out[5]
+            )
+        }
 
         Align_samples ( 
             input_read_ch,
@@ -206,14 +229,14 @@ workflow {
 
         Pipeline_prep ( 
             Align_samples.out[0].collect(),
-            CreateGFF.out[2],
-            CreateGFF.out[3],
+            Alignment_prep.out[5],
+            Alignment_prep.out[6],
             Alignment_prep.out[0],
             INITIALIZE_PROTEINS_CSV
         )
 
         Create_VCF ( 
-            CreateGFF.out[3],
+            Alignment_prep.out[6],
             Pipeline_prep.out[2],
             Align_samples.out[0],
             Alignment_prep.out[1],
@@ -225,7 +248,7 @@ workflow {
             input_read_ch.first(),
             params.ALLELE_FREQ,
             Create_VCF.out[0],
-            CreateGFF.out[3],
+            Alignment_prep.out[6],
             Pipeline_prep.out[3],
             Align_samples.out[1],
             METADATA_FILE
@@ -258,8 +281,8 @@ workflow {
             Pipeline_prep.out[1],
             Align_samples.out[2].collect(),
             Create_VCF.out[2].collect(),
-            CreateGFF.out[4],
-            CreateGFF.out[5],
+            Alignment_prep.out[7],
+            Alignment_prep.out[8],
             MAT_PEPTIDE_ADDITION,
             RIBOSOMAL_SLIPPAGE,
             GENOME_PROTEIN_PLOTS,
