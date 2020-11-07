@@ -171,12 +171,12 @@ process Align_samples {
 	# Align each sample to consensus fasta.
 	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
 	# Sorts SAM.
-	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR 
+	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR VALIDATION_STRINGENCY=LENIENT 
 	# Removes duplicates (e.g. from library construction using PCR) if --DEDUPLICATE flag specified.
 	if !{DEDUPLICATE} 
 		then
 			echo "Deduplicating !{R1}"
-			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true
+			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true VALIDATION_STRINGENCY=LENIENT 
 			cat ${R1}_dedup.bam > ${R1}.bam
 	fi
 	# Creates genomecov file from BAM so we can generate coverage graphs later.
