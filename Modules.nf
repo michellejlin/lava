@@ -163,7 +163,6 @@ process Align_samples {
 	tuple file(R1), file("*.pileup"), file("*.bam"), val(PASSAGE)
 	file "FIRSTFILE.bam" optional true
 	file "${R1}.genomecov"
-	file("*.bam")
 
 	shell:
 	'''
