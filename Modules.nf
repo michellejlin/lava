@@ -353,7 +353,7 @@ process Ref_done {
 	 mv a.tmp !{FIRST_FILE}.txt
 	SAMPLE="$(awk -F"," -v name=!{FIRST_FILE} '$1==name {print $2}' !{METADATA})"
 	
-	 awk -v name=!{FIRST_FILE} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$42","sample}' !{FIRST_FILE}.txt > !{FIRST_FILE}.csv
+	 awk -v name=!{FIRST_FILE} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$43","sample}' !{FIRST_FILE}.txt > !{FIRST_FILE}.csv
 	'''
 }
 
@@ -371,7 +371,6 @@ process Extract_variants {
 	output:
 		tuple file("${R1}.csv"), val(PASSAGE), file("reads.csv"), file(R1) optional true
 		tuple file(R1), val(PASSAGE) optional true
-		file("${R1}.txt")
 	shell:
 
 	'''
@@ -400,7 +399,7 @@ process Extract_variants {
 	SAMPLE="$(awk -F"," -v name=!{R1} '$1==name {print $2}' !{METADATA})"
 	echo $SAMPLE
 	
-	 awk -v name=!{R1} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$42","sample}' !{R1}.txt > !{R1}.csv
+	 awk -v name=!{R1} -v sample=!{PASSAGE} -F'[\t:,]' '{print name","$6" "substr($9,3)","$12","$46+0","substr($9,3)","$6","substr($8,3)","substr($8,3,1)" to "substr($8,length($8))","$2","$43","sample}' !{R1}.txt > !{R1}.csv
 	'''
 }
 
