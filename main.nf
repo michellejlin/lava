@@ -291,6 +291,7 @@ workflow {
         
     publish:
         Generate_output.out to: "${params.OUTDIR}" , mode: 'copy'
+        Align_samples.out[3] to: "${params.OUTDIR}"bams, mode: 'copy' 
 }
 
 def nfcoreHeader() {
