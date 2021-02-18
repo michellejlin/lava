@@ -20,6 +20,8 @@ process CreateGFF_Genbank {
 	  file "CONTROL.fastq"
 	  file "ribosomal_start.txt"
 	  file "mat_peptides.txt"
+      file "consensus.fasta"
+      file "lava_ref.gff"
 
     script:
     """
