@@ -153,7 +153,6 @@ if(params.GFF == "False" && params.FASTA == 'false' && params.GENBANK == "False"
 }
 
 // Make sure OUTDIR ends with trailing slash
-
 if (!params.OUTDIR.endsWith("/")){
    params.OUTDIR = "${params.OUTDIR}/"
 }
@@ -200,14 +199,25 @@ workflow {
 
         }
         else {
-            CreateGFF ( 
+            if(params.FASTA == 'false') {
+                CreateGFF ( 
+                params.GENBANK, 
+                CONTROL_FASTQ,
+                PULL_ENTREZ,
+                WRITE_GFF,
+                CreateGFF_Genbank.out[6],
+                CreateGFF_Genbank.out[7]
+                )
+            } else {
+                CreateGFF ( 
                 params.GENBANK, 
                 CONTROL_FASTQ,
                 PULL_ENTREZ,
                 WRITE_GFF,
                 file(params.FASTA),
                 file(params.GFF)
-            )
+                )
+            }
 
             Alignment_prep ( 
                 CreateGFF.out[0],
