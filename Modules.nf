@@ -488,6 +488,9 @@ process Generate_output {
 		file "vcf_files"
 		file "genomecov"
 		file "all_files"
+
+	publishDir params.OUTDIR, mode: 'copy'
+	
 	script:
 
 	// Assumes that "Passage" info given in metadata file is a numerical value.
