@@ -44,7 +44,7 @@ NOTE: The examples provided are mainly to illustrate how to use either method - 
 
 To run LAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
 
-* If your computer doesn't have at least 4 cores and 6GB of ram, run your LAVA commands with `-profile testing`
+* If your computer doesn't have at least 8 cores and 10GB of ram, run your LAVA commands with `-profile laptop`
 
 1. With a reference fasta and a reference gff (as seen in Example 1):
 	
