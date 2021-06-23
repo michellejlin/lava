@@ -49,10 +49,7 @@ def protein_annotation(first):
 		# Makes arrows for mature peptides.
 		for i in range(0, mat_peptides_list.shape[0]):
 			x1 = mat_peptides_list.iloc[i,1]
-			if(i==mat_peptides_list.shape[0]-1):
-				x2 = mat_peptides_list.iloc[i,2]
-			else:
-				x2 = mat_peptides_list.iloc[(i+1),1]
+			x2 = mat_peptides_list.iloc[i,2]
 			genome_plot.add_layout(Arrow(end = VeeHead(size=20, fill_color = "cadetblue", fill_alpha = 0.3, line_alpha = 0), 
 				line_color = "cadetblue", line_width = 20, x_start = x1, x_end = x2,
 				y_start = 5, y_end = 5, line_alpha = 0.3))
@@ -337,6 +334,7 @@ if __name__ == '__main__':
 		if args.categorical:
 			name_from_passage = merged.loc[merged['Sample']==sample_name].iloc[0]
 			name_from_passage = name_from_passage['Passage']
+			name_from_passage = name_from_passage.replace('_',' ')
 		
 		# Plot per base coverage for each sample as a subplot to the side.
 		coverage = pd.read_csv(sample_name.strip() + '.genomecov', names=["sample", 'position', 'cov'], header=0, sep='\t')
@@ -355,7 +353,7 @@ if __name__ == '__main__':
 		# Creates a graph with x-axis being genome length (based on protein csv).
 		## Took out active_scroll = "wheel_zoom" -RCS
 		genome_plot = figure(plot_width=1600, plot_height=800, y_range=DataRange1d(bounds=(0,102), start=0,end=102),
-			title=sample_name.split('/')[0], sizing_mode = 'scale_width',
+			title=name_from_passage, sizing_mode = 'scale_width',
 			x_range=DataRange1d(bounds=(0, proteins.iloc[proteins.shape[0]-1,2]), start=0, end=proteins.iloc[proteins.shape[0]-1,2]))
 		
 		# Plots by nucleotide letter change.

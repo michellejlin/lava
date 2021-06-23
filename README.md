@@ -1,5 +1,3 @@
-## To make sure you have the latest version of LAVA, please see the [Greninger lab repo](https://github.com/greninger-lab/lava) for both the longitudinal (master branch) and unlongitudinal versions of LAVA.
-
 # LAVA: Longitudinal Analysis of Viral Alleles
 
 ![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
@@ -46,13 +44,13 @@ NOTE: The examples provided are mainly to illustrate how to use either method - 
 
 To run LAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
 
-* If your computer doesn't have at least 4 cores and 6GB of ram, run your LAVA commands with `-profile testing`
+* If your computer doesn't have at least 8 cores and 10GB of ram, run your LAVA commands with `-profile laptop`
 
 1. With a reference fasta and a reference gff (as seen in Example 1):
 	
 `nextflow run greninger-lab/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
-2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
+2. And to pull the reference from Genbank (as seen in Example 2):
 
 `nextflow run greninger-lab/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
 

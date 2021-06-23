@@ -219,7 +219,7 @@ for x in range(0, len(gene_product_list)):
 	gene_end = str(gene_end)
 
 	## For ribosomal slippage, creates fake new protein to get the second set of values
-	if len(gene_loc_list[x]) == 4:
+	if len(gene_loc_list[x]) == 4 and gene_product_list[x] != 'D_protein':
 		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
 		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
 		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + '_ribosomal_slippage;Parent=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
