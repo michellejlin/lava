@@ -1,4 +1,4 @@
-import subprocess 
+import subprocess
 import argparse
 from Bio.Seq import Seq
 from Bio.Blast import NCBIWWW
@@ -16,20 +16,20 @@ import math
 correction_number = 0
 residue_correction_number = 0
 
-# -1 for coronavirus, HIV
-slippage_number = -1
-
-# Grabs the start of the CDS for the original protein before ribosomal slip
-slippage_cd_start = open("ribosomal_start.txt").read()
-
-for line in open("proteins.csv"):
-    if '_ribosomal_slippage' in line:
-        slip_site = line.split(',')[1]
-        residue_correction_number = int(slip_site) - int(slippage_cd_start) - slippage_number
-
-        # For some reason, nucleotide counting is off but residue number is correct.
-        # For now, adding back protein start is vaguely correct.
-        correction_number = int(slip_site) - 1
+# # -1 for coronavirus, HIV
+# slippage_number = -1
+#
+# # Grabs the start of the CDS for the original protein before ribosomal slip
+# slippage_cd_start = open("ribosomal_start.txt").read()
+#
+# for line in open("proteins.csv"):
+#     if '_ribosomal_slippage' in line:
+#         slip_site = line.split(',')[1]
+#         residue_correction_number = int(slip_site) - int(slippage_cd_start) - slippage_number
+#
+#         # For some reason, nucleotide counting is off but residue number is correct.
+#         # For now, adding back protein start is vaguely correct.
+#         correction_number = int(slip_site) - 1
 
 
 # Ribosomal_corrected has corrected ribosomal slippage annotations.
@@ -85,14 +85,14 @@ with open("final.csv") as f:
                     mat_nuc = str(mat_nuc_num) + nuc[-4:]
                 else:
                     mat_nuc = nuc[0] + str(mat_nuc_num) + nuc[-1]
-                
+
                 # Grabs correct amino acid mutation.
                 mat_aa = amino[0] + str(mat_aa_num) + amino[-1]
 
                 # Writes full mature peptide annotation.
                 mat_peptide = mat_name + ": " + mat_aa + "; " + mat_nuc
 
-        # Corrects for ribosomal slippage by adding correction_number to 
+        # Corrects for ribosomal slippage by adding correction_number to
         # original nucleotide/residue number.
         if '_ribosomal_slippage' in line:
             if 'del' in nuc:

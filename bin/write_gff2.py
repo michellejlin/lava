@@ -1,4 +1,4 @@
-import subprocess 
+import subprocess
 import argparse
 from Bio.Seq import Seq
 from Bio.Blast import NCBIWWW
@@ -11,6 +11,7 @@ import re
 import os.path
 import pandas as pd
 import sys
+import csv
 
 # Reads in a fasta and returns fasta name, fasta sequence with Ts instead of Us.
 def read_fasta(fasta_file_loc):
@@ -51,7 +52,7 @@ mat_peptide_product_list = []
 mat_peptide_current_loc = []
 allow_one_mat = False
 
-# Pulls CDS annotations from downloaded genbank file 
+# Pulls CDS annotations from downloaded genbank file
 for line in open('lava_ref.gbk'):
 	# Grabs locations of proteins from CDS annotations.
 	if 'CDS' in line and '..' in line:
@@ -78,11 +79,11 @@ for line in open('lava_ref.gbk'):
 		if px not in mat_peptide_product_list:
 			mat_peptide_product_list.append(px)
 			mat_peptide_loc_list.append(mat_peptide_current_loc)
-	
+
 # Writes mature peptide names and locations to new file.
 mat_peptide_list = open('mat_peptides.txt', 'w')
 for x in range(0, len(mat_peptide_product_list)):
-	# some peptides have ribosomal slippage too, 
+	# some peptides have ribosomal slippage too,
 	# grab the last two locations (after slippage join)
 	if len(mat_peptide_loc_list[x]) == 4:
 		peptide_start = str(mat_peptide_loc_list[x][2])
@@ -91,7 +92,7 @@ for x in range(0, len(mat_peptide_product_list)):
 		before_slip = int(before_slip)
 		# append the length of the protein before ribosomal slippage to name of mat_peptide,
 		# to be parsed later by ribosomal_slippage.py
-		mat_peptide_list.write(mat_peptide_product_list[x] + "_rib_" + str(before_slip) + 
+		mat_peptide_list.write(mat_peptide_product_list[x] + "_rib_" + str(before_slip) +
 		"," + peptide_start + "," + peptide_end + "\n")
 
 	# otherwise, just grab the locations of the mat peptide
@@ -101,7 +102,7 @@ for x in range(0, len(mat_peptide_product_list)):
 		mat_peptide_list.write(mat_peptide_product_list[x] + "," + peptide_start + "," + peptide_end + "\n")
 mat_peptide_list.close()
 
-# Writes a new .gff file for annovar to use later 
+# Writes a new .gff file for annovar to use later
 print("Writing GFF file...")
 g = open('lava_ref.gff', 'w')
 g.write('##gff-version 3\n##source-version geneious 9.1.7\n')
@@ -131,12 +132,14 @@ for x in range(0, len(gene_product_list)):
 
 	## For ribosomal slippage, creates fake new protein to get the second set of values
 	if len(gene_loc_list[x]) == 4 and gene_product_list[x] != 'D_protein':
-		g.write(name + '\tLAVA\tgene\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
-		g.write(name + '\tLAVA\tCDS\t' +  str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t0\tID=CDS:' + gene_product_list[x] + '_ribosomal_slippage;Parent=transcript:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
-		g.write(name + '\tLAVA\ttranscript\t' + str(gene_loc_list[x][2]) + '\t' + str(gene_loc_list[x][3]) + '\t.\t+\t.\tID=transcript:' + gene_product_list[x] + '_ribosomal_slippage;Parent=gene:' + gene_product_list[x] + '_ribosomal_slippage;biotype=protein_coding\n')
+		g.write(name + '\tLAVA\tgene\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t.\tID=gene:' + gene_name + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\tCDS\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t0\tID=CDS:' + gene_name + ';Parent=transcript:' + gene_name + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\ttranscript\t' + gene_loc_list[x][0] + '\t' + gene_loc_list[x][1] + '\t.\t+\t.\tID=transcript:' + gene_name + ';Parent=gene:' + gene_name + ';biotype=protein_coding\n')
 
-		slip_start = str(gene_loc_list[x][0])
-	
+		g.write(name + '\tLAVA\tgene\t' + gene_loc_list[x][2] + '\t' + gene_loc_list[x][3] + '\t.\t+\t.\tID=gene:' + gene_name + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\tCDS\t' + gene_loc_list[x][2] + '\t' + gene_loc_list[x][3] + '\t.\t+\t0\tID=CDS:' + gene_name + ';Parent=transcript:' + gene_name + ';biotype=protein_coding\n')
+		g.write(name + '\tLAVA\ttranscript\t' + gene_loc_list[x][2] + '\t' + gene_loc_list[x][3] + '\t.\t+\t.\tID=transcript:' + gene_name + ';Parent=gene:' + gene_name + ';biotype=protein_coding\n')
+
 	elif(gene_name != "C_protein" and gene_name != "D_protein"):
 		g.write(name + '\tLAVA\tgene\t' + gene_start + '\t' + gene_end + '\t.\t+\t.\tID=gene:' + gene_name + ';biotype=protein_coding\n')
 		g.write(name + '\tLAVA\tCDS\t' +  gene_start + '\t' + gene_end + '\t.\t+\t0\tID=CDS:' + gene_name + ';Parent=transcript:' + gene_name + ';biotype=protein_coding\n')
