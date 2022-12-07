@@ -205,11 +205,11 @@ for l in range(len(variantFunction)):
                                         after = translate(variantFunction.iloc[l,8] + fasta[int(variantFunction.iloc[l,10])] + fasta[int(variantFunction.iloc[l,10]+1)])
 
                                     if(before == "STOP"):
-                                        before = "X"
+                                        before = "*"
                                     if (after == "STOP"):
-                                        after = "X"
+                                        after = "*"
 
-                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+                                    #variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
 
                                     if(before == after):
                                         variantFunction.iloc[l, 1] = "synonymous SNV"
@@ -217,11 +217,14 @@ for l in range(len(variantFunction)):
                                     if(before != after):
                                         variantFunction.iloc[l, 1] = "nonsynonymous SNV"
 
-                                    if(after == "STOP"):
+                                    if(after == "*"):
                                         variantFunction.iloc[l, 1] = "stopgain"
 
-                                    if(before == "STOP" and after != "STOP"):
+                                    if(before == "*" and after != "*"):
                                         variantFunction.iloc[l, 1] = "stoploss"
+
+                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+
 
                             if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 1):
                                 if(variantFunction.iloc[l,8] !=  "-" and fasta[int(variantFunction.iloc[l,10]-2)] !=  "-" and fasta[int(variantFunction.iloc[l,10])] !=  "-"):
@@ -238,11 +241,11 @@ for l in range(len(variantFunction)):
                                         after = translate(fasta[int(variantFunction.iloc[l, 10]) - 2] + variantFunction.iloc[l, 8] + fasta[int(variantFunction.iloc[l, 10])])
 
                                     if(before == "STOP"):
-                                        before = "X"
+                                        before = "*"
                                     if (after == "STOP"):
-                                        after = "X"
+                                        after = "*"
 
-                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+                                    #variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
 
                                     if(before == after):
                                         variantFunction.iloc[l, 1] = "synonymous SNV"
@@ -250,11 +253,14 @@ for l in range(len(variantFunction)):
                                     if(before != after):
                                         variantFunction.iloc[l, 1] = "nonsynonymous SNV"
 
-                                    if(after == "STOP"):
+                                    if(after == "*"):
                                         variantFunction.iloc[l, 1] = "stopgain"
 
-                                    if(before == "STOP" and after != "STOP"):
+                                    if(before == "*" and after != "*"):
                                         variantFunction.iloc[l, 1] = "stoploss"
+
+                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+
 
                             if ((int(variantFunction.iloc[l, 10]) - int(gff.iloc[m, 3])) % 3 == 2):
                                 if (variantFunction.iloc[l, 8] != "-" and fasta[int(variantFunction.iloc[l, 10] - 2)] != "-" and fasta[int(variantFunction.iloc[l, 10] - 3)] != "-"):
@@ -271,11 +277,11 @@ for l in range(len(variantFunction)):
                                         after = translate(fasta[int(variantFunction.iloc[l, 10]) - 3] +  fasta[int(variantFunction.iloc[l, 10])- 2] + variantFunction.iloc[l, 8])
 
                                     if(before == "STOP"):
-                                        before = "X"
+                                        before = "*"
                                     if (after == "STOP"):
-                                        after = "X"
+                                        after = "*"
 
-                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+                                    #variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
 
                                     if(before == after):
                                         variantFunction.iloc[l, 1] = "synonymous SNV"
@@ -283,11 +289,14 @@ for l in range(len(variantFunction)):
                                     if(before != after):
                                         variantFunction.iloc[l, 1] = "nonsynonymous SNV"
 
-                                    if(after == "STOP"):
+                                    if(after == "*"):
                                         variantFunction.iloc[l, 1] = "stopgain"
 
-                                    if(before == "STOP" and after != "STOP"):
+                                    if(before == "*" and after != "*"):
                                         variantFunction.iloc[l, 1] = "stoploss"
+
+                                    variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
+
 
 variantFunction = variantFunction[variantFunction.iloc[:,2] == "exonic"]
 
