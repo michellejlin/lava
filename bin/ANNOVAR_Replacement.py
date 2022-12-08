@@ -182,7 +182,7 @@ for l in range(len(variantFunction)):
 
                                         if(slipageNum < 0):
 
-                                            aminoNum = int(aminoNum) + (int(gff.iloc[o, 4]) - int(gff.iloc[o, 3])) + 1 + slipageNum
+                                            aminoNum = (int(aminoNum) + (int(gff.iloc[o, 4]) - int(gff.iloc[o, 3])) + 1 + slipageNum)
 
                                         # aminoNum = int(aminoNum) + (int(gff.iloc[o, 4]) - int(gff.iloc[o, 3])) + slipageNum
 
@@ -190,8 +190,8 @@ for l in range(len(variantFunction)):
                             proteinNum = str(int(aminoNum/3) + ((aminoNum % 3 ) > 0))
                             aminoNum = str(aminoNum)
 
-                            #if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 0):
-                            if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 1):
+                            if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 0):
+                            #if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 1):
                                 if(variantFunction.iloc[l,8] !=  "-" and fasta[int(variantFunction.iloc[l,10])] !=  "-" and fasta[int(variantFunction.iloc[l,10]+1)] !=  "-"):
 
                                     if 'N' in fasta[int(variantFunction.iloc[l,10])-1] or 'N' in fasta[int(variantFunction.iloc[l,10])] or 'N' in fasta[int(variantFunction.iloc[l,10])+1] or 'N' in (variantFunction.iloc[l,8]):                                    #
@@ -227,8 +227,8 @@ for l in range(len(variantFunction)):
                                     #variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
 
 
-                            #if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 1):
-                            if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 2):
+                            if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 1):
+                            #if((int(variantFunction.iloc[l,10]) - int(gff.iloc[m,3]))%3 == 2):
                                 if(variantFunction.iloc[l,8] !=  "-" and fasta[int(variantFunction.iloc[l,10]-2)] !=  "-" and fasta[int(variantFunction.iloc[l,10])] !=  "-"):
 
                                     if 'N' in fasta[int(variantFunction.iloc[l,10])-2] or 'N' in fasta[int(variantFunction.iloc[l,10])-1] or 'N' in fasta[int(variantFunction.iloc[l,10])] or 'N' in (variantFunction.iloc[l,8]):                                    #
@@ -264,8 +264,8 @@ for l in range(len(variantFunction)):
                                     #variantFunction.iloc[l, 3] = proteinName + ":" + proteinName2 + ":exon1:c." + variantFunction.iloc[l, 7] + aminoNum + variantFunction.iloc[l, 8] + ":p." + before + proteinNum + after + ","
 
 
-                            #if ((int(variantFunction.iloc[l, 10]) - int(gff.iloc[m, 3])) % 3 == 2):
-                            if ((int(variantFunction.iloc[l, 10]) - int(gff.iloc[m, 3])) % 3 == 0):
+                            if ((int(variantFunction.iloc[l, 10]) - int(gff.iloc[m, 3])) % 3 == 2):
+                            #if ((int(variantFunction.iloc[l, 10]) - int(gff.iloc[m, 3])) % 3 == 0):
                                 if (variantFunction.iloc[l, 8] != "-" and fasta[int(variantFunction.iloc[l, 10] - 2)] != "-" and fasta[int(variantFunction.iloc[l, 10] - 3)] != "-"):
 
                                     if 'N' in fasta[int(variantFunction.iloc[l,10])-3] or 'N' in fasta[int(variantFunction.iloc[l,10])-2] or 'N' in fasta[int(variantFunction.iloc[l,10])-1] or 'N' in (variantFunction.iloc[l,8]):                                    #
