@@ -38,6 +38,11 @@ To run RAVA you need, at a minimum:
 
 NOTE: The examples provided are mainly to illustrate how to use either method - fasta and .gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and .gff file and Example 2 uses `--GENBANK MF795094.1` to pull the reference from GenBank. The examples provided are real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). `Example1_file1.fastq` is sample SC1201, and `Example1_file2.fastq` is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being `Example2_file1.fastq`, `Example2_file2.fastq`, and `Example2_file3.fastq`, respectively. I have drastically reduced the number of reads in the FASTQ files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
 
+This version of RAVA replaces ANNOVAR with a similarly written program to account for slippage and protein overlap, thus allowing it to work with more complex GFF files.
+
+The program now accepts GFF or GBK files exported from Geneious. Use --GFF for either option; RAVA will automatically sort the file based on its extension
+Running the program take the same inputs; interactive graph is virtually identical with addition protein labeling annotations added and VCF coverage graphed as well.
+
 3. A metadata.csv file that must contain two column headers: Sample and Passage. Sample values must be the full path to the FASTQ for the sample. Passage must contain passage number, day the sample was collected, or any other numerical categorical variable. Take a look at the example metadata file `Example1_metadata.csv` to see the formatting.
 
 ## Usage
@@ -45,6 +50,7 @@ NOTE: The examples provided are mainly to illustrate how to use either method - 
 To run RAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute RAVA from this folder. You have two choices for running RAVA:
 
 * If your computer doesn't have at least 4 cores and 6GB of ram, run your RAVA commands with `-profile testing`
+* Use '-profile MORE' if your computer has at least 18 cpus and 60gb of ram
 
 1. With a reference fasta and a reference gff (as seen in Example 1):
 	
@@ -90,6 +96,8 @@ For additional help you can also run `RAVA.py -help`:
 Output files will be placed the folder specified by `--OUTDIR`. An interactive graph will be automatically opened on your default browser. This graph is saved as `RAVA_plots.html`. Sharing the output is as easy as sending this html file over email.
 
 Additionally you can examine the data more in depth via the `final.csv` file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
+
+This version of Lava accepts degenerative bases and will print out all possible translations for a codon with a degenerative base.
 
 ## Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
@@ -165,11 +173,6 @@ If you don't want to use the template GFF, or want to troubleshoot any problems 
 | Fasta Name | Source | Feature | Start | End | Score | Strand | Phase | Attributes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Must match the name of your .fasta reference sequence: both the first line, and the file name. | Anything in this column. | One of 3 things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | Beginning position of the protein. | End position of the protein. | Only contains "." | Only contains "+". | Contains a "0" for all CDS lines, and "." for all others. | Contains ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
-
-Additional Notes (Cave42):
-This version of RAVA replaces ANNOVAR with a similarly written program to account for slippage and protein overlap, thus allowing it to work with more complex GFF files.
-The program now accepts GFF or GBK files exported from Geneious. Use --GFF for either option; RAVA will automatically sort the file based on its extension
-Running the program take the same inputs; interactive graph is virtually identical with addition protein labeling annotations added and VCF coverage graphed as well.
 
 If you experience any difficulties doing this, or have any other questions about RAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
 
