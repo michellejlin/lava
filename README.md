@@ -1,8 +1,8 @@
-# LAVA: Longitudinal Analysis of Viral Alleles
+# RAVA: Reference-based Analysis of Viral Alleles
 
-![LAVA](https://github.com/vpeddu/lava/workflows/LAVA/badge.svg)
+![RAVA](https://github.com/vpeddu/RAVA/workflows/RAVA/badge.svg)
 
-LAVA analyzes and visualizes minor allele variants in longitudinal sequence data. LAVA takes FASTQ files (for every sample in your analysis), a metadata sheet (providing info on what day or passage each sample was collected), and a reference genome either by accession number or your own FASTA and GFF. Output will be displayed as an interactive graph in your web browser, and a table of all mutations of all samples.
+RAVA is derived from LAVA, but for nonlongitudinal sequence data. RAVA takes FASTQ files (for every sample in your analysis), a metadata sheet (providing info on what day or passage each sample was collected), and a reference genome either by accession number or your own FASTA and GFF. Output will be displayed as an interactive graph in your web browser, and a table of all mutations of all samples.
 
 # Table of Contents
 1. [Installation](#Installation)
@@ -15,7 +15,7 @@ LAVA analyzes and visualizes minor allele variants in longitudinal sequence data
 ## Installation
 **Before you get started**
 
-LAVA is written in [`Nextflow`](https://www.nextflow.io/) and uses `Docker` containers in the interest of ease of use and reproducibility. The only dependencies are `Nextflow` and `Docker`: 
+RAVA is written in [`Nextflow`](https://www.nextflow.io/) and uses `Docker` containers in the interest of ease of use and reproducibility. The only dependencies are `Nextflow` and `Docker`: 
 
 1. If you are on OSX, install `Nextflow` via `Homebrew` by running `brew install nextflow`. If you are on Linux/Windows, find instructions on install `Nextflow` [here](https://www.nextflow.io/docs/latest/getstarted.html). 
 2. `Docker` can be installed from [here](https://docs.docker.com/get-docker/).
@@ -28,36 +28,39 @@ That's it! Now you're ready to do some longitudinal analysis of minor alleles!
 
 Example files are included in the `test_data` folder. It is HIGHLY recommended you examine each of the example files before performing your own analysis.
 
-To run LAVA you need, at a minimum:
+To run RAVA you need, at a minimum:
 
-1. FASTQ files for all of your samples. LAVA does not perform any adapter or quality trimming so this should be done beforehand (e.g. with trimmomatic). You need at least two samples to perform a meaningful longitudinal analysis, e.g. `Example1_file1.fastq Example1_file2.fastq`. You only need to specify the first reference FASTQ for LAVA to point at.
+1. FASTQ files for all of your samples. RAVA does not perform any adapter or quality trimming so this should be done beforehand (e.g. with trimmomatic).
 
-2. A fasta file representing the majority consensus of your first sample. There are two options: 
+2. A fasta file for reference genome. There are two options: 
 * A reference fasta and a .gff file with protein annotation for the above reference fasta, e.g. `Example1_ref.fasta Example1_ref.gff`.
-* A Genbank accession number pointing to a genome that contains annotations that you would like transferred to your reference fasta, e.g. `NC_039477.1`. (This is the Genbank reference for Example 2, included in the example folder.) In this case, the majority consensus fasta will be automatically generated for you.
+* A Genbank accession number pointing to a genome that contains annotations that you would like transferred, e.g. `NC_039477.1`. (This is the Genbank reference for Example 2, included in the example folder.)
 
 NOTE: The examples provided are mainly to illustrate how to use either method - fasta and .gff file, or Genbank accession number - can be used effectively. Example 1 uses a provided fasta and .gff file and Example 2 uses `--GENBANK MF795094.1` to pull the reference from GenBank. The examples provided are real data that was used in [this paper](https://mbio.asm.org/content/mbio/9/4/e00898-18.full.pdf). `Example1_file1.fastq` is sample SC1201, and `Example1_file2.fastq` is CUL1201. The data from Example 2 is from [this study](https://www.biorxiv.org/content/10.1101/473405v1), with samples ST107, ST283, and ST709 being `Example2_file1.fastq`, `Example2_file2.fastq`, and `Example2_file3.fastq`, respectively. I have drastically reduced the number of reads in the FASTQ files to make downloading and running these examples extremely fast, so the data does differ from what's presented a bit. However, if you wish to run the full analysis, all files used are publically available on SRA. 
+
+This version of RAVA replaces ANNOVAR with a similarly written program to account for slippage and protein overlap, thus allowing it to work with more complex GFF files.
+
+The program now accepts GFF or GBK files exported from Geneious. Use --GFF for either option; RAVA will automatically sort the file based on its extension
+Running the program take the same inputs; interactive graph is virtually identical with addition protein labeling annotations added and VCF coverage graphed as well.
 
 3. A metadata.csv file that must contain two column headers: Sample and Passage. Sample values must be the full path to the FASTQ for the sample. Passage must contain passage number, day the sample was collected, or any other numerical categorical variable. Take a look at the example metadata file `Example1_metadata.csv` to see the formatting.
 
 ## Usage
 
-To run LAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute LAVA from this folder. You have two choices for running LAVA:
+To run RAVA you need to make sure you have placed all the FASTQ files you want to analyze as well as your metadata.csv file inside a folder. You can then use the terminal to execute RAVA from this folder. You have two choices for running RAVA:
 
-* If your computer doesn't have at least 8 cores and 10GB of ram, run your LAVA commands with `-profile laptop`
+* If your computer doesn't have at least 4 cores and 6GB of ram, run your RAVA commands with `-profile testing`
+* Use '-profile MORE' if your computer has at least 18 cpus and 60gb of ram
 
 1. With a reference fasta and a reference gff (as seen in Example 1):
 	
-`nextflow run greninger-lab/lava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --CONTROL_FASTQ test_data/Example1_file1.fastq --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run greninger-lab/lava -r rava --OUTDIR test_data/example_1_output/ --FASTA test_data/Example1_ref.fasta --GFF test_data/Example1_ref.gff --METADATA test_data/Example1_metadata.csv -with-docker ubuntu:18.04`
 
-2. And to pull the reference from Genbank (as seen in Example 2):
+2. And to pull the reference from Genbank, this will place all output into a folder named the current data and time (as seen in Example 2):
 
-`nextflow run greninger-lab/lava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --CONTROL_FASTQ test_data/Example2_file1.fastq --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
+`nextflow run greninger-lab/lava -r rava --OUTDIR test_data/example_2_output/ --GENBANK NC_039477.1 --METADATA test_data/Example2_metadata.csv -with-docker ubuntu:18.04`
 
-For additional help you can also run `lava.py -help`: 
-
-      * --CONTROL_FASTQ The fastq reads for the first sample in
-                        your longitudinal analysis [REQUIRED]
+For additional help you can also run `RAVA.py -help`: 
 
       *  --METADATA     A two column csv - the first column is the path to all the 
 	  					fastqs you wish to include in your analysis.
@@ -82,23 +85,19 @@ For additional help you can also run `lava.py -help`:
                         this consensus will be annotated from the downloaded genbank
                         record as well. [REQUIRED IF NOT --FASTA + --GFF]
 
-        * --NUC         Results are listed as nucleotide changes not amino acid
-                        changes. Do not use with -png. Doesn't work currently
-
         * --ALLELE_FREQ Specify an allele frequency percentage to cut off - with a
                         minimum of 1 percent - in whole numbers.
-
-        * --PNG         Output results as a png. Do not use with -nuc. Doesn't work currently
         
         * --DEDUPLICATE Optional flag, will perform automatic removal of PCR
                         duplicates via DeDup.
-	* --CATEGORICAL	Optional flag, will specify that column under "Passage" in metadata file will be read as categorical variables.
 
 ## Output Files
 
-Output files will be placed the folder specified by `--OUTDIR`. An interactive graph will be automatically opened on your default browser. This graph is saved as `LAVA_plots.html`. Sharing the output is as easy as sending this html file over email.
+Output files will be placed the folder specified by `--OUTDIR`. An interactive graph will be automatically opened on your default browser. This graph is saved as `RAVA_plots.html`. Sharing the output is as easy as sending this html file over email.
 
 Additionally you can examine the data more in depth via the `final.csv` file which will be created, which includes information such as position, nucleotide changes, allele frequency, depth, and so forth. 
+
+This version of Lava accepts degenerative bases and will print out all possible translations for a codon with a degenerative base.
 
 ## Common Errors
 1. `WARNING: A total of 1 sequences will be ignored due to lack of correct ORF annotation`
@@ -113,13 +112,13 @@ Additionally you can examine the data more in depth via the `final.csv` file whi
 
 	Make sure there are no special characters (dashes, underscores, etc.) in the reference genome name.
 
-4. `Picard not found - lava is being executed from : ` (or with GATK or VARSCAN replacing picard in this error)
+4. `Picard not found - RAVA is being executed from : ` (or with GATK or VARSCAN replacing picard in this error)
 
-	This error is because LAVA couldn't find PICARD in the LAVA folder. Check to see if you ran the install.py script corectly. You can do this by navigating to the LAVA folder and typing in `python install.py -c` to check if all the dependencies are there.
+	This error is because RAVA couldn't find PICARD in the RAVA folder. Check to see if you ran the install.py script corectly. You can do this by navigating to the RAVA folder and typing in `python install.py -c` to check if all the dependencies are there.
 
 5. ``import: not authorized `subprocess' @ error/constitute.c/WriteImage/1028.``
 	
-	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because lava.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias lava.py="python3 /Users/uwvirongs/Downloads/lava/lava.py"`.
+	This error may be accompanied by your mouse cursor turning into a thick plus, and happens because RAVA.py is not being run in python. Type in `nano ~/.bashrc` or `nano ~/.bash_profile` for Mac OSX, and make sure the alias statement includes python in front of the path, as in `alias RAVA.py="python /Users/uwvirongs/Downloads/RAVA/RAVA.py"`.
 
 6. ``IOError: [Errno 2] No such file or directory: 'Example1_metadata.csv'``
 
@@ -139,9 +138,9 @@ Additionally you can examine the data more in depth via the `final.csv` file whi
 
 
 ## GFF Creation Guide
-Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample LAVA will Genbank many mutations at 100% allele frequency in your first sample. 
+Perhaps the most difficult aspect of running this program is properly formatting your reference fasta and .gff files. In order to have a longitudinal analysis that makes sense, you need to specify a fasta file containing the majority consensus for the first sample. This allows you to examine minor variants in your first sample properly. If you use a fasta that is not representative of your first sample RAVA will Genbank many mutations at 100% allele frequency in your first sample. 
 
-In order to avoid this issue, we recommend using the `-q` flag to specify a GenBank record that is a reference for your samples. Assuming the selected reference has accurate annotations, LAVA will automatically assemble a working consensus sequence for your first set of reads and use this as the reference. 
+In order to avoid this issue, we recommend using the `-q` flag to specify a GenBank record that is a reference for your samples. Assuming the selected reference has accurate annotations, RAVA will automatically assemble a working consensus sequence for your first set of reads and use this as the reference. 
 
 However, for situations that are not covered by GenBank references, you would need to manually generate your own .fasta and .gff files.
 
@@ -157,7 +156,7 @@ To do this you first need to have your start and end nucleotide postitions for y
 
 Below is a visual guide of what you need to change the template `Example1_ref.gff` for your purposes.
 
-![Visual Guide](https://github.com/michellejlin/lava/blob/master/Gff-editing-guide.png)
+![Visual Guide](https://github.com/michellejlin/RAVA/blob/master/Gff-editing-guide.png)
 
 The color coded regions are the only portions that need to be changed. (The first two lines of the .gff files are comments and can be safely ignored.)
 
@@ -175,5 +174,5 @@ If you don't want to use the template GFF, or want to troubleshoot any problems 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Must match the name of your .fasta reference sequence: both the first line, and the file name. | Anything in this column. | One of 3 things: gene, CDS, transcript. CDS must be in all caps. Each protein MUST have all 3 features. | Beginning position of the protein. | End position of the protein. | Only contains "." | Only contains "+". | Contains a "0" for all CDS lines, and "." for all others. | Contains ID=`feature type`, where `feature type` is one of gene, CDS, or transcript, followed by the protein name. For CDS lines, it must also contain a `Parent=transcript:` identifier, followed by the protein name. For transcript lines, it must also contain a `Parent=gene:` identifier, followed by the protein name. All lines must end with `biotype=protein_coding`. Each of these tags should be separated by semicolons.|
 
-If you experience any difficulties doing this, or have any other questions about LAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
+If you experience any difficulties doing this, or have any other questions about RAVA, feel free to email us at uwvirongs@gmail.com and we'll be happy to help you out!
 

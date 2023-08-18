@@ -57,7 +57,8 @@ with open("final.csv") as f:
         else:
             nuc_num = int(nuc[1:-1])
         amino = line.split(',')[4]
-        amino_num = int(amino[1:-1])
+        #amino_num = int(amino[1:-1])
+        amino_num = int(re.sub('\D', '', (amino)))
         position = int(line.split(',')[2])
 
         # position = line.split(',')[2]
