@@ -85,6 +85,30 @@ test = 0
 
 df = None
 
+#impose a strand-bias filter -- remove alt alleles where
+# >90% of alt alleles come from one strand
+strandfilter_idx = []
+
+for k in range(len(variantFunction)):
+    temp_varstats = variantFunction.iloc[k,16].split(':')
+    ADF = float(temp_varstats[12])
+    ADR = float(temp_varstats[13])
+    total_A = ADF+ADR
+    percent_ADF = ADF/total_A * 100.0
+    percent_ADR = ADR/total_A * 100.0
+    if(not(percent_ADR > 90 or percent_ADF > 90)):
+        #print(variantFunction.iloc[k,:])
+        #print("ADF:",ADF)
+        #print("ADR:",ADR)
+        #print("total:", total_A)
+        #print("percent_ADF:", percent_ADF)
+        #print("percent_ADR:", percent_ADR)
+        strandfilter_idx.append(k)
+
+strandfiltered_df = variantFunction.loc[strandfilter_idx].reset_index(drop=True)
+
+variantFunction = strandfiltered_df
+
 for j in range(numRegions):
     if(gff.iloc[j,2] == "CDS"):
         for k in range(len(variantFunction)):

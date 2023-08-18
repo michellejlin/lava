@@ -258,7 +258,8 @@ workflow {
             MAT_PEPTIDE_ADDITION,
             RIBOSOMAL_SLIPPAGE,
             GENOME_PROTEIN_PLOTS,
-            PALETTE
+            PALETTE, 
+            Align_samples.out[2].collect()
         )
 }
 
@@ -288,6 +289,6 @@ __       /                 \\     /-   o     /-
           MM   `Mb.   A'     VML  :MM;  A'     VML
         .JMML. .JMM..AMA.   .AMMA. VF .AMA.   .AMMA.
 
-                      Version 3
+                      Version 4
     """.stripIndent()
 }

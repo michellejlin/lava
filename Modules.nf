@@ -103,7 +103,7 @@ process Alignment_prep {
     file "lava_ref.gff"
 	file "ribosomal_start.txt"
 	file "mat_peptides.txt"
-
+    publishDir params.OUTDIR, mode: 'copy'
 
     // Code to be executed inside the task
     script:
@@ -135,13 +135,13 @@ process Align_samples {
 	output:
 	tuple file(R1), file("*.pileup"), file("*.bam"), val(PASSAGE)
 	file "${R1}.genomecov"
-
+	file "${R1}.bam"
 	shell:
 	'''
 	#!/bin/bash
 	echo aligning "!{R1}"
 	# Align each sample to consensus fasta.
-	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [17,17] consensus.fasta !{R1} > !{R1}.sam
+	/usr/local/miniconda/bin/bwa mem -t !{task.cpus} -M -R \'@RG\\tID:group1\\tSM:!{R1}\\tPL:illumina\\tLB:lib1\\tPU:unit1\' -p -L [2,2] -B 6 consensus.fasta !{R1} > !{R1}.sam
 	# Sorts SAM.
 	java -jar /usr/bin/picard.jar SortSam INPUT=!{R1}.sam OUTPUT=!{R1}.bam SORT_ORDER=coordinate VERBOSITY=ERROR
 	# Removes duplicates (e.g. from library construction using PCR) if --DEDUPLICATE flag specified.
@@ -151,6 +151,8 @@ process Align_samples {
 			java -jar /usr/bin/picard.jar MarkDuplicates INPUT=${R1}.bam OUTPUT=${R1}_dedup.bam METRICS_FILE=metrics.txt VERBOSITY=ERROR REMOVE_DUPLICATES=true
 			cat ${R1}_dedup.bam > ${R1}.bam
 	fi
+	#gatk ClipReads -I ${R1}.bam -O ${R1}_softclipped.bam -CT "1-16" -CR SOFTCLIP_BASES
+	#cat ${R1}_softclipped.bam > ${R1}.bam
 	java -jar /usr/bin/picard.jar BuildBamIndex INPUT=!{R1}.bam VERBOSITY=ERROR
 	# Creates genomecov file from BAM so we can generate coverage graphs later.
 	echo sample\tposition\tcov > !{R1}.genomecov
@@ -217,7 +219,7 @@ process Create_VCF {
 	# here for file passthrough (input -> output)
 	mv !{BAM} !{BAM}.bam
 	# Generates VCF outputting all bases with a min coverage of 2.
-	cat !{R1_PILEUP} | java -jar /usr/local/bin/VarScan mpileup2cns --validation 1 --output-vcf 1 --min-coverage 2 --min-var-freq 0.001 --p-value 0.99 --min-reads2 1 > !{R1}.vcf
+	cat !{R1_PILEUP} | java -jar /usr/local/bin/VarScan mpileup2cns --validation 1 --output-vcf 1 --min-coverage 2 --min-var-freq 0.001 --p-value 0.99 --min-reads2 1 --strand-filter 1 > !{R1}.vcf
 	# Fixes ploidy issues.
 	awk -F $\'\t\' \'BEGIN {FS=OFS="\t"}{gsub("0/0","0/1",$10)gsub("0/0","1/0",$11)gsub("1/1","0/1",$10)gsub("1/1","1/0",$11)}1\' !{R1}.vcf > !{R1}_p.vcf
 
@@ -322,6 +324,7 @@ process Generate_output {
 		file RIBOSOMAL_SLIPPAGE
 		file GENOME_PROTEIN_PLOTS
 		file PALETTE
+		file BAM
 
 	output:
 		file "*.html"
@@ -331,7 +334,7 @@ process Generate_output {
 		file "vcf_files"
 		file "genomecov"
 		file "all_files"
-
+		file "bam_files"
 	publishDir params.OUTDIR, mode: 'copy'
 
 
@@ -372,6 +375,9 @@ process Generate_output {
 
 	mkdir genomecov
 	mv *.genomecov genomecov
+
+	mkdir bam_files
+	mv *.bam bam_files 
 
 	mkdir all_files
 
